@@ -1,0 +1,4 @@
+dataset: data/datasets/walking_il/dataset.jsonl
+loss: kl_plus_mse
+batch_size: 8
+epochs: 1

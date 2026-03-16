@@ -1,0 +1,31 @@
+# Local secrets
+token.md
+.env
+.env.*
+
+# Python environments and caches
+.venv*/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+
+# Frontend dependencies and build outputs
+apps/**/node_modules/
+apps/**/dist/
+apps/**/.vite/
+
+# Local tool downloads
+.tools/
+
+# Generated datasets and large local source snapshots
+data/raw/
+data/datasets/
+*.download.log
+
+# Generated artifacts
+outputs/

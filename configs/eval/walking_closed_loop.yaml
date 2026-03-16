@@ -1,0 +1,3 @@
+task: walking_closed_loop
+mode: deterministic
+max_steps: 200

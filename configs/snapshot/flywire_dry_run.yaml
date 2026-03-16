@@ -1,0 +1,5 @@
+dataset: public
+seed_strategy: readonly_coords
+max_hops: 2
+max_nodes: 5000
+allow_seed_override: true

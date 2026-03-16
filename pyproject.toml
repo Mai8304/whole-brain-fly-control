@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fruitfly"
+version = "0.1.0"
+description = "Full-graph fruit fly connectome control research workspace"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0",
+    "pyarrow>=19.0.0",
+    "torch>=2.10",
+]
+
+[project.optional-dependencies]
+flywire = [
+    "fafbseg>=3.2.2",
+    "pyarrow>=19.0.0",
+]
+embodiment = []
+ui = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+]
+dev = [
+    "httpx>=0.28.0",
+    "pytest>=9.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

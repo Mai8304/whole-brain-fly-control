@@ -1,0 +1,181 @@
+export interface ConsoleField {
+  label: string
+  value: string
+  helper?: string
+  labelKey?: string
+  helperKey?: string
+}
+
+export interface ConsoleAction {
+  label: string
+  variant?: 'default' | 'outline' | 'secondary'
+  labelKey?: string
+}
+
+export interface ConsolePanel {
+  title: string
+  description: string
+  titleKey?: string
+  descriptionKey?: string
+  fields?: ConsoleField[]
+  actions?: ConsoleAction[]
+  lines?: string[]
+  note?: string
+  noteKey?: string
+}
+
+export interface ConsoleSessionPayload {
+  mode: string
+  checkpoint: string
+  task: string
+  pending_changes: number
+  applied_state: {
+    environment_physics: Record<string, string>
+    sensory_inputs: Record<string, string>
+  }
+  intervention_log: string[]
+  action_provenance: {
+    direct_action_editing: boolean
+    joint_override: boolean
+  }
+}
+
+export interface PipelineStagePayload {
+  name: string
+  status: 'queued' | 'running' | 'done'
+}
+
+export interface BrainRegionPayload {
+  roi_id: string
+  roi_name: string
+  activity_value: number
+  activity_delta: number
+  node_count: number
+}
+
+export interface BrainTopNodePayload {
+  node_idx: number
+  source_id: string
+  activity_value: number
+  flow_role: string
+  roi_name: string
+}
+
+export interface BrainShellPayload {
+  asset_id: string
+  asset_url: string
+  base_color: string
+  opacity: number
+}
+
+export interface BrainViewPayload {
+  data_status?: 'recorded' | 'unavailable'
+  semantic_scope?: string
+  view_mode: string
+  shell?: BrainShellPayload | null
+  mapping_coverage: {
+    roi_mapped_nodes: number
+    total_nodes: number
+  }
+  region_activity: BrainRegionPayload[]
+  top_regions: BrainRegionPayload[]
+  top_nodes: BrainTopNodePayload[]
+  afferent_activity: number | null
+  intrinsic_activity: number | null
+  efferent_activity: number | null
+  formal_truth?: {
+    occupancy_exists: boolean
+    validation_path: string
+    validation_passed: boolean
+    mapped_nodes: number
+    reason: string
+  }
+}
+
+export interface BrainAssetRoiPayload {
+  roi_id: string
+  short_label: string
+  display_name: string
+  display_name_zh: string
+  group: string
+  description_zh: string
+  default_color: string
+  priority: number
+}
+
+export interface BrainAssetManifestPayload {
+  asset_id: string
+  asset_version: string
+  source: {
+    provider: string
+    cloudpath: string
+    info_url: string
+    mesh_segment_id: number
+  }
+  shell: {
+    render_asset_path: string
+    render_format: string
+    vertex_count: number
+    face_count: number
+    bbox_min: number[]
+    bbox_max: number[]
+    base_color: string
+    opacity: number
+    asset_url?: string
+  }
+  roi_manifest: BrainAssetRoiPayload[]
+}
+
+export interface RoiMeshAssetPayload {
+  roi_id: string
+  render_asset_path: string
+  render_format: string
+  asset_url?: string
+}
+
+export interface RoiAssetPackPayload {
+  asset_id: string
+  asset_version: string
+  shell: {
+    render_asset_path: string
+    render_format: string
+  }
+  roi_manifest_path: string
+  node_roi_map_path: string
+  roi_meshes: RoiMeshAssetPayload[]
+  mapping_coverage: {
+    roi_mapped_nodes: number
+    total_nodes: number
+  }
+}
+
+export interface TimelineEventPayload {
+  step_id: number
+  event_type: string
+  label: string
+}
+
+export interface TimelinePayload {
+  data_status?: 'recorded' | 'unavailable'
+  steps_requested: number
+  steps_completed: number
+  current_step: number
+  brain_view_ref: string
+  body_view_ref: string
+  events: TimelineEventPayload[]
+}
+
+export interface ClosedLoopSummaryPayload {
+  status: string
+  task: string
+  steps_requested: number
+  steps_completed: number
+  terminated_early: boolean
+  reward_mean: number
+  final_reward: number
+  mean_action_norm: number
+  forward_velocity_mean: number
+  forward_velocity_std: number
+  body_upright_mean: number
+  final_heading_delta: number
+}

@@ -1,0 +1,75 @@
+import json
+from pathlib import Path
+
+
+def test_load_brain_asset_manifest_validates_shell_and_roi_contract(tmp_path: Path) -> None:
+    from fruitfly.evaluation.brain_asset_manifest import load_brain_asset_manifest
+
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "asset_id": "flywire_brain_v141",
+                "asset_version": "v141",
+                "source": {
+                    "provider": "flywire",
+                    "cloudpath": "precomputed://gs://flywire_neuropil_meshes/whole_neuropil/brain_mesh_v141.surf",
+                    "info_url": "https://storage.googleapis.com/flywire_neuropil_meshes/whole_neuropil/brain_mesh_v141.surf/info",
+                    "mesh_segment_id": 1,
+                },
+                "shell": {
+                    "render_asset_path": "brain_shell.glb",
+                    "render_format": "glb",
+                    "vertex_count": 8997,
+                    "face_count": 18000,
+                    "bbox_min": [213120.0, 77504.0, 760.0],
+                    "bbox_max": [840512.0, 388160.0, 269560.0],
+                    "base_color": "#89a5ff",
+                    "opacity": 0.18,
+                },
+                "roi_manifest": [
+                    {
+                        "roi_id": "MB",
+                        "short_label": "MB",
+                        "display_name": "Mushroom Body",
+                        "display_name_zh": "蘑菇体",
+                        "group": "core-processing",
+                        "description_zh": "V1 中作为核心处理中间脑区展示。",
+                        "default_color": "#f7b267",
+                        "priority": 1,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    manifest = load_brain_asset_manifest(manifest_path)
+
+    assert manifest["asset_id"] == "flywire_brain_v141"
+    assert manifest["shell"]["render_asset_path"] == "brain_shell.glb"
+    assert manifest["source"]["mesh_segment_id"] == 1
+    assert manifest["roi_manifest"][0] == {
+        "roi_id": "MB",
+        "short_label": "MB",
+        "display_name": "Mushroom Body",
+        "display_name_zh": "蘑菇体",
+        "group": "core-processing",
+        "description_zh": "V1 中作为核心处理中间脑区展示。",
+        "default_color": "#f7b267",
+        "priority": 1,
+    }
+
+
+def test_build_default_roi_manifest_returns_representative_groups() -> None:
+    from fruitfly.evaluation.brain_asset_manifest import build_default_roi_manifest
+
+    roi_manifest = build_default_roi_manifest()
+
+    assert len(roi_manifest) >= 6
+    assert {entry["group"] for entry in roi_manifest} == {
+        "input-associated",
+        "core-processing",
+        "output-associated",
+    }
+    assert roi_manifest[0]["roi_id"]

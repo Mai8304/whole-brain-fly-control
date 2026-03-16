@@ -1,0 +1,4 @@
+model: whole_brain_rate
+graph: full
+hidden_dim: 32
+action_dim: 59
