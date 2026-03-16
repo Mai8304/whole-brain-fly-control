@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Serve the neural console read-only API.")
     parser.add_argument("--compiled-graph-dir", type=Path, required=True, help="Compiled graph artifact directory")
     parser.add_argument("--eval-dir", type=Path, required=True, help="Closed-loop evaluation artifact directory")
-    parser.add_argument("--checkpoint", type=Path, required=True, help="Checkpoint used for the displayed run")
+    parser.add_argument("--checkpoint", type=Path, default=None, help="Optional checkpoint used for the displayed run")
     parser.add_argument(
         "--brain-asset-dir",
         type=Path,

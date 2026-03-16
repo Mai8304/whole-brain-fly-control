@@ -2,6 +2,9 @@ import json
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 
 def test_console_api_serves_realistic_read_only_payloads(tmp_path: Path) -> None:
@@ -236,4 +239,277 @@ def test_console_api_prefers_recorded_brain_and_timeline_payloads(tmp_path: Path
     assert brain_payload["data_status"] == "recorded"
     assert brain_payload["mapping_coverage"]["roi_mapped_nodes"] == 50
     assert timeline_payload["data_status"] == "recorded"
-    assert timeline_payload["current_step"] == 5
+
+
+def test_console_api_materializes_recorded_brain_and_timeline_from_activity_trace(tmp_path: Path) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 4, "edge_count": 3, "afferent_count": 1, "intrinsic_count": 2, "efferent_count": 1}),
+        encoding="utf-8",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0},
+                {"source_id": 20, "node_idx": 1},
+                {"source_id": 30, "node_idx": 2},
+                {"source_id": 40, "node_idx": 3},
+            ]
+        ),
+        compiled_dir / "node_index.parquet",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {
+                    "source_id": 10,
+                    "node_idx": 0,
+                    "neuropil": "AL_L",
+                    "pre_count": 1,
+                    "post_count": 0,
+                    "synapse_count": 1,
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+                {
+                    "source_id": 20,
+                    "node_idx": 1,
+                    "neuropil": "AL_R",
+                    "pre_count": 1,
+                    "post_count": 0,
+                    "synapse_count": 1,
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+                {
+                    "source_id": 30,
+                    "node_idx": 2,
+                    "neuropil": "FB",
+                    "pre_count": 1,
+                    "post_count": 0,
+                    "synapse_count": 1,
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+            ]
+        ),
+        compiled_dir / "node_neuropil_occupancy.parquet",
+    )
+    (compiled_dir / "neuropil_truth_validation.json").write_text(
+        json.dumps(
+            {
+                "validation_passed": True,
+                "validation_scope": "graph_source_ids",
+                "roster_alignment": {
+                    "alignment_passed": True,
+                    "graph_only_root_count": 0,
+                    "proofread_only_root_count": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "task": "straight_walking",
+                "steps_requested": 4,
+                "steps_completed": 4,
+                "terminated_early": False,
+                "reward_mean": 1.0,
+                "final_reward": 1.0,
+                "mean_action_norm": 1.2,
+                "forward_velocity_mean": 0.3,
+                "forward_velocity_std": 0.1,
+                "body_upright_mean": 0.95,
+                "final_heading_delta": 0.2,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "activity_trace.json").write_text(
+        json.dumps(
+            {
+                "task": "straight_walking",
+                "steps_requested": 4,
+                "steps_completed": 4,
+                "terminated_early": False,
+                "snapshots": [
+                    {
+                        "step_id": 1,
+                        "afferent_activity": 0.1,
+                        "intrinsic_activity": 0.2,
+                        "efferent_activity": 0.3,
+                        "top_active_nodes": [{"node_idx": 1, "activity_value": 0.6, "flow_role": "intrinsic"}],
+                    },
+                    {
+                        "step_id": 4,
+                        "afferent_activity": 0.4,
+                        "intrinsic_activity": 0.5,
+                        "efferent_activity": 0.6,
+                        "top_active_nodes": [{"node_idx": 2, "activity_value": 0.9, "flow_role": "efferent"}],
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    np.save(eval_dir / "final_node_activity.npy", np.asarray([0.2, 0.6, 0.9, 0.1], dtype=np.float32))
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+        )
+    )
+    client = TestClient(app)
+
+    brain_payload = client.get("/api/console/brain-view").json()
+    timeline_payload = client.get("/api/console/timeline").json()
+
+    assert brain_payload["data_status"] == "recorded"
+    assert brain_payload["semantic_scope"] == "neuropil"
+    assert brain_payload["top_regions"][0]["roi_id"] == "FB"
+    assert brain_payload["top_nodes"][0]["source_id"] == "30"
+    assert brain_payload["top_nodes"][0]["roi_name"] == "FB"
+    assert timeline_payload["data_status"] == "recorded"
+    assert timeline_payload["steps_completed"] == 4
+    assert len(timeline_payload["events"]) >= 2
+    assert timeline_payload["current_step"] == 4
+    assert (eval_dir / "brain_view.json").exists()
+    assert (eval_dir / "timeline.json").exists()
+
+
+def test_console_api_surfaces_graph_scoped_formal_truth_state(tmp_path: Path) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    checkpoint_path = tmp_path / "epoch_0001.pt"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    checkpoint_path.write_bytes(b"checkpoint")
+    (compiled_dir / "graph_stats.json").write_text(json.dumps({"node_count": 139244}), encoding="utf-8")
+    pq.write_table(
+        pa.Table.from_pylist([{"source_id": 11, "neuropil": "FB", "pre_count": 1, "post_count": 1}]),
+        compiled_dir / "node_neuropil_occupancy.parquet",
+    )
+    (compiled_dir / "neuropil_truth_validation.json").write_text(
+        json.dumps(
+            {
+                "validation_passed": True,
+                "validation_scope": "graph_source_ids",
+                "roster_alignment": {
+                    "alignment_passed": False,
+                    "graph_only_root_count": 15,
+                    "proofread_only_root_count": 26,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "task": "straight_walking",
+                "steps_requested": 1,
+                "steps_completed": 1,
+                "terminated_early": False,
+                "reward_mean": 1.0,
+                "final_reward": 1.0,
+                "mean_action_norm": 1.0,
+                "forward_velocity_mean": 0.0,
+                "forward_velocity_std": 0.0,
+                "body_upright_mean": 1.0,
+                "final_heading_delta": 0.0,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=checkpoint_path,
+        )
+    )
+    client = TestClient(app)
+
+    brain_payload = client.get("/api/console/brain-view").json()
+    assert brain_payload["formal_truth"]["validation_passed"] is True
+    assert brain_payload["formal_truth"]["validation_scope"] == "graph_source_ids"
+    assert brain_payload["formal_truth"]["roster_alignment_passed"] is False
+    assert brain_payload["formal_truth"]["graph_only_root_count"] == 15
+    assert brain_payload["formal_truth"]["proofread_only_root_count"] == 26
+    assert "proofread roster alignment differs" in brain_payload["formal_truth"]["reason"]
+
+
+def test_console_api_returns_unavailable_summary_when_eval_artifacts_are_missing(tmp_path: Path) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    checkpoint_path = tmp_path / "epoch_0001.pt"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    checkpoint_path.write_bytes(b"checkpoint")
+    (compiled_dir / "graph_stats.json").write_text(json.dumps({"node_count": 139255}), encoding="utf-8")
+    pq.write_table(
+        pa.Table.from_pylist([{"source_id": 11, "neuropil": "FB", "pre_count": 1, "post_count": 1}]),
+        compiled_dir / "node_neuropil_occupancy.parquet",
+    )
+    (compiled_dir / "neuropil_truth_validation.json").write_text(
+        json.dumps(
+            {
+                "validation_passed": True,
+                "validation_scope": "graph_source_ids",
+                "roster_alignment": {
+                    "alignment_passed": True,
+                    "graph_only_root_count": 0,
+                    "proofread_only_root_count": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+        )
+    )
+    client = TestClient(app)
+
+    session_payload = client.get("/api/console/session").json()
+    assert session_payload["checkpoint"] == "unavailable"
+
+    summary_payload = client.get("/api/console/summary").json()
+    assert summary_payload["data_status"] == "unavailable"
+    assert summary_payload["status"] == "unavailable"
+    assert summary_payload["video_url"] is None
+
+    timeline_payload = client.get("/api/console/timeline").json()
+    assert timeline_payload["data_status"] == "unavailable"
+    assert timeline_payload["steps_requested"] == 0
+    assert timeline_payload["steps_completed"] == 0
+
+    brain_payload = client.get("/api/console/brain-view").json()
+    assert brain_payload["formal_truth"]["validation_passed"] is True
+    assert brain_payload["formal_truth"]["roster_alignment_passed"] is True

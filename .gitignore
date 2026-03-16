@@ -24,8 +24,10 @@ apps/**/.vite/
 
 # Generated datasets and large local source snapshots
 data/raw/
+data/derived/
 data/datasets/
 *.download.log
 
 # Generated artifacts
+output/
 outputs/

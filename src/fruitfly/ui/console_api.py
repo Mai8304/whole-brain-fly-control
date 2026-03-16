@@ -1,25 +1,33 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import pyarrow.parquet as pq
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 
 from fruitfly.evaluation.brain_asset_manifest import load_brain_asset_manifest, with_runtime_asset_urls
 from fruitfly.evaluation.console_session import ConsoleSession
 from fruitfly.evaluation.roi_asset_pack import load_roi_asset_pack_manifest
+from fruitfly.evaluation.runtime_activity_artifacts import (
+    build_replay_brain_view_payload,
+    build_replay_timeline_payload,
+    materialize_runtime_activity_artifacts,
+)
 from fruitfly.evaluation.timeline import build_shared_timeline_payload
+from fruitfly.ui.replay_runtime import ReplayRuntime
 
 
 @dataclass(frozen=True, slots=True)
 class ConsoleApiConfig:
     compiled_graph_dir: Path
     eval_dir: Path
-    checkpoint_path: Path
+    checkpoint_path: Path | None = None
+    replay_renderer_python: Path | None = None
     brain_asset_dir: Path | None = None
     roi_asset_dir: Path | None = None
     mode: str = "Experiment"
@@ -41,6 +49,20 @@ class ConsoleApiConfig:
 
 
 def create_console_api(config: ConsoleApiConfig) -> FastAPI:
+    replay_runtime: ReplayRuntime | None = None
+
+    def get_or_create_replay_runtime() -> ReplayRuntime:
+        nonlocal replay_runtime
+        if replay_runtime is None:
+            try:
+                replay_runtime = ReplayRuntime.from_eval_dir(config.eval_dir)
+            except FileNotFoundError as exc:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Replay inspector artifacts are unavailable",
+                ) from exc
+        return replay_runtime
+
     app = FastAPI(
         title="Fruitfly Neural Console API",
         version="0.1.0",
@@ -71,12 +93,16 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
 
     @app.get("/api/console/summary")
     def summary() -> dict[str, Any]:
-        payload = dict(_read_json(_summary_path(config)))
-        payload["video_url"] = "/api/console/video" if _video_path(config).exists() else None
-        return payload
+        if _summary_path(config).exists():
+            payload = dict(_read_json(_summary_path(config)))
+            payload["data_status"] = "recorded"
+            payload["video_url"] = "/api/console/video" if _video_path(config).exists() else None
+            return payload
+        return _build_unavailable_summary_payload(config)
 
     @app.get("/api/console/brain-view")
     def brain_view() -> dict[str, Any]:
+        _ensure_runtime_activity_artifacts(config)
         payload_path = config.eval_dir / "brain_view.json"
         if payload_path.exists():
             payload = dict(_read_json(payload_path))
@@ -105,6 +131,7 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
 
     @app.get("/api/console/timeline")
     def timeline() -> dict[str, Any]:
+        _ensure_runtime_activity_artifacts(config)
         payload_path = config.eval_dir / "timeline.json"
         if payload_path.exists():
             payload = dict(_read_json(payload_path))
@@ -123,6 +150,91 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
             "timeline_url": "/api/console/timeline",
             "video_url": "/api/console/video" if _video_path(config).exists() else None,
         }
+
+    @app.get("/api/console/replay/session")
+    def replay_session() -> dict[str, Any]:
+        runtime = get_or_create_replay_runtime()
+        return {
+            **runtime.trace.session,
+            "current_step": runtime.current_step,
+            "status": runtime.status,
+            "speed": runtime.speed,
+            "camera": runtime.camera_preset,
+        }
+
+    @app.post("/api/console/replay/seek")
+    def replay_seek(payload: dict[str, Any]) -> dict[str, Any]:
+        runtime = get_or_create_replay_runtime()
+        runtime.seek(int(payload["step"]))
+        return {"current_step": runtime.current_step}
+
+    @app.post("/api/console/replay/control")
+    def replay_control(payload: dict[str, Any]) -> dict[str, Any]:
+        runtime = get_or_create_replay_runtime()
+        action = str(payload["action"])
+        if action == "play":
+            runtime.play()
+        elif action == "pause":
+            runtime.pause()
+        elif action == "next":
+            runtime.next_step()
+        elif action == "prev":
+            runtime.prev_step()
+        else:
+            raise HTTPException(status_code=400, detail=f"unsupported replay control: {action}")
+        return {"status": runtime.status, "current_step": runtime.current_step}
+
+    @app.post("/api/console/replay/camera")
+    def replay_camera(payload: dict[str, Any]) -> dict[str, Any]:
+        runtime = get_or_create_replay_runtime()
+        runtime.set_camera(str(payload["camera"]))
+        return {"camera": runtime.camera_preset, "current_step": runtime.current_step}
+
+    @app.get("/api/console/replay/summary")
+    def replay_summary() -> dict[str, Any]:
+        runtime = get_or_create_replay_runtime()
+        return runtime.current_summary()
+
+    @app.get("/api/console/replay/brain-view")
+    def replay_brain_view() -> dict[str, Any]:
+        runtime = get_or_create_replay_runtime()
+        brain_payload = runtime.current_brain_payload()
+        return build_replay_brain_view_payload(
+            compiled_graph_dir=config.compiled_graph_dir,
+            step_id=int(brain_payload["step_id"]),
+            node_activity=brain_payload["node_activity"],
+            afferent_activity=float(brain_payload["afferent_activity"])
+            if brain_payload.get("afferent_activity") is not None
+            else None,
+            intrinsic_activity=float(brain_payload["intrinsic_activity"])
+            if brain_payload.get("intrinsic_activity") is not None
+            else None,
+            efferent_activity=float(brain_payload["efferent_activity"])
+            if brain_payload.get("efferent_activity") is not None
+            else None,
+            shell=_brain_shell_payload(config),
+        )
+
+    @app.get("/api/console/replay/timeline")
+    def replay_timeline() -> dict[str, Any]:
+        runtime = get_or_create_replay_runtime()
+        return build_replay_timeline_payload(
+            summary_payload=runtime.summary_payload,
+            current_step=runtime.current_step,
+            events=list(runtime.trace.events),
+        )
+
+    @app.get("/api/console/replay/frame")
+    def replay_frame(width: int = 320, height: int = 240) -> Response:
+        runtime = get_or_create_replay_runtime()
+        frame_bytes = _render_replay_frame_bytes(
+            config=config,
+            step=runtime.current_step,
+            camera=runtime.camera_preset,
+            width=int(width),
+            height=int(height),
+        )
+        return Response(content=frame_bytes, media_type="image/jpeg")
 
     @app.get("/api/console/video")
     def video() -> FileResponse:
@@ -155,9 +267,10 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
 
 
 def _build_session_payload(config: ConsoleApiConfig) -> dict[str, Any]:
+    checkpoint_value = str(config.checkpoint_path) if config.checkpoint_path is not None else "unavailable"
     session = ConsoleSession.create(
         mode=config.mode,
-        checkpoint=str(config.checkpoint_path),
+        checkpoint=checkpoint_value,
         task=config.task,
         environment_physics=config.environment_physics,
         sensory_inputs=config.sensory_inputs,
@@ -216,8 +329,88 @@ def _build_unavailable_timeline_payload(config: ConsoleApiConfig) -> dict[str, A
     return payload
 
 
+def _build_unavailable_summary_payload(config: ConsoleApiConfig) -> dict[str, Any]:
+    return {
+        "data_status": "unavailable",
+        "status": "unavailable",
+        "task": config.task,
+        "steps_requested": 0,
+        "steps_completed": 0,
+        "terminated_early": False,
+        "reward_mean": 0.0,
+        "final_reward": 0.0,
+        "mean_action_norm": 0.0,
+        "forward_velocity_mean": 0.0,
+        "forward_velocity_std": 0.0,
+        "body_upright_mean": 0.0,
+        "final_heading_delta": 0.0,
+        "video_url": None,
+    }
+
+
+def _render_replay_frame_bytes(
+    *,
+    config: ConsoleApiConfig,
+    step: int,
+    camera: str,
+    width: int,
+    height: int,
+) -> bytes:
+    renderer_python = _resolve_replay_renderer_python(config)
+    if renderer_python is None:
+        raise HTTPException(status_code=503, detail="replay renderer environment is not configured")
+
+    script_path = Path(__file__).resolve().parents[3] / "scripts" / "render_replay_frame.py"
+    if not script_path.exists():
+        raise HTTPException(status_code=503, detail="replay frame renderer script is not available")
+
+    result = subprocess.run(
+        [
+            str(renderer_python),
+            str(script_path),
+            "--eval-dir",
+            str(config.eval_dir),
+            "--step",
+            str(int(step)),
+            "--camera",
+            str(camera),
+            "--width",
+            str(int(width)),
+            "--height",
+            str(int(height)),
+        ],
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        message = result.stderr.decode("utf-8", errors="ignore").strip() or "replay frame rendering failed"
+        raise HTTPException(status_code=503, detail=message)
+    return bytes(result.stdout)
+
+
+def _resolve_replay_renderer_python(config: ConsoleApiConfig) -> Path | None:
+    if config.replay_renderer_python is not None:
+        return config.replay_renderer_python
+    candidate = Path(__file__).resolve().parents[3] / ".venv-flybody" / "bin" / "python"
+    if candidate.exists():
+        return candidate
+    return None
+
+
 def _graph_stats(config: ConsoleApiConfig) -> dict[str, Any]:
     return _read_json(config.compiled_graph_dir / "graph_stats.json")
+
+
+def _ensure_runtime_activity_artifacts(config: ConsoleApiConfig) -> None:
+    brain_view_path = config.eval_dir / "brain_view.json"
+    timeline_path = config.eval_dir / "timeline.json"
+    if brain_view_path.exists() and timeline_path.exists():
+        return
+    materialize_runtime_activity_artifacts(
+        compiled_graph_dir=config.compiled_graph_dir,
+        eval_dir=config.eval_dir,
+        shell=_brain_shell_payload(config),
+    )
 
 
 def _brain_asset_manifest(config: ConsoleApiConfig) -> dict[str, Any]:
@@ -284,17 +477,30 @@ def _formal_neuropil_truth_state(config: ConsoleApiConfig) -> dict[str, Any]:
     if validation_path.exists():
         validation_payload = _read_json(validation_path)
     validation_passed = bool(validation_payload and validation_payload.get("validation_passed") is True)
+    validation_scope = str(validation_payload.get("validation_scope")) if validation_payload else None
+    roster_alignment = dict(validation_payload.get("roster_alignment") or {}) if validation_payload else {}
+    roster_alignment_passed = roster_alignment.get("alignment_passed")
     mapped_nodes = _count_occupancy_nodes(occupancy_path) if occupancy_exists else 0
     if occupancy_exists and validation_passed:
-        reason = "formal neuropil truth present, but runtime activity recording is not available"
+        if roster_alignment_passed is False:
+            reason = "graph-scoped formal neuropil truth present; proofread roster alignment differs"
+        else:
+            reason = "formal neuropil truth present, but runtime activity recording is not available"
     elif occupancy_exists:
-        reason = "formal neuropil occupancy exists, but official validation has not passed"
+        if validation_scope == "graph_source_ids":
+            reason = "formal neuropil occupancy exists, but graph-scoped official validation has not passed"
+        else:
+            reason = "formal neuropil occupancy exists, but official validation has not passed"
     else:
         reason = "formal neuropil occupancy artifact not found"
     return {
         "occupancy_exists": occupancy_exists,
         "validation_path": str(validation_path),
         "validation_passed": validation_passed,
+        "validation_scope": validation_scope,
+        "roster_alignment_passed": roster_alignment_passed,
+        "graph_only_root_count": roster_alignment.get("graph_only_root_count"),
+        "proofread_only_root_count": roster_alignment.get("proofread_only_root_count"),
         "mapped_nodes": mapped_nodes,
         "reason": reason,
     }
@@ -308,14 +514,14 @@ def _count_occupancy_nodes(path: Path) -> int:
 
 
 def _summary_payload(config: ConsoleApiConfig) -> dict[str, Any]:
-    return _read_json(_summary_path(config))
+    summary_path = _summary_path(config)
+    if summary_path.exists():
+        return _read_json(summary_path)
+    return _build_unavailable_summary_payload(config)
 
 
 def _summary_path(config: ConsoleApiConfig) -> Path:
-    path = config.eval_dir / "summary.json"
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="summary.json not found")
-    return path
+    return config.eval_dir / "summary.json"
 
 
 def _video_path(config: ConsoleApiConfig) -> Path:

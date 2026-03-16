@@ -37,14 +37,17 @@ class ClosedLoopPolicyWrapper:
         self._state = next_state.detach()
         return [float(value) for value in mean[0].detach().cpu().tolist()]
 
-    def activity_snapshot(self, *, top_k: int = 20) -> dict[str, Any]:
+    def activity_snapshot(self, *, top_k: int = 20, include_node_activity: bool = False) -> dict[str, Any]:
         if self._state is None:
-            return {
+            payload = {
                 "afferent_activity": 0.0,
                 "intrinsic_activity": 0.0,
                 "efferent_activity": 0.0,
                 "top_active_nodes": [],
             }
+            if include_node_activity:
+                payload["node_activity"] = []
+            return payload
         compiled_graph = self.bundle.compiled_graph
         return summarize_neural_activity(
             state=self._state.detach(),
@@ -52,6 +55,7 @@ class ClosedLoopPolicyWrapper:
             intrinsic_mask=compiled_graph["intrinsic_mask"],
             efferent_mask=compiled_graph["efferent_mask"],
             top_k=top_k,
+            include_node_activity=include_node_activity,
         )
 
     @staticmethod

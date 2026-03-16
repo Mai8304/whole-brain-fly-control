@@ -69,6 +69,7 @@ export interface BrainShellPayload {
 }
 
 export interface BrainViewPayload {
+  step_id?: number
   data_status?: 'recorded' | 'unavailable'
   semantic_scope?: string
   view_mode: string
@@ -87,6 +88,10 @@ export interface BrainViewPayload {
     occupancy_exists: boolean
     validation_path: string
     validation_passed: boolean
+    validation_scope?: string | null
+    roster_alignment_passed?: boolean | null
+    graph_only_root_count?: number | null
+    proofread_only_root_count?: number | null
     mapped_nodes: number
     reason: string
   }
@@ -166,6 +171,12 @@ export interface TimelinePayload {
 }
 
 export interface ClosedLoopSummaryPayload {
+  step_id?: number
+  reward?: number
+  forward_velocity?: number
+  body_upright?: number
+  terminated?: boolean
+  data_status?: 'recorded' | 'unavailable'
   status: string
   task: string
   steps_requested: number
@@ -178,4 +189,19 @@ export interface ClosedLoopSummaryPayload {
   forward_velocity_std: number
   body_upright_mean: number
   final_heading_delta: number
+}
+
+export type ReplayStatus = 'paused' | 'playing'
+export type ReplayCameraPreset = 'follow' | 'side' | 'top' | 'front-quarter'
+
+export interface ReplaySessionPayload {
+  session_id: string
+  task: string
+  default_camera: ReplayCameraPreset
+  steps_requested: number
+  steps_completed: number
+  current_step: number
+  status: ReplayStatus
+  speed: number
+  camera: ReplayCameraPreset
 }

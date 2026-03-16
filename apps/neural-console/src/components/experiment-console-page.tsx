@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 
+import { BodyReplayInspector } from '@/components/body-replay-inspector'
 import { ConsolePageHeader } from '@/components/console-page-header'
 import { Button } from '@/components/ui/button'
 import {
@@ -39,6 +40,12 @@ interface ExperimentConsolePageProps {
   pipeline: PipelineStagePayload[]
   sourceStatus: 'API UNAVAILABLE' | 'LIVE API' | 'LOADING' | 'MOCK FALLBACK'
   summary: {
+    step_id?: number
+    reward?: number
+    forward_velocity?: number
+    body_upright?: number
+    terminated?: boolean
+    data_status?: 'recorded' | 'unavailable'
     status: string
     task: string
     steps_requested: number
@@ -54,6 +61,30 @@ interface ExperimentConsolePageProps {
   }
   timeline: TimelinePayload
   videoSrc: string
+  replay: {
+    available: boolean
+    session: {
+      session_id: string
+      task: string
+      default_camera: 'follow' | 'side' | 'top' | 'front-quarter'
+      steps_requested: number
+      steps_completed: number
+      current_step: number
+      status: 'paused' | 'playing'
+      speed: number
+      camera: 'follow' | 'side' | 'top' | 'front-quarter'
+    } | null
+    frameSrc: string
+    loading: boolean
+    errorMessage: string | null
+    onPlayPause: () => void
+    onPrevStep: () => void
+    onNextStep: () => void
+    onSeek: (step: number) => void
+    onSetCamera: (camera: 'follow' | 'side' | 'top' | 'front-quarter') => void
+    onSetSpeed: (speed: number) => void
+    onResetView: () => void
+  }
 }
 
 export function ExperimentConsolePage({
@@ -68,6 +99,7 @@ export function ExperimentConsolePage({
   summary,
   timeline,
   videoSrc,
+  replay,
 }: ExperimentConsolePageProps) {
   const { t } = useConsolePreferences()
   const timelineProgress =
@@ -75,6 +107,20 @@ export function ExperimentConsolePage({
   const hasRecordedBrainActivity =
     sourceStatus === 'LIVE API' && brainView.data_status !== 'unavailable'
   const hasRecordedTimeline = sourceStatus === 'LIVE API' && timeline.data_status !== 'unavailable'
+  const hasRecordedSummary = sourceStatus === 'LIVE API' && summary.data_status !== 'unavailable'
+  const environmentFields =
+    leftPanels.find((panel) => panel.title === 'Environment Physics')?.fields?.map((field) => ({
+      label: translateFieldLabel(field),
+      value: field.value,
+    })) ?? []
+  const sensoryFields =
+    leftPanels.find((panel) => panel.title === 'Sensory Inputs')?.fields?.map((field) => ({
+      label:
+        translateFieldLabel(field) === t('field.temperature')
+          ? 'Temp'
+          : translateFieldLabel(field),
+      value: field.value,
+    })) ?? []
 
   return (
     <div className="grid gap-4">
@@ -311,48 +357,23 @@ export function ExperimentConsolePage({
                 <CardDescription>{t('experiment.body.description')}</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <div className="console-video-panel">
-                  <div className="console-status-strip">
-                    {leftPanels
-                      .find((panel) => panel.title === 'Environment Physics')
-                      ?.fields?.map((field) => (
-                        <span key={field.label}>
-                          {translateFieldLabel(field)}: {field.value}
-                        </span>
-                      ))}
-                    {leftPanels
-                      .find((panel) => panel.title === 'Sensory Inputs')
-                      ?.fields?.map((field) => (
-                        <span key={field.label}>
-                          {translateFieldLabel(field) === t('field.temperature')
-                            ? 'Temp'
-                            : translateFieldLabel(field)}
-                          : {field.value}
-                        </span>
-                      ))}
-                  </div>
-
-                  <div className="console-video-frame">
-                    {videoSrc ? (
-                      <video
-                        className="aspect-video w-full object-cover"
-                        controls
-                        muted
-                        loop
-                        playsInline
-                        autoPlay
-                        src={videoSrc}
-                        title="Fly rollout video"
-                      >
-                        浏览器无法播放当前 rollout.mp4（视频文件）。
-                      </video>
-                    ) : (
-                      <div className="flex aspect-video items-center justify-center px-6 text-center text-sm text-muted-foreground">
-                        {t('experiment.body.videoUnavailable')}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <BodyReplayInspector
+                  available={replay.available}
+                  session={replay.session}
+                  frameSrc={replay.frameSrc}
+                  loading={replay.loading}
+                  errorMessage={replay.errorMessage}
+                  summary={summary}
+                  statusFields={[...environmentFields, ...sensoryFields]}
+                  videoSrc={videoSrc}
+                  onPlayPause={replay.onPlayPause}
+                  onPrevStep={replay.onPrevStep}
+                  onNextStep={replay.onNextStep}
+                  onSeek={replay.onSeek}
+                  onSetCamera={replay.onSetCamera}
+                  onSetSpeed={replay.onSetSpeed}
+                  onResetView={replay.onResetView}
+                />
 
                 <div className="grid gap-4">
                   <section className="console-detail-section">
@@ -365,36 +386,61 @@ export function ExperimentConsolePage({
                       </p>
                     </div>
                     <Separator className="my-3" />
-                    <div className="grid gap-3 text-sm">
-                      <MetricRow
-                        label={t('experiment.body.metric.steps')}
-                        value={`${summary.steps_completed} / ${summary.steps_requested}`}
-                      />
-                      <MetricRow
-                        label={t('experiment.body.metric.rewardMean')}
-                        value={formatNumber(summary.reward_mean)}
-                      />
-                      <MetricRow
-                        label={t('experiment.body.metric.terminated')}
-                        value={String(summary.terminated_early)}
-                      />
-                      <MetricRow
-                        label={t('experiment.body.metric.forwardVelocity')}
-                        value={formatNumber(summary.forward_velocity_mean)}
-                      />
-                      <MetricRow
-                        label={t('experiment.body.metric.velocityStd')}
-                        value={formatNumber(summary.forward_velocity_std)}
-                      />
-                      <MetricRow
-                        label={t('experiment.body.metric.uprightness')}
-                        value={formatNumber(summary.body_upright_mean)}
-                      />
-                      <MetricRow
-                        label={t('experiment.body.metric.headingDrift')}
-                        value={signed(summary.final_heading_delta)}
-                      />
-                    </div>
+                    {hasRecordedSummary ? (
+                      <div className="grid gap-3 text-sm">
+                        {summary.step_id != null ? (
+                          <>
+                            <MetricRow
+                              label={t('experiment.timeline.step')}
+                              value={`${summary.step_id} / ${summary.steps_completed}`}
+                            />
+                            <MetricRow
+                              label={t('experiment.body.metric.terminated')}
+                              value={summary.terminated != null ? String(summary.terminated) : 'false'}
+                            />
+                            <Separator />
+                          </>
+                        ) : null}
+                        <MetricRow
+                          label={t('experiment.body.metric.steps')}
+                          value={`${summary.steps_completed} / ${summary.steps_requested}`}
+                        />
+                        {summary.reward != null ? (
+                          <MetricRow
+                            label={t('experiment.body.metric.rewardMean')}
+                            value={formatNumber(summary.reward)}
+                          />
+                        ) : null}
+                        <MetricRow
+                          label={t('experiment.body.metric.rewardMean')}
+                          value={formatNumber(summary.reward_mean)}
+                        />
+                        <MetricRow
+                          label={t('experiment.body.metric.terminated')}
+                          value={String(summary.terminated_early)}
+                        />
+                        <MetricRow
+                          label={t('experiment.body.metric.forwardVelocity')}
+                          value={formatNumber(summary.forward_velocity ?? summary.forward_velocity_mean)}
+                        />
+                        <MetricRow
+                          label={t('experiment.body.metric.velocityStd')}
+                          value={formatNumber(summary.forward_velocity_std)}
+                        />
+                        <MetricRow
+                          label={t('experiment.body.metric.uprightness')}
+                          value={formatNumber(summary.body_upright ?? summary.body_upright_mean)}
+                        />
+                        <MetricRow
+                          label={t('experiment.body.metric.headingDrift')}
+                          value={signed(summary.final_heading_delta)}
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        {t('experiment.body.summaryUnavailable')}
+                      </p>
+                    )}
                   </section>
 
                   <section className="console-detail-section">

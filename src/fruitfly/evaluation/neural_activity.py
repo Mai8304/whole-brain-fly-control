@@ -13,6 +13,7 @@ def summarize_neural_activity(
     intrinsic_mask: Tensor,
     efferent_mask: Tensor,
     top_k: int = 20,
+    include_node_activity: bool = False,
 ) -> dict[str, Any]:
     if state.ndim != 3:
         raise ValueError("state must have shape [batch, num_nodes, hidden_dim]")
@@ -43,12 +44,15 @@ def summarize_neural_activity(
     else:
         top_active_nodes = []
 
-    return {
+    payload = {
         "afferent_activity": _masked_mean(node_activity, afferent_mask),
         "intrinsic_activity": _masked_mean(node_activity, intrinsic_mask),
         "efferent_activity": _masked_mean(node_activity, efferent_mask),
         "top_active_nodes": top_active_nodes,
     }
+    if include_node_activity:
+        payload["node_activity"] = [float(value) for value in node_activity.detach().cpu().tolist()]
+    return payload
 
 
 def _masked_mean(values: Tensor, mask: Tensor) -> float:

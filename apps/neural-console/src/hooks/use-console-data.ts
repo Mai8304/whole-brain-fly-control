@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { startTransition, useEffect, useRef, useState } from 'react'
 
 import {
   mockBrainAssetManifest,
@@ -12,26 +12,116 @@ import {
   mockTimelinePayload,
   mockVideoSrc,
 } from '@/data/mockConsoleData'
-import { fetchConsoleSnapshot } from '@/lib/console-api'
-import type { ConsolePanel, PipelineStagePayload } from '@/types/console'
+import {
+  buildReplayFrameUrl,
+  controlReplay,
+  fetchConsoleSnapshot,
+  fetchReplaySnapshot,
+  seekReplayStep,
+  setReplayCamera,
+} from '@/lib/console-api'
+import type {
+  BrainViewPayload,
+  ClosedLoopSummaryPayload,
+  ConsolePanel,
+  PipelineStagePayload,
+  ReplayCameraPreset,
+  ReplaySessionPayload,
+  TimelinePayload,
+} from '@/types/console'
 
 type DataSourceStatus = 'API UNAVAILABLE' | 'LIVE API' | 'LOADING' | 'MOCK FALLBACK'
+
+interface ReplayInspectorState {
+  available: boolean
+  session: ReplaySessionPayload | null
+  frameSrc: string
+  loading: boolean
+  errorMessage: string | null
+  onPlayPause: () => void
+  onPrevStep: () => void
+  onNextStep: () => void
+  onSeek: (step: number) => void
+  onSetCamera: (camera: ReplayCameraPreset) => void
+  onSetSpeed: (speed: number) => void
+  onResetView: () => void
+}
 
 export interface ConsoleDataState {
   sourceStatus: DataSourceStatus
   errorMessage: string | null
   leftPanels: ConsolePanel[]
   pipeline: PipelineStagePayload[]
-  brainView: typeof mockBrainViewPayload
+  brainView: BrainViewPayload
   brainAssets: typeof mockBrainAssetManifest | null
   roiAssets: typeof mockRoiAssetPack | null
-  timeline: typeof mockTimelinePayload
-  summary: typeof mockClosedLoopSummary
+  timeline: TimelinePayload
+  summary: ClosedLoopSummaryPayload
   executionLog: string[]
   videoSrc: string
+  replay: ReplayInspectorState
 }
 
 const ENABLE_MOCK_FALLBACK = import.meta.env.VITE_ENABLE_MOCK_FALLBACK === 'true'
+const REPLAY_FRAME_WIDTH = 960
+const REPLAY_FRAME_HEIGHT = 540
+const REPLAY_BASE_FPS = 8
+
+const unavailableBrainView: BrainViewPayload = {
+  data_status: 'unavailable',
+  semantic_scope: 'neuropil',
+  view_mode: 'region-aggregated',
+  shell: null,
+  mapping_coverage: { roi_mapped_nodes: 0, total_nodes: 0 },
+  region_activity: [],
+  top_regions: [],
+  top_nodes: [],
+  afferent_activity: null,
+  intrinsic_activity: null,
+  efferent_activity: null,
+}
+
+const unavailableTimeline: TimelinePayload = {
+  data_status: 'unavailable',
+  steps_requested: 0,
+  steps_completed: 0,
+  current_step: 0,
+  brain_view_ref: 'step_id',
+  body_view_ref: 'step_id',
+  events: [],
+}
+
+const unavailableSummary: ClosedLoopSummaryPayload = {
+  status: 'unavailable',
+  task: 'straight_walking',
+  steps_requested: 0,
+  steps_completed: 0,
+  terminated_early: false,
+  reward_mean: 0,
+  final_reward: 0,
+  mean_action_norm: 0,
+  forward_velocity_mean: 0,
+  forward_velocity_std: 0,
+  body_upright_mean: 0,
+  final_heading_delta: 0,
+}
+
+function createReplayUnavailableState(message: string | null = null): ReplayInspectorState {
+  return {
+    available: false,
+    session: null,
+    frameSrc: '',
+    loading: false,
+    errorMessage: message,
+    onPlayPause: () => undefined,
+    onPrevStep: () => undefined,
+    onNextStep: () => undefined,
+    onSeek: () => undefined,
+    onSetCamera: () => undefined,
+    onSetSpeed: () => undefined,
+    onResetView: () => undefined,
+  }
+}
 
 const mockState: ConsoleDataState = {
   sourceStatus: 'MOCK FALLBACK',
@@ -45,6 +135,7 @@ const mockState: ConsoleDataState = {
   summary: mockClosedLoopSummary,
   executionLog: mockExecutionLog,
   videoSrc: mockVideoSrc,
+  replay: createReplayUnavailableState(),
 }
 
 const loadingState: ConsoleDataState = {
@@ -52,46 +143,14 @@ const loadingState: ConsoleDataState = {
   errorMessage: null,
   leftPanels: buildUnavailablePanels('Loading live API…'),
   pipeline: [],
-  brainView: {
-    data_status: 'unavailable',
-    semantic_scope: 'neuropil',
-    view_mode: 'region-aggregated',
-    shell: null,
-    mapping_coverage: { roi_mapped_nodes: 0, total_nodes: 0 },
-    region_activity: [],
-    top_regions: [],
-    top_nodes: [],
-    afferent_activity: null,
-    intrinsic_activity: null,
-    efferent_activity: null,
-  },
+  brainView: unavailableBrainView,
   brainAssets: null,
   roiAssets: null,
-  timeline: {
-    data_status: 'unavailable',
-    steps_requested: 0,
-    steps_completed: 0,
-    current_step: 0,
-    brain_view_ref: 'step_id',
-    body_view_ref: 'step_id',
-    events: [],
-  },
-  summary: {
-    status: 'unavailable',
-    task: 'straight_walking',
-    steps_requested: 0,
-    steps_completed: 0,
-    terminated_early: false,
-    reward_mean: 0,
-    final_reward: 0,
-    mean_action_norm: 0,
-    forward_velocity_mean: 0,
-    forward_velocity_std: 0,
-    body_upright_mean: 0,
-    final_heading_delta: 0,
-  },
+  timeline: unavailableTimeline,
+  summary: unavailableSummary,
   executionLog: ['[strict] waiting for live API'],
   videoSrc: '',
+  replay: createReplayUnavailableState(),
 }
 
 function buildUnavailableState(message: string): ConsoleDataState {
@@ -101,11 +160,21 @@ function buildUnavailableState(message: string): ConsoleDataState {
     errorMessage: message,
     leftPanels: buildUnavailablePanels(message),
     executionLog: [`[strict] ${message}`],
+    replay: createReplayUnavailableState(message),
   }
 }
 
 export function useConsoleData(): ConsoleDataState {
-  const [state, setState] = useState<ConsoleDataState>(ENABLE_MOCK_FALLBACK ? mockState : loadingState)
+  const [state, setState] = useState<ConsoleDataState>(
+    ENABLE_MOCK_FALLBACK ? mockState : loadingState,
+  )
+  const stateRef = useRef(state)
+  const replayCacheRef = useRef(0)
+  const replayBusyRef = useRef(false)
+
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
 
   useEffect(() => {
     if (typeof fetch !== 'function') {
@@ -114,51 +183,208 @@ export function useConsoleData(): ConsoleDataState {
 
     let cancelled = false
 
-    fetchConsoleSnapshot()
-      .then((snapshot) => {
+    async function loadInitialState() {
+      try {
+        const snapshot = await fetchConsoleSnapshot()
         if (cancelled) {
           return
         }
-        setState({
-          sourceStatus: 'LIVE API',
-          errorMessage: null,
-          leftPanels: buildPanelsFromLiveSnapshot(snapshot.session),
-          pipeline: snapshot.pipeline,
-          brainView: snapshot.brainView,
-          brainAssets: snapshot.brainAssets,
-          roiAssets: snapshot.roiAssets,
-          timeline: snapshot.timeline,
-          summary: snapshot.summary,
-          executionLog: [
-            '[live] session loaded from /api/console/session',
-            '[live] summary loaded from /api/console/summary',
-            '[live] brain assets loaded from /api/console/brain-assets',
-            '[live] roi assets loaded from /api/console/roi-assets',
-            '[live] timeline loaded from /api/console/timeline',
-          ],
-          videoSrc: snapshot.videoSrc,
+
+        const baseState = buildLiveState(snapshot)
+        startTransition(() => {
+          setState(baseState)
         })
-      })
-      .catch(() => {
+
+        try {
+          const replaySnapshot = await fetchReplaySnapshot()
+          if (cancelled) {
+            return
+          }
+          startTransition(() => {
+            setState((previous) =>
+              applyReplaySnapshot({
+                previous,
+                replaySnapshot,
+                message: '[live] replay session loaded from /api/console/replay/session',
+              }),
+            )
+          })
+        } catch {
+          if (cancelled) {
+            return
+          }
+          startTransition(() => {
+            setState((previous) => ({
+              ...previous,
+              replay: createReplayUnavailableState('Replay inspector is unavailable.'),
+            }))
+          })
+        }
+      } catch {
         if (cancelled) {
           return
         }
-        setState(
-          ENABLE_MOCK_FALLBACK
-            ? {
-                ...mockState,
-                errorMessage: 'Live API unavailable. Falling back to mock data.',
-              }
-            : buildUnavailableState('Live API unavailable. Research mode disables mock fallback.'),
-        )
-      })
+        startTransition(() => {
+          setState(
+            ENABLE_MOCK_FALLBACK
+              ? {
+                  ...mockState,
+                  errorMessage: 'Live API unavailable. Falling back to mock data.',
+                }
+              : buildUnavailableState(
+                  'Live API unavailable. Research mode disables mock fallback.',
+                ),
+          )
+        })
+      }
+    }
+
+    void loadInitialState()
 
     return () => {
       cancelled = true
     }
   }, [])
 
-  return state
+  useEffect(() => {
+    if (!state.replay.available || state.replay.session?.status !== 'playing') {
+      return
+    }
+
+    const intervalMs = Math.max(
+      80,
+      Math.round(1000 / (REPLAY_BASE_FPS * (state.replay.session?.speed ?? 1))),
+    )
+    const timer = window.setInterval(() => {
+      const currentState = stateRef.current
+      const session = currentState.replay.session
+      if (!currentState.replay.available || session == null) {
+        return
+      }
+      if (session.current_step >= session.steps_completed) {
+        void mutateReplay(async () => {
+          await controlReplay('pause')
+        })
+        return
+      }
+      void mutateReplay(async () => {
+        await controlReplay('next')
+      })
+    }, intervalMs)
+
+    return () => window.clearInterval(timer)
+  }, [state.replay.available, state.replay.session?.status, state.replay.session?.speed])
+
+  async function mutateReplay(action: () => Promise<unknown>) {
+    if (replayBusyRef.current) {
+      return
+    }
+    replayBusyRef.current = true
+    startTransition(() => {
+      setState((previous) => ({
+        ...previous,
+        replay: {
+          ...previous.replay,
+          loading: true,
+          errorMessage: null,
+        },
+      }))
+    })
+
+    try {
+      await action()
+      const replaySnapshot = await fetchReplaySnapshot()
+      replayCacheRef.current += 1
+      startTransition(() => {
+        setState((previous) =>
+          applyReplaySnapshot({
+            previous,
+            replaySnapshot,
+            cacheKey: replayCacheRef.current,
+          }),
+        )
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Replay control failed.'
+      startTransition(() => {
+        setState((previous) => ({
+          ...previous,
+          replay: {
+            ...previous.replay,
+            loading: false,
+            errorMessage: message,
+          },
+          executionLog: [...previous.executionLog, `[strict] ${message}`],
+        }))
+      })
+    } finally {
+      replayBusyRef.current = false
+    }
+  }
+
+  function setReplaySpeed(speed: number) {
+    startTransition(() => {
+      setState((previous) => {
+        if (!previous.replay.available || previous.replay.session == null) {
+          return previous
+        }
+        return {
+          ...previous,
+          replay: {
+            ...previous.replay,
+            session: {
+              ...previous.replay.session,
+              speed,
+            },
+          },
+        }
+      })
+    })
+  }
+
+  return {
+    ...state,
+    replay: {
+      ...state.replay,
+      onPlayPause: () => {
+        if (!stateRef.current.replay.available || stateRef.current.replay.session == null) {
+          return
+        }
+        const nextAction = stateRef.current.replay.session.status === 'playing' ? 'pause' : 'play'
+        void mutateReplay(async () => {
+          await controlReplay(nextAction)
+        })
+      },
+      onPrevStep: () => {
+        void mutateReplay(async () => {
+          await controlReplay('prev')
+        })
+      },
+      onNextStep: () => {
+        void mutateReplay(async () => {
+          await controlReplay('next')
+        })
+      },
+      onSeek: (step) => {
+        void mutateReplay(async () => {
+          await seekReplayStep(step)
+        })
+      },
+      onSetCamera: (camera) => {
+        void mutateReplay(async () => {
+          await setReplayCamera(camera)
+        })
+      },
+      onSetSpeed: (speed) => {
+        setReplaySpeed(speed)
+      },
+      onResetView: () => {
+        void mutateReplay(async () => {
+          await setReplayCamera('follow')
+        })
+      },
+    },
+  }
 }
 
 function buildUnavailablePanels(message: string): ConsolePanel[] {
@@ -286,6 +512,75 @@ function buildPanelsFromLiveSnapshot(session: typeof mockSession): ConsolePanel[
       lines: session.intervention_log,
     },
   ]
+}
+
+function buildLiveState(snapshot: Awaited<ReturnType<typeof fetchConsoleSnapshot>>): ConsoleDataState {
+  return {
+    sourceStatus: 'LIVE API',
+    errorMessage: null,
+    leftPanels: buildPanelsFromLiveSnapshot(snapshot.session),
+    pipeline: snapshot.pipeline,
+    brainView: snapshot.brainView,
+    brainAssets: snapshot.brainAssets,
+    roiAssets: snapshot.roiAssets,
+    timeline: snapshot.timeline,
+    summary: snapshot.summary,
+    executionLog: [
+      '[live] session loaded from /api/console/session',
+      '[live] summary loaded from /api/console/summary',
+      '[live] brain assets loaded from /api/console/brain-assets',
+      '[live] roi assets loaded from /api/console/roi-assets',
+      '[live] timeline loaded from /api/console/timeline',
+    ],
+    videoSrc: snapshot.videoSrc,
+    replay: createReplayUnavailableState(),
+  }
+}
+
+function applyReplaySnapshot({
+  previous,
+  replaySnapshot,
+  cacheKey = 0,
+  message,
+}: {
+  previous: ConsoleDataState
+  replaySnapshot: Awaited<ReturnType<typeof fetchReplaySnapshot>>
+  cacheKey?: number
+  message?: string
+}): ConsoleDataState {
+  const effectiveSpeed =
+    previous.replay.available && previous.replay.session != null
+      ? previous.replay.session.speed
+      : replaySnapshot.session.speed
+
+  return {
+    ...previous,
+    brainView: replaySnapshot.brainView,
+    timeline: replaySnapshot.timeline,
+    summary: {
+      ...previous.summary,
+      ...replaySnapshot.summary,
+      data_status: 'recorded',
+    },
+    executionLog: message
+      ? [...previous.executionLog, message]
+      : previous.executionLog,
+    replay: {
+      ...previous.replay,
+      available: true,
+      loading: false,
+      errorMessage: null,
+      session: {
+        ...replaySnapshot.session,
+        speed: effectiveSpeed,
+      },
+      frameSrc: buildReplayFrameUrl({
+        width: REPLAY_FRAME_WIDTH,
+        height: REPLAY_FRAME_HEIGHT,
+        cacheKey: `${replaySnapshot.session.current_step}-${cacheKey}`,
+      }),
+    },
+  }
 }
 
 function camelCase(value: string) {

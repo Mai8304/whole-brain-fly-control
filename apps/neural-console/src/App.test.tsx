@@ -1,12 +1,27 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
+
+beforeAll(() => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  )
+})
 
 afterEach(() => {
   vi.restoreAllMocks()
   window.history.replaceState(null, '', '/')
+})
+
+afterAll(() => {
+  vi.unstubAllGlobals()
 })
 
 describe('Neural console shell', () => {
@@ -17,7 +32,7 @@ describe('Neural console shell', () => {
 
     expect(screen.getByRole('heading', { name: /whole-brain fly console/i })).toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.getByText(/^Research Strict Mode$/i)).toBeInTheDocument()
+      expect(screen.getByText(/^API UNAVAILABLE$/i)).toBeInTheDocument()
     })
     expect(screen.getByRole('button', { name: /experiment console/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /training console/i })).toBeInTheDocument()
@@ -30,7 +45,9 @@ describe('Neural console shell', () => {
     expect(screen.getAllByText(/^Fly Body Live$/).length).toBeGreaterThan(0)
     expect(screen.getByTestId('experiment-brain-card')).toBeInTheDocument()
     expect(screen.getByTestId('experiment-body-card')).toBeInTheDocument()
-    expect(screen.getByText(/live rollout video is unavailable/i)).toBeInTheDocument()
+    expect(
+      screen.getAllByText(/live api unavailable\. research mode disables mock fallback\./i).length,
+    ).toBeGreaterThan(0)
     expect(screen.getByText(/^API UNAVAILABLE$/i)).toBeInTheDocument()
     expect(screen.queryByText(/^LIVE API$/i)).not.toBeInTheDocument()
   })
@@ -43,7 +60,7 @@ describe('Neural console shell', () => {
     render(<App />)
 
     await waitFor(() => {
-      expect(screen.getByText(/^Research Strict Mode$/i)).toBeInTheDocument()
+      expect(screen.getByText(/^API UNAVAILABLE$/i)).toBeInTheDocument()
     })
 
     await user.click(screen.getByRole('button', { name: /training console/i }))
@@ -237,6 +254,87 @@ describe('Neural console shell', () => {
           video_url: '/api/console/video',
         })
       }
+      if (url.endsWith('/api/console/replay/session')) {
+        return jsonResponse({
+          session_id: 'sess-1',
+          task: 'straight_walking',
+          default_camera: 'follow',
+          steps_requested: 64,
+          steps_completed: 64,
+          current_step: 12,
+          status: 'paused',
+          speed: 1,
+          camera: 'top',
+        })
+      }
+      if (url.endsWith('/api/console/replay/summary')) {
+        return jsonResponse({
+          status: 'ok',
+          task: 'straight_walking',
+          steps_requested: 64,
+          steps_completed: 64,
+          terminated_early: false,
+          reward_mean: 0.8,
+          final_reward: 1.0,
+          mean_action_norm: 2.1,
+          forward_velocity_mean: 0.45,
+          forward_velocity_std: 0.12,
+          body_upright_mean: 0.99,
+          final_heading_delta: -8.5,
+          step_id: 12,
+          reward: 0.52,
+          forward_velocity: 0.31,
+          body_upright: 0.97,
+          terminated: false,
+        })
+      }
+      if (url.endsWith('/api/console/replay/brain-view')) {
+        return jsonResponse({
+          step_id: 12,
+          view_mode: 'region-aggregated',
+          data_status: 'recorded',
+          shell: {
+            asset_id: 'flywire_brain_v141',
+            asset_url: '/api/console/brain-shell',
+            base_color: '#89a5ff',
+            opacity: 0.18,
+          },
+          mapping_coverage: { roi_mapped_nodes: 120000, total_nodes: 139244 },
+          region_activity: [],
+          top_regions: [
+            {
+              roi_id: 'MB',
+              roi_name: 'Mushroom Body',
+              activity_value: 0.9,
+              activity_delta: 0.1,
+              node_count: 1000,
+            },
+          ],
+          top_nodes: [
+            {
+              node_idx: 1,
+              source_id: '7205759',
+              activity_value: 1.2,
+              flow_role: 'efferent',
+              roi_name: 'Mushroom Body',
+            },
+          ],
+          afferent_activity: 0.2,
+          intrinsic_activity: 0.4,
+          efferent_activity: 0.6,
+        })
+      }
+      if (url.endsWith('/api/console/replay/timeline')) {
+        return jsonResponse({
+          data_status: 'recorded',
+          steps_requested: 64,
+          steps_completed: 64,
+          current_step: 12,
+          brain_view_ref: 'step_id',
+          body_view_ref: 'step_id',
+          events: [{ step_id: 12, event_type: 'brain', label: 'whole-brain propagation' }],
+        })
+      }
       return Promise.reject(new Error(`unexpected url: ${url}`))
     })
 
@@ -247,8 +345,11 @@ describe('Neural console shell', () => {
     })
 
     expect(screen.getByDisplayValue('rough')).toBeInTheDocument()
-    expect(screen.getByText(/step 12/i)).toBeInTheDocument()
-    expect(screen.getByTitle(/fly rollout video/i)).toHaveAttribute('src', '/api/console/video')
+    expect(screen.getAllByText(/step 12/i).length).toBeGreaterThan(0)
+    expect(screen.getByRole('img', { name: /replay frame/i })).toHaveAttribute(
+      'src',
+      expect.stringContaining('/api/console/replay/frame'),
+    )
     expect(screen.getAllByText(/flywire_brain_v141/i).length).toBeGreaterThan(0)
   })
 })

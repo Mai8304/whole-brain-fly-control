@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { fetchConsoleSnapshot } from './console-api'
+import {
+  buildReplayFrameUrl,
+  controlReplay,
+  fetchConsoleSnapshot,
+  fetchReplaySnapshot,
+  seekReplayStep,
+  setReplayCamera,
+} from './console-api'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -135,5 +142,110 @@ describe('console api client', () => {
 
     expect(snapshot.roiAssets?.asset_id).toBe('flywire_roi_pack_v1')
     expect(snapshot.roiAssets?.roi_meshes[0]?.asset_url).toBe('/api/console/roi-mesh/AL')
+  })
+
+  it('loads replay payloads and posts replay controls', async () => {
+    const requests: string[] = []
+    const jsonResponse = (payload: unknown) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => payload,
+      } as Response)
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      const url = String(input)
+      requests.push(`${init?.method ?? 'GET'} ${url}`)
+      if (url.endsWith('/api/console/replay/session')) {
+        return jsonResponse({
+          session_id: 'sess-1',
+          task: 'straight_walking',
+          default_camera: 'follow',
+          steps_requested: 64,
+          steps_completed: 64,
+          current_step: 8,
+          status: 'paused',
+          speed: 1,
+          camera: 'side',
+        })
+      }
+      if (url.endsWith('/api/console/replay/summary')) {
+        return jsonResponse({
+          status: 'ok',
+          task: 'straight_walking',
+          steps_requested: 64,
+          steps_completed: 64,
+          terminated_early: false,
+          reward_mean: 1,
+          final_reward: 1,
+          mean_action_norm: 2,
+          forward_velocity_mean: 0.5,
+          forward_velocity_std: 0.1,
+          body_upright_mean: 0.9,
+          final_heading_delta: 0,
+          step_id: 8,
+          reward: 0.25,
+          forward_velocity: 0.3,
+          body_upright: 0.92,
+          terminated: false,
+        })
+      }
+      if (url.endsWith('/api/console/replay/brain-view')) {
+        return jsonResponse({
+          step_id: 8,
+          view_mode: 'neuropil-occupancy',
+          mapping_coverage: { roi_mapped_nodes: 120000, total_nodes: 139255 },
+          region_activity: [],
+          top_regions: [],
+          top_nodes: [],
+          afferent_activity: 0.2,
+          intrinsic_activity: 0.4,
+          efferent_activity: 0.1,
+        })
+      }
+      if (url.endsWith('/api/console/replay/timeline')) {
+        return jsonResponse({
+          data_status: 'recorded',
+          steps_requested: 64,
+          steps_completed: 64,
+          current_step: 8,
+          brain_view_ref: 'step_id',
+          body_view_ref: 'step_id',
+          events: [],
+        })
+      }
+      if (url.endsWith('/api/console/replay/seek')) {
+        expect(init?.method).toBe('POST')
+        expect(init?.body).toBe(JSON.stringify({ step: 12 }))
+        return jsonResponse({ current_step: 12 })
+      }
+      if (url.endsWith('/api/console/replay/control')) {
+        expect(init?.method).toBe('POST')
+        expect(init?.body).toBe(JSON.stringify({ action: 'next' }))
+        return jsonResponse({ status: 'paused', current_step: 9 })
+      }
+      if (url.endsWith('/api/console/replay/camera')) {
+        expect(init?.method).toBe('POST')
+        expect(init?.body).toBe(JSON.stringify({ camera: 'top' }))
+        return jsonResponse({ camera: 'top', current_step: 8 })
+      }
+      return Promise.reject(new Error(`unexpected url: ${url}`))
+    })
+
+    const replaySnapshot = await fetchReplaySnapshot()
+    const seekPayload = await seekReplayStep(12)
+    const controlPayload = await controlReplay('next')
+    const cameraPayload = await setReplayCamera('top')
+
+    expect(replaySnapshot.session.current_step).toBe(8)
+    expect(replaySnapshot.summary.step_id).toBe(8)
+    expect(replaySnapshot.brainView.step_id).toBe(8)
+    expect(replaySnapshot.timeline.current_step).toBe(8)
+    expect(seekPayload.current_step).toBe(12)
+    expect(controlPayload.current_step).toBe(9)
+    expect(cameraPayload.camera).toBe('top')
+    expect(buildReplayFrameUrl({ width: 640, height: 360, cacheKey: '8-1' })).toBe(
+      '/api/console/replay/frame?width=640&height=360&cache=8-1',
+    )
+    expect(requests).toContain('GET /api/console/replay/session')
   })
 })

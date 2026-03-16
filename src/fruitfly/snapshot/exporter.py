@@ -7,16 +7,24 @@ from dataclasses import dataclass
 import io
 import json
 from pathlib import Path
+import sqlite3
 import time
 import sys
 from typing import Any
 
 import yaml
 
+from fruitfly.evaluation.flywire_annotation_enrichment import load_annotation_enrichment
+
 from .flywire_verify import DEFAULT_PUBLIC_COORDS, require_fafbseg
 
 
 DEFAULT_SNAPSHOT_ROOT = Path("data/connectome/snapshots")
+DEFAULT_PROOFREAD_ROOT_IDS_PATH = Path("data/raw/flywire_783_neuropil_release/proofread_root_ids_783.npy")
+DEFAULT_PROOFREAD_CONNECTIONS_PATH = Path("data/raw/flywire_783_neuropil_release/proofread_connections_783.feather")
+DEFAULT_ANNOTATION_ENRICHMENT_PATH = Path(
+    "data/derived/flywire_783_annotation_enrichment_release/annotation_enrichment_783.parquet"
+)
 NORMALIZED_NODE_COLUMNS = [
     "source_id",
     "dataset_version",
@@ -49,6 +57,11 @@ class SnapshotExportRequest:
     max_nodes: int = 5000
     batch_size: int = 256
     seed_strategy: str = "readonly_coords"
+    materialization: int | str = 783
+    proofread_root_ids_path: Path | None = None
+    proofread_connections_path: Path | None = None
+    annotation_enrichment_path: Path | None = None
+    allow_live_annotation_fetch: bool = False
 
 
 @dataclass(slots=True)
@@ -208,6 +221,7 @@ def export_snapshot_full(
     normalized_dir = paths["normalized_dir"]
     connectivity_batch_dir = paths["connectivity_batch_dir"]
     state_path = paths["state_path"]
+    edge_aggregate_db_path = raw_dir / "proofread_edge_aggregate.sqlite3"
     raw_dir.mkdir(parents=True, exist_ok=True)
     normalized_dir.mkdir(parents=True, exist_ok=True)
     connectivity_batch_dir.mkdir(parents=True, exist_ok=True)
@@ -216,7 +230,7 @@ def export_snapshot_full(
     if hasattr(client, "set_default_dataset"):
         _call_quietly(getattr(client, "set_default_dataset"), request.dataset)
 
-    normalized_nodes, normalized_partitions, flow_labels = _load_or_initialize_full_metadata(
+    normalized_nodes, normalized_partitions, flow_labels, flow_label_source = _load_or_initialize_full_metadata(
         request=request,
         snapshot_dir=snapshot_dir,
         raw_dir=raw_dir,
@@ -224,42 +238,71 @@ def export_snapshot_full(
         flywire_client=client,
     )
 
-    root_ids = [int(node["source_id"]) for node in normalized_nodes]
-    total_batches = max(1, (len(root_ids) + request.batch_size - 1) // request.batch_size)
-    state = _load_export_state(
-        state_path,
-        total_batches=total_batches,
-        resume=request.resume,
-    )
-    completed_batches = int(state.get("completed_batches", 0))
-
-    for batch_index, root_batch in enumerate(_batched(root_ids, request.batch_size)):
-        if batch_index < completed_batches:
-            continue
-        connectivity = _get_connectivity_with_retry(
-            flywire_client=client,
-            root_batch=root_batch,
-            dataset=request.dataset,
+    valid_node_ids = {int(node["source_id"]) for node in normalized_nodes}
+    edge_source = "online_get_connectivity"
+    if request.proofread_root_ids_path:
+        proofread_connections_path = request.proofread_connections_path
+        if proofread_connections_path is None or not proofread_connections_path.exists():
+            raise RuntimeError(
+                "proofread-scoped full export requires proofread_connections_783.feather. "
+                "Provide --proofread-connections-path or place the file under data/raw/flywire_783_neuropil_release."
+            )
+        edge_count, total_batches = _build_edges_from_proofread_connections(
+            proofread_connections_path=proofread_connections_path,
+            valid_node_ids=valid_node_ids,
+            state_path=state_path,
+            aggregate_db_path=edge_aggregate_db_path,
+            raw_edges_path=raw_dir / "edges.parquet",
+            normalized_edges_path=normalized_dir / "edges.parquet",
+            resume=request.resume,
+            mode=request.mode,
         )
-        edges = _normalize_connectivity_records(_list_records(connectivity))
-        _write_batch_jsonl(connectivity_batch_dir / f"batch_{batch_index:05d}.jsonl", edges)
-        _write_export_state(
+        edge_source = proofread_connections_path.name
+    else:
+        root_ids = [int(node["source_id"]) for node in normalized_nodes]
+        total_batches = max(1, (len(root_ids) + request.batch_size - 1) // request.batch_size)
+        state = _load_export_state(
             state_path,
-            {
-                "status": "running",
-                "mode": request.mode,
-                "completed_batches": batch_index + 1,
-                "total_batches": total_batches,
-            },
+            total_batches=total_batches,
+            resume=request.resume,
         )
+        completed_batches = int(state.get("completed_batches", 0))
 
-    normalized_edges = _aggregate_batch_edges(
-        connectivity_batch_dir=connectivity_batch_dir,
-        valid_node_ids={int(node["source_id"]) for node in normalized_nodes},
-    )
-    stats = _build_stats(
+        for batch_index, root_batch in enumerate(_batched(root_ids, request.batch_size)):
+            if batch_index < completed_batches:
+                continue
+            connectivity = _get_connectivity_with_retry(
+                flywire_client=client,
+                root_batch=root_batch,
+                dataset=request.dataset,
+                materialization=request.materialization,
+            )
+            edges = _normalize_connectivity_records(_list_records(connectivity))
+            _write_batch_jsonl(connectivity_batch_dir / f"batch_{batch_index:05d}.jsonl", edges)
+            _write_export_state(
+                state_path,
+                {
+                    "status": "running",
+                    "mode": request.mode,
+                    "completed_batches": batch_index + 1,
+                    "total_batches": total_batches,
+                },
+            )
+
+        normalized_edges = _aggregate_batch_edges(
+            connectivity_batch_dir=connectivity_batch_dir,
+            valid_node_ids=valid_node_ids,
+        )
+        edge_count = len(normalized_edges)
+        _write_parquet(raw_dir / "edges.parquet", normalized_edges)
+        _write_parquet(
+            normalized_dir / "edges.parquet",
+            normalized_edges,
+            columns=NORMALIZED_EDGE_COLUMNS,
+        )
+    stats = _build_stats_from_counts(
         nodes=normalized_nodes,
-        edges=normalized_edges,
+        edge_count=edge_count,
         partitions=normalized_partitions,
     )
     _write_manifest(
@@ -267,21 +310,16 @@ def export_snapshot_full(
         request=request,
         seed_root_id=0,
         node_count=len(normalized_nodes),
-        edge_count=len(normalized_edges),
-        flow_label_source="annotation_table",
+        edge_count=edge_count,
+        flow_label_source=flow_label_source,
+        edge_source=edge_source,
     )
     _write_parquet(raw_dir / "nodes.parquet", normalized_nodes)
-    _write_parquet(raw_dir / "edges.parquet", normalized_edges)
     _write_parquet(raw_dir / "flow_labels.parquet", flow_labels)
     _write_parquet(
         normalized_dir / "nodes.parquet",
         normalized_nodes,
         columns=NORMALIZED_NODE_COLUMNS,
-    )
-    _write_parquet(
-        normalized_dir / "edges.parquet",
-        normalized_edges,
-        columns=NORMALIZED_EDGE_COLUMNS,
     )
     _write_parquet(
         normalized_dir / "partitions.parquet",
@@ -302,7 +340,7 @@ def export_snapshot_full(
         snapshot_dir=snapshot_dir,
         seed_root_id=0,
         node_count=len(normalized_nodes),
-        edge_count=len(normalized_edges),
+        edge_count=edge_count,
         status="ok",
     )
 
@@ -340,13 +378,14 @@ def _load_or_initialize_full_metadata(
     raw_dir: Path,
     normalized_dir: Path,
     flywire_client: object,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], str]:
     nodes_path = normalized_dir / "nodes.parquet"
     partitions_path = normalized_dir / "partitions.parquet"
     flow_labels_path = raw_dir / "flow_labels.parquet"
     raw_nodes_path = raw_dir / "nodes.parquet"
 
     if request.resume and nodes_path.exists() and partitions_path.exists():
+        proofread_root_ids_path = request.proofread_root_ids_path
         normalized_nodes = _read_parquet_records(nodes_path)
         normalized_partitions = _read_parquet_records(partitions_path)
         if flow_labels_path.exists():
@@ -356,19 +395,49 @@ def _load_or_initialize_full_metadata(
                 {"source_id": int(node["source_id"]), "flow_role": str(node["flow_role"])}
                 for node in normalized_nodes
             ]
-        return normalized_nodes, normalized_partitions, flow_labels
+        flow_label_source = "proofread_roster_plus_annotation_enrichment" if proofread_root_ids_path else "annotation_table"
+        return normalized_nodes, normalized_partitions, flow_labels, flow_label_source
 
-    annotations = _load_full_annotations(
-        flywire_client=flywire_client,
-        dataset=request.dataset,
-    )
-    if not annotations:
-        raise RuntimeError("Full snapshot export returned no annotations.")
-    normalized_nodes = _normalize_annotation_nodes(annotations, dataset_version=request.dataset)
-    normalized_partitions = _normalize_annotation_partitions(
-        annotations,
-        partition_version=request.snapshot_id,
-    )
+    proofread_root_ids_path = request.proofread_root_ids_path
+    proofread_root_ids = _load_proofread_root_ids(path=proofread_root_ids_path)
+    if proofread_root_ids:
+        annotations = _load_annotation_enrichment_records(
+            annotation_enrichment_path=request.annotation_enrichment_path,
+            flywire_client=flywire_client,
+            dataset=request.dataset,
+            materialization=request.materialization,
+            allow_live_annotation_fetch=request.allow_live_annotation_fetch,
+        )
+        normalized_nodes = _normalize_proofread_nodes(
+            root_ids=proofread_root_ids,
+            annotations=annotations,
+            dataset_version=request.dataset,
+        )
+        normalized_partitions = _normalize_partitions(
+            nodes=normalized_nodes,
+            flow_labels=[
+                {"source_id": int(node["source_id"]), "flow_role": str(node["flow_role"])}
+                for node in normalized_nodes
+            ],
+            partition_version=request.snapshot_id,
+        )
+        flow_label_source = "proofread_roster_plus_annotation_enrichment"
+    else:
+        annotations = _load_annotation_enrichment_records(
+            annotation_enrichment_path=request.annotation_enrichment_path,
+            flywire_client=flywire_client,
+            dataset=request.dataset,
+            materialization=request.materialization,
+            allow_live_annotation_fetch=True,
+        )
+        if not annotations:
+            raise RuntimeError("Full snapshot export returned no annotations.")
+        normalized_nodes = _normalize_annotation_nodes(annotations, dataset_version=request.dataset)
+        normalized_partitions = _normalize_annotation_partitions(
+            annotations,
+            partition_version=request.snapshot_id,
+        )
+        flow_label_source = "annotation_table"
     flow_labels = [
         {"source_id": int(node["source_id"]), "flow_role": str(node["flow_role"])}
         for node in normalized_nodes
@@ -385,7 +454,7 @@ def _load_or_initialize_full_metadata(
         normalized_partitions,
         columns=NORMALIZED_PARTITION_COLUMNS,
     )
-    return normalized_nodes, normalized_partitions, flow_labels
+    return normalized_nodes, normalized_partitions, flow_labels, flow_label_source
 
 
 def _read_parquet_records(path: Path) -> list[dict[str, Any]]:
@@ -399,6 +468,7 @@ def _get_connectivity_with_retry(
     flywire_client: object,
     root_batch: list[int],
     dataset: str,
+    materialization: int | str,
     attempts: int = 5,
     initial_delay_seconds: float = 2.0,
 ) -> Any:
@@ -413,6 +483,7 @@ def _get_connectivity_with_retry(
                 downstream=True,
                 progress=False,
                 dataset=dataset,
+                materialization=materialization,
             )
         except Exception as exc:
             last_error = exc
@@ -442,13 +513,14 @@ def _load_full_annotations(
     *,
     flywire_client: object,
     dataset: str,
-) -> list[dict[str, Any]]:
+    materialization: int | str,
+) -> tuple[int, int]:
     if not hasattr(flywire_client, "search_annotations"):
         raise RuntimeError("FlyWire full export requires search_annotations(...).")
     annotations = _call_quietly(
         getattr(flywire_client, "search_annotations"),
         None,
-        materialization="latest",
+        materialization=materialization,
         verbose=False,
         regex=False,
         dataset=dataset,
@@ -466,6 +538,47 @@ def _load_full_annotations(
             }
         )
     return normalized
+
+
+def _load_annotation_enrichment_records(
+    *,
+    annotation_enrichment_path: Path | None,
+    flywire_client: object,
+    dataset: str,
+    materialization: int | str,
+    allow_live_annotation_fetch: bool,
+) -> list[dict[str, Any]]:
+    if annotation_enrichment_path is not None and annotation_enrichment_path.exists():
+        return load_annotation_enrichment(annotation_enrichment_path)
+    if allow_live_annotation_fetch:
+        return _load_full_annotations(
+            flywire_client=flywire_client,
+            dataset=dataset,
+            materialization=materialization,
+        )
+    raise RuntimeError(
+        "Frozen annotation enrichment is required for proofread-scoped full export. "
+        "Run scripts/freeze_flywire_annotation_enrichment.py first or explicitly allow live annotation fetch."
+    )
+
+
+def _normalize_proofread_nodes(
+    root_ids: list[int],
+    *,
+    annotations: list[dict[str, Any]],
+    dataset_version: str,
+) -> list[dict[str, Any]]:
+    annotation_by_id = {int(record["source_id"]): record for record in annotations}
+    return [
+        {
+            "source_id": int(source_id),
+            "dataset_version": dataset_version,
+            "hemisphere": str(annotation_by_id.get(int(source_id), {}).get("hemisphere") or "unknown"),
+            "flow_role": str(annotation_by_id.get(int(source_id), {}).get("flow_role") or "unknown"),
+            "is_active": True,
+        }
+        for source_id in root_ids
+    ]
 
 
 def _normalize_annotation_nodes(
@@ -568,6 +681,117 @@ def _aggregate_batch_edges(
     ]
 
 
+def _build_edges_from_proofread_connections(
+    *,
+    proofread_connections_path: Path,
+    valid_node_ids: set[int],
+    state_path: Path,
+    aggregate_db_path: Path,
+    raw_edges_path: Path,
+    normalized_edges_path: Path,
+    resume: bool,
+    mode: str,
+) -> list[dict[str, Any]]:
+    import pyarrow as pa
+    import pyarrow.ipc as ipc
+    import pyarrow.parquet as pq
+
+    if not resume and aggregate_db_path.exists():
+        aggregate_db_path.unlink()
+
+    reader = ipc.RecordBatchFileReader(pa.memory_map(str(proofread_connections_path), "r"))
+    total_batches = int(reader.num_record_batches)
+    state = _load_export_state(state_path, total_batches=total_batches, resume=resume)
+    completed_batches = int(state.get("completed_batches", 0))
+
+    connection = sqlite3.connect(aggregate_db_path)
+    try:
+        connection.execute("PRAGMA journal_mode=WAL")
+        connection.execute("PRAGMA synchronous=NORMAL")
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS edges (
+                pre_id INTEGER NOT NULL,
+                post_id INTEGER NOT NULL,
+                synapse_count INTEGER NOT NULL,
+                PRIMARY KEY (pre_id, post_id)
+            )
+            """
+        )
+
+        for batch_index in range(total_batches):
+            if batch_index < completed_batches:
+                continue
+            batch = reader.get_batch(batch_index)
+            aggregated_rows: dict[tuple[int, int], int] = {}
+            for row in batch.to_pylist():
+                pre_id = int(row["pre_pt_root_id"])
+                post_id = int(row["post_pt_root_id"])
+                if pre_id not in valid_node_ids or post_id not in valid_node_ids:
+                    continue
+                key = (pre_id, post_id)
+                aggregated_rows[key] = aggregated_rows.get(key, 0) + int(row["syn_count"])
+            if aggregated_rows:
+                connection.executemany(
+                    """
+                    INSERT INTO edges(pre_id, post_id, synapse_count)
+                    VALUES (?, ?, ?)
+                    ON CONFLICT(pre_id, post_id)
+                    DO UPDATE SET synapse_count = synapse_count + excluded.synapse_count
+                    """,
+                    [(pre_id, post_id, synapse_count) for (pre_id, post_id), synapse_count in aggregated_rows.items()],
+                )
+                connection.commit()
+            _write_export_state(
+                state_path,
+                {
+                    "status": "running",
+                    "mode": mode,
+                    "completed_batches": batch_index + 1,
+                    "total_batches": total_batches,
+                },
+            )
+
+        schema = pa.schema(
+            [
+                ("pre_id", pa.int64()),
+                ("post_id", pa.int64()),
+                ("synapse_count", pa.int64()),
+                ("is_directed", pa.bool_()),
+                ("is_active", pa.bool_()),
+            ]
+        )
+        raw_writer = pq.ParquetWriter(raw_edges_path, schema=schema)
+        normalized_writer = pq.ParquetWriter(normalized_edges_path, schema=schema)
+        edge_count = 0
+        cursor = connection.execute(
+            "SELECT pre_id, post_id, synapse_count FROM edges ORDER BY pre_id, post_id"
+        )
+        while True:
+            rows = cursor.fetchmany(100_000)
+            if not rows:
+                break
+            payload = [
+                {
+                    "pre_id": int(pre_id),
+                    "post_id": int(post_id),
+                    "synapse_count": int(synapse_count),
+                    "is_directed": True,
+                    "is_active": True,
+                }
+                for pre_id, post_id, synapse_count in rows
+            ]
+            edge_count += len(payload)
+            table = pa.Table.from_pylist(payload, schema=schema)
+            raw_writer.write_table(table)
+            normalized_writer.write_table(table)
+        raw_writer.close()
+        normalized_writer.close()
+        return edge_count, total_batches
+    finally:
+        connection.close()
+
+
 def _write_manifest(
     path: Path,
     *,
@@ -576,6 +800,7 @@ def _write_manifest(
     node_count: int,
     edge_count: int,
     flow_label_source: str,
+    edge_source: str | None = None,
 ) -> None:
     payload = {
         "snapshot_id": request.snapshot_id,
@@ -588,6 +813,8 @@ def _write_manifest(
         "edge_count": edge_count,
         "flow_label_source": flow_label_source,
     }
+    if edge_source is not None:
+        payload["edge_source"] = edge_source
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
@@ -718,6 +945,30 @@ def _build_stats(
     }
 
 
+def _build_stats_from_counts(
+    *,
+    nodes: list[dict[str, Any]],
+    edge_count: int,
+    partitions: list[dict[str, Any]],
+) -> dict[str, Any]:
+    flow_counts = {"afferent": 0, "intrinsic": 0, "efferent": 0}
+    active_nodes = 0
+    for node in nodes:
+        if bool(node["is_active"]):
+            active_nodes += 1
+        flow_role = str(node["flow_role"])
+        if flow_role in flow_counts:
+            flow_counts[flow_role] += 1
+    return {
+        "node_count": len(nodes),
+        "edge_count": int(edge_count),
+        "active_node_count": active_nodes,
+        "active_edge_count": int(edge_count),
+        "partition_count": len(partitions),
+        "flow_role_counts": flow_counts,
+    }
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
@@ -822,6 +1073,14 @@ def _infer_flow_labels(
     return labels
 
 
+def _load_proofread_root_ids(*, path: Path | None) -> list[int]:
+    if path is None or not path.exists():
+        return []
+    import numpy as np
+
+    return [int(value) for value in np.load(path).tolist()]
+
+
 def load_normalized_snapshot(snapshot_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     import pyarrow.parquet as pq
 
@@ -842,8 +1101,41 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-hops", type=int, default=2, help="Neighborhood hop limit")
     parser.add_argument("--max-nodes", type=int, default=5000, help="Neighborhood node budget")
     parser.add_argument("--batch-size", type=int, default=256, help="Connectivity query batch size for full export")
+    parser.add_argument(
+        "--materialization",
+        default="783",
+        help="FlyWire materialization version for full export queries. Defaults to 783.",
+    )
+    parser.add_argument(
+        "--proofread-root-ids-path",
+        type=Path,
+        default=None,
+        help="Optional path to proofread_root_ids_783.npy. Defaults to data/raw/flywire_783_neuropil_release/proofread_root_ids_783.npy when present.",
+    )
+    parser.add_argument(
+        "--proofread-connections-path",
+        type=Path,
+        default=None,
+        help="Optional path to proofread_connections_783.feather. Defaults to data/raw/flywire_783_neuropil_release/proofread_connections_783.feather when present.",
+    )
+    parser.add_argument(
+        "--annotation-enrichment-path",
+        type=Path,
+        default=None,
+        help="Optional path to frozen annotation_enrichment_783.parquet. Defaults to data/derived/flywire_783_annotation_enrichment_release/annotation_enrichment_783.parquet when present.",
+    )
+    parser.add_argument(
+        "--allow-live-annotation-fetch",
+        action="store_true",
+        help="Allow live search_annotations fetch during full export when no frozen annotation enrichment file is available.",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON instead of text")
     args = parser.parse_args(argv)
+
+    try:
+        materialization: int | str = int(args.materialization)
+    except ValueError:
+        materialization = args.materialization
 
     result = export_snapshot(
         request=SnapshotExportRequest(
@@ -855,6 +1147,13 @@ def main(argv: list[str] | None = None) -> int:
             max_hops=args.max_hops,
             max_nodes=args.max_nodes,
             batch_size=args.batch_size,
+            materialization=materialization,
+            proofread_root_ids_path=args.proofread_root_ids_path or (DEFAULT_PROOFREAD_ROOT_IDS_PATH if DEFAULT_PROOFREAD_ROOT_IDS_PATH.exists() else None),
+            proofread_connections_path=args.proofread_connections_path
+            or (DEFAULT_PROOFREAD_CONNECTIONS_PATH if DEFAULT_PROOFREAD_CONNECTIONS_PATH.exists() else None),
+            annotation_enrichment_path=args.annotation_enrichment_path
+            or (DEFAULT_ANNOTATION_ENRICHMENT_PATH if DEFAULT_ANNOTATION_ENRICHMENT_PATH.exists() else None),
+            allow_live_annotation_fetch=bool(args.allow_live_annotation_fetch),
         ),
         output_root=args.output_root,
     )

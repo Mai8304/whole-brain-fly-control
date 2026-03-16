@@ -1,0 +1,192 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from fastapi.testclient import TestClient
+import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+from fruitfly.evaluation.inspector_trace import dump_replay_trace
+from fruitfly.ui import ConsoleApiConfig, create_console_api
+
+
+def test_console_api_exposes_replay_seek_and_step_synchronized_payloads(tmp_path: Path) -> None:
+    import fruitfly.ui.console_api as console_api_module
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    checkpoint_path = tmp_path / "epoch_0001.pt"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    checkpoint_path.write_bytes(b"checkpoint")
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 2, "edge_count": 1, "afferent_count": 1, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0},
+                {"source_id": 20, "node_idx": 1},
+            ]
+        ),
+        compiled_dir / "node_index.parquet",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0, "neuropil": "AL_L", "occupancy_fraction": 1.0},
+                {"source_id": 20, "node_idx": 1, "neuropil": "LH_R", "occupancy_fraction": 1.0},
+            ]
+        ),
+        compiled_dir / "node_neuropil_occupancy.parquet",
+    )
+    dump_replay_trace(
+        output_dir=eval_dir,
+        session={
+            "session_id": "sess-1",
+            "task": "straight_walking",
+            "default_camera": "follow",
+            "steps_requested": 3,
+            "steps_completed": 3,
+        },
+        state_arrays={
+            "step_id": np.asarray([1, 2, 3], dtype=np.int64),
+            "reward": np.asarray([0.1, 0.2, 0.3], dtype=np.float64),
+            "forward_velocity": np.asarray([0.4, 0.5, 0.6], dtype=np.float64),
+            "body_upright": np.asarray([0.8, 0.9, 1.0], dtype=np.float64),
+            "terminated": np.asarray([False, False, True], dtype=bool),
+            "qpos": np.zeros((3, 2), dtype=np.float64),
+            "qvel": np.zeros((3, 2), dtype=np.float64),
+            "ctrl": np.zeros((3, 2), dtype=np.float64),
+            "sim_time": np.asarray([0.1, 0.2, 0.3], dtype=np.float64),
+        },
+        neural_arrays={
+            "step_id": np.asarray([1, 2, 3], dtype=np.int64),
+            "node_activity": np.asarray(
+                [
+                    [0.1, 0.2],
+                    [0.3, 0.4],
+                    [0.5, 0.6],
+                ],
+                dtype=np.float32,
+            ),
+            "afferent_activity": np.asarray([0.1, 0.3, 0.5], dtype=np.float32),
+            "intrinsic_activity": np.asarray([0.2, 0.4, 0.6], dtype=np.float32),
+            "efferent_activity": np.asarray([0.0, 0.0, 0.0], dtype=np.float32),
+        },
+        events=[
+            {"step_id": 1, "event_type": "rollout_started", "label": "Recorded rollout start"},
+            {"step_id": 3, "event_type": "rollout_completed", "label": "Recorded rollout complete"},
+        ],
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "task": "straight_walking",
+                "steps_requested": 3,
+                "steps_completed": 3,
+                "reward_mean": 0.2,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=checkpoint_path,
+        )
+    )
+    client = TestClient(app)
+
+    def fake_render_replay_frame_bytes(*, config, step: int, camera: str, width: int, height: int) -> bytes:
+        assert step == 2
+        assert camera == "top"
+        assert width == 320
+        assert height == 240
+        return b"fake-jpeg"
+
+    console_api_module._render_replay_frame_bytes = fake_render_replay_frame_bytes
+
+    session_response = client.get("/api/console/replay/session")
+    assert session_response.status_code == 200
+    assert session_response.json()["current_step"] == 1
+
+    seek_response = client.post("/api/console/replay/seek", json={"step": 2})
+    assert seek_response.status_code == 200
+    assert seek_response.json()["current_step"] == 2
+
+    brain_response = client.get("/api/console/replay/brain-view")
+    summary_response = client.get("/api/console/replay/summary")
+    timeline_response = client.get("/api/console/replay/timeline")
+
+    assert brain_response.status_code == 200
+    assert summary_response.status_code == 200
+    assert timeline_response.status_code == 200
+    assert brain_response.json()["step_id"] == 2
+    assert summary_response.json()["step_id"] == 2
+    assert timeline_response.json()["current_step"] == 2
+
+    camera_response = client.post("/api/console/replay/camera", json={"camera": "top"})
+    assert camera_response.status_code == 200
+    assert camera_response.json()["camera"] == "top"
+
+    frame_response = client.get("/api/console/replay/frame?width=320&height=240")
+    assert frame_response.status_code == 200
+    assert frame_response.headers["content-type"] == "image/jpeg"
+    assert frame_response.content == b"fake-jpeg"
+
+    control_response = client.post("/api/console/replay/control", json={"action": "play"})
+    assert control_response.status_code == 200
+    assert control_response.json()["status"] == "playing"
+
+
+def test_console_api_returns_404_when_replay_artifacts_are_missing(tmp_path: Path) -> None:
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps(
+            {"node_count": 2, "edge_count": 1, "afferent_count": 1, "intrinsic_count": 1, "efferent_count": 0}
+        ),
+        encoding="utf-8",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0},
+                {"source_id": 20, "node_idx": 1},
+            ]
+        ),
+        compiled_dir / "node_index.parquet",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0, "neuropil": "AL_L", "occupancy_fraction": 1.0},
+                {"source_id": 20, "node_idx": 1, "neuropil": "LH_R", "occupancy_fraction": 1.0},
+            ]
+        ),
+        compiled_dir / "node_neuropil_occupancy.parquet",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+        )
+    )
+    client = TestClient(app)
+
+    response = client.get("/api/console/replay/session")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Replay inspector artifacts are unavailable"
