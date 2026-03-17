@@ -70,9 +70,11 @@ const REPLAY_BASE_FPS = 8
 const unavailableBrainView: BrainViewPayload = {
   data_status: 'unavailable',
   semantic_scope: 'neuropil',
-  view_mode: 'region-aggregated',
+  view_mode: 'grouped-neuropil-v1',
+  mapping_mode: 'node_neuropil_occupancy',
+  activity_metric: 'activity_mass',
   shell: null,
-  mapping_coverage: { roi_mapped_nodes: 0, total_nodes: 0 },
+  mapping_coverage: { neuropil_mapped_nodes: 0, total_nodes: 0 },
   region_activity: [],
   top_regions: [],
   top_nodes: [],

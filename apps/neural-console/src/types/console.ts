@@ -47,11 +47,19 @@ export interface PipelineStagePayload {
 }
 
 export interface BrainRegionPayload {
-  roi_id: string
-  roi_name: string
-  activity_value: number
-  activity_delta: number
+  neuropil_id: string
+  display_name: string
+  raw_activity_mass: number
+  signed_activity: number
+  covered_weight_sum: number
   node_count: number
+  is_display_grouped: boolean
+}
+
+export interface BrainNeuropilMembershipPayload {
+  neuropil: string
+  occupancy_fraction: number
+  synapse_count: number
 }
 
 export interface BrainTopNodePayload {
@@ -59,7 +67,8 @@ export interface BrainTopNodePayload {
   source_id: string
   activity_value: number
   flow_role: string
-  roi_name: string
+  neuropil_memberships: BrainNeuropilMembershipPayload[]
+  display_group_hint?: string
 }
 
 export interface BrainShellPayload {
@@ -74,9 +83,17 @@ export interface BrainViewPayload {
   data_status?: 'recorded' | 'unavailable'
   semantic_scope?: string
   view_mode: string
+  mapping_mode: string
+  activity_metric: string
+  validation_passed?: boolean
+  graph_scope_validation_passed?: boolean
+  roster_alignment_passed?: boolean
+  validation_scope?: string | null
+  materialization?: number | null
+  dataset?: string | null
   shell?: BrainShellPayload | null
   mapping_coverage: {
-    roi_mapped_nodes: number
+    neuropil_mapped_nodes: number
     total_nodes: number
   }
   region_activity: BrainRegionPayload[]
@@ -86,15 +103,18 @@ export interface BrainViewPayload {
   intrinsic_activity: number | null
   efferent_activity: number | null
   formal_truth?: {
-    occupancy_exists: boolean
-    validation_path: string
+    occupancy_exists?: boolean
+    validation_path?: string
     validation_passed: boolean
+    graph_scope_validation_passed?: boolean
     validation_scope?: string | null
     roster_alignment_passed?: boolean | null
     graph_only_root_count?: number | null
     proofread_only_root_count?: number | null
-    mapped_nodes: number
-    reason: string
+    mapped_nodes?: number
+    materialization?: number | null
+    dataset?: string | null
+    reason?: string
   }
 }
 

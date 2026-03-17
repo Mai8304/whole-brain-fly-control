@@ -53,11 +53,52 @@ describe('console api client', () => {
       }
       if (url.endsWith('/api/console/brain-view')) {
         return jsonResponse({
-          view_mode: 'region-aggregated',
-          mapping_coverage: { roi_mapped_nodes: 120000, total_nodes: 139244 },
-          region_activity: [],
-          top_regions: [],
-          top_nodes: [],
+          semantic_scope: 'neuropil',
+          view_mode: 'grouped-neuropil-v1',
+          mapping_mode: 'node_neuropil_occupancy',
+          activity_metric: 'activity_mass',
+          validation_passed: true,
+          graph_scope_validation_passed: true,
+          roster_alignment_passed: false,
+          mapping_coverage: { neuropil_mapped_nodes: 120000, total_nodes: 139244 },
+          region_activity: [
+            {
+              neuropil_id: 'AL_L',
+              display_name: 'AL',
+              raw_activity_mass: 0.8,
+              signed_activity: -0.2,
+              covered_weight_sum: 1.0,
+              node_count: 3,
+              is_display_grouped: true,
+            },
+          ],
+          top_regions: [
+            {
+              neuropil_id: 'AL_L',
+              display_name: 'AL',
+              raw_activity_mass: 0.8,
+              signed_activity: -0.2,
+              covered_weight_sum: 1.0,
+              node_count: 3,
+              is_display_grouped: true,
+            },
+          ],
+          top_nodes: [
+            {
+              node_idx: 5,
+              source_id: '1005',
+              activity_value: 0.7,
+              flow_role: 'intrinsic',
+              neuropil_memberships: [
+                {
+                  neuropil: 'AL_L',
+                  occupancy_fraction: 0.75,
+                  synapse_count: 3,
+                },
+              ],
+              display_group_hint: 'AL',
+            },
+          ],
           afferent_activity: 0.1,
           intrinsic_activity: 0.2,
           efferent_activity: 0.3,
@@ -142,6 +183,11 @@ describe('console api client', () => {
 
     expect(snapshot.roiAssets?.asset_id).toBe('flywire_roi_pack_v1')
     expect(snapshot.roiAssets?.roi_meshes[0]?.asset_url).toBe('/api/console/roi-mesh/AL')
+    expect(snapshot.brainView.mapping_mode).toBe('node_neuropil_occupancy')
+    expect(snapshot.brainView.activity_metric).toBe('activity_mass')
+    expect(snapshot.brainView.mapping_coverage.neuropil_mapped_nodes).toBe(120000)
+    expect(snapshot.brainView.region_activity[0]?.neuropil_id).toBe('AL_L')
+    expect(snapshot.brainView.top_nodes[0]?.neuropil_memberships[0]?.occupancy_fraction).toBe(0.75)
   })
 
   it('loads replay payloads and posts replay controls', async () => {
@@ -192,11 +238,52 @@ describe('console api client', () => {
       if (url.endsWith('/api/console/replay/brain-view')) {
         return jsonResponse({
           step_id: 8,
-          view_mode: 'neuropil-occupancy',
-          mapping_coverage: { roi_mapped_nodes: 120000, total_nodes: 139255 },
-          region_activity: [],
-          top_regions: [],
-          top_nodes: [],
+          semantic_scope: 'neuropil',
+          view_mode: 'grouped-neuropil-v1',
+          mapping_mode: 'node_neuropil_occupancy',
+          activity_metric: 'activity_mass',
+          validation_passed: true,
+          graph_scope_validation_passed: true,
+          roster_alignment_passed: true,
+          mapping_coverage: { neuropil_mapped_nodes: 120000, total_nodes: 139255 },
+          region_activity: [
+            {
+              neuropil_id: 'FB',
+              display_name: 'FB',
+              raw_activity_mass: 0.9,
+              signed_activity: 0.4,
+              covered_weight_sum: 1.0,
+              node_count: 4,
+              is_display_grouped: false,
+            },
+          ],
+          top_regions: [
+            {
+              neuropil_id: 'FB',
+              display_name: 'FB',
+              raw_activity_mass: 0.9,
+              signed_activity: 0.4,
+              covered_weight_sum: 1.0,
+              node_count: 4,
+              is_display_grouped: false,
+            },
+          ],
+          top_nodes: [
+            {
+              node_idx: 7,
+              source_id: '1007',
+              activity_value: 0.6,
+              flow_role: 'efferent',
+              neuropil_memberships: [
+                {
+                  neuropil: 'FB',
+                  occupancy_fraction: 1,
+                  synapse_count: 4,
+                },
+              ],
+              display_group_hint: 'FB',
+            },
+          ],
           afferent_activity: 0.2,
           intrinsic_activity: 0.4,
           efferent_activity: 0.1,
@@ -239,6 +326,8 @@ describe('console api client', () => {
     expect(replaySnapshot.session.current_step).toBe(8)
     expect(replaySnapshot.summary.step_id).toBe(8)
     expect(replaySnapshot.brainView.step_id).toBe(8)
+    expect(replaySnapshot.brainView.mapping_mode).toBe('node_neuropil_occupancy')
+    expect(replaySnapshot.brainView.top_nodes[0]?.display_group_hint).toBe('FB')
     expect(replaySnapshot.timeline.current_step).toBe(8)
     expect(seekPayload.current_step).toBe(12)
     expect(controlPayload.current_step).toBe(9)
