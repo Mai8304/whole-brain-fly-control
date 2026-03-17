@@ -65,10 +65,7 @@ def materialize_runtime_activity_artifacts(
     final_node_activity = np.load(final_node_activity_path)
     formal_truth = _load_formal_truth(compiled_graph_dir)
 
-    occupancy_rows = pq.read_table(
-        occupancy_path,
-        columns=["source_id", "node_idx", "neuropil", "occupancy_fraction", "synapse_count"],
-    ).to_pylist()
+    occupancy_rows = _read_occupancy_rows(occupancy_path)
     node_index_rows = pq.read_table(
         node_index_path,
         columns=["source_id", "node_idx"],
@@ -115,10 +112,7 @@ def build_replay_brain_view_payload(
         formal_truth = _load_formal_truth(compiled_graph_dir)
     occupancy_path = compiled_graph_dir / "node_neuropil_occupancy.parquet"
     node_index_path = compiled_graph_dir / "node_index.parquet"
-    occupancy_rows = pq.read_table(
-        occupancy_path,
-        columns=["source_id", "node_idx", "neuropil", "occupancy_fraction", "synapse_count"],
-    ).to_pylist()
+    occupancy_rows = _read_occupancy_rows(occupancy_path)
     node_index_rows = pq.read_table(
         node_index_path,
         columns=["source_id", "node_idx"],
@@ -329,6 +323,26 @@ def _load_formal_truth(compiled_graph_dir: Path) -> dict[str, bool]:
     return _normalize_formal_truth(
         json.loads(validation_path.read_text(encoding="utf-8"))
     )
+
+
+def _read_occupancy_rows(path: Path) -> list[dict[str, Any]]:
+    table = pq.read_table(path)
+    selected_columns = [
+        column
+        for column in (
+            "source_id",
+            "node_idx",
+            "neuropil",
+            "occupancy_fraction",
+            "synapse_count",
+        )
+        if column in table.column_names
+    ]
+    rows = table.select(selected_columns).to_pylist()
+    if "synapse_count" not in selected_columns:
+        for row in rows:
+            row["synapse_count"] = 0
+    return rows
 
 
 def _build_timeline_payload(

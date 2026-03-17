@@ -206,3 +206,70 @@ def test_materialize_runtime_activity_artifacts_uses_contract_payload_with_forma
             "display_group_hint": "FB",
         },
     ]
+
+
+def test_build_replay_brain_view_payload_defaults_missing_synapse_count_to_zero(
+    tmp_path: Path,
+) -> None:
+    from fruitfly.evaluation.runtime_activity_artifacts import (
+        build_replay_brain_view_payload,
+    )
+
+    compiled_graph_dir = tmp_path / "compiled"
+    compiled_graph_dir.mkdir()
+
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0},
+            ]
+        ),
+        compiled_graph_dir / "node_index.parquet",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {
+                    "source_id": 10,
+                    "node_idx": 0,
+                    "neuropil": "AL_L",
+                    "occupancy_fraction": 1.0,
+                }
+            ]
+        ),
+        compiled_graph_dir / "node_neuropil_occupancy.parquet",
+    )
+
+    payload = build_replay_brain_view_payload(
+        compiled_graph_dir=compiled_graph_dir,
+        step_id=3,
+        node_activity=np.asarray([0.25], dtype=np.float32),
+        afferent_activity=0.1,
+        intrinsic_activity=0.2,
+        efferent_activity=0.3,
+        top_active_nodes=[
+            {"node_idx": 0, "activity_value": 0.25, "flow_role": "intrinsic"}
+        ],
+        formal_truth={
+            "validation_passed": True,
+            "graph_scope_validation_passed": True,
+            "roster_alignment_passed": True,
+        },
+    )
+
+    assert payload["top_nodes"] == [
+        {
+            "node_idx": 0,
+            "source_id": "10",
+            "activity_value": 0.25,
+            "flow_role": "intrinsic",
+            "neuropil_memberships": [
+                {
+                    "neuropil": "AL_L",
+                    "occupancy_fraction": 1.0,
+                    "synapse_count": 0,
+                }
+            ],
+            "display_group_hint": "AL",
+        }
+    ]
