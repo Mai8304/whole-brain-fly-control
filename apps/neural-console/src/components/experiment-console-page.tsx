@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 
 import { BodyReplayInspector } from '@/components/body-replay-inspector'
 import { ConsolePageHeader } from '@/components/console-page-header'
@@ -103,6 +103,7 @@ export function ExperimentConsolePage({
   replay,
 }: ExperimentConsolePageProps) {
   const { t } = useConsolePreferences()
+  const [showFormalNeuropilDetail, setShowFormalNeuropilDetail] = useState(false)
   const unavailableLabel = t('shared.unavailable')
   const hasRecordedBrainActivity =
     sourceStatus === 'LIVE API' && brainView.data_status !== 'unavailable'
@@ -111,7 +112,6 @@ export function ExperimentConsolePage({
     brainView.graph_scope_validation_passed === true &&
     (brainView.display_region_activity?.length ?? 0) > 0
   const groupedSummary = getSortedDisplayRegionActivity(brainView.display_region_activity)
-  const hasGroupedSummary = groupedSummary.length > 0
   const brainViewProvenance = formatBrainViewProvenance(brainView, t)
   const environmentFields = getTranslatedStatusFields(leftPanels, 'environment', t)
   const sensoryFields = getTranslatedStatusFields(leftPanels, 'sensory', t)
@@ -200,21 +200,13 @@ export function ExperimentConsolePage({
                             value={formatNumber(brainView.efferent_activity, unavailableLabel)}
                           />
                           <Separator />
-                          {hasGroupedSummary
-                            ? groupedSummary.map((region) => (
-                                <MetricRow
-                                  key={region.group_neuropil_id}
-                                  label={region.group_neuropil_id}
-                                  value={formatGroupedRegionSummary(region, t, unavailableLabel)}
-                                />
-                              ))
-                            : brainView.top_regions.map((region) => (
-                                <MetricRow
-                                  key={region.neuropil_id}
-                                  label={region.neuropil_id}
-                                  value={formatRegionSummary(region, t, unavailableLabel)}
-                                />
-                              ))}
+                          {groupedSummary.map((region) => (
+                            <MetricRow
+                              key={region.group_neuropil_id}
+                              label={region.group_neuropil_id}
+                              value={formatGroupedRegionSummary(region, t, unavailableLabel)}
+                            />
+                          ))}
                           <Separator />
                           <MetricRow
                             label={t('experiment.brain.metric.coverage')}
@@ -252,6 +244,42 @@ export function ExperimentConsolePage({
                                 : unavailableLabel
                             }
                           />
+                          <Separator />
+                          <div className="grid gap-3">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full justify-between text-left"
+                              aria-expanded={showFormalNeuropilDetail}
+                              onClick={() =>
+                                setShowFormalNeuropilDetail((current) => !current)
+                              }
+                            >
+                              <span>Formal Neuropil Detail（正式神经纤维区明细）</span>
+                              <span className="text-xs text-muted-foreground">
+                                {showFormalNeuropilDetail ? '−' : '+'}
+                              </span>
+                            </Button>
+                            {showFormalNeuropilDetail ? (
+                              <div className="grid gap-3 rounded-lg border border-border/60 bg-background/50 p-3">
+                                <p className="text-xs text-muted-foreground">
+                                  Fine-grained formal data（细粒度正式数据）; not the grouped 3D glow
+                                  layer.
+                                </p>
+                                {brainView.top_regions.length ? (
+                                  brainView.top_regions.map((region) => (
+                                    <MetricRow
+                                      key={`formal-${region.neuropil_id}`}
+                                      label={region.neuropil_id}
+                                      value={formatRegionSummary(region, t, unavailableLabel)}
+                                    />
+                                  ))
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">{unavailableLabel}</p>
+                                )}
+                              </div>
+                            ) : null}
+                          </div>
                         </>
                       ) : (
                         <div className="console-empty-state px-3 py-4 text-sm text-muted-foreground">

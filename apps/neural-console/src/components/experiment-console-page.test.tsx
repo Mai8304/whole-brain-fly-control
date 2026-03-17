@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -276,7 +277,9 @@ describe('ExperimentConsolePage layout', () => {
     expect(screen.queryByText('LO_L')).not.toBeInTheDocument()
   })
 
-  it('falls back to fine-grained top regions when grouped summary data is missing', () => {
+  it('keeps formal top regions hidden by default when grouped summary data is missing', async () => {
+    const user = userEvent.setup()
+
     render(
       <ConsolePreferencesProvider>
         <ExperimentConsolePage
@@ -331,15 +334,181 @@ describe('ExperimentConsolePage layout', () => {
       </ConsolePreferencesProvider>,
     )
 
-    const brainCard = screen.getByTestId('experiment-brain-card')
-    const summaryRows = within(brainCard)
-      .getAllByText(/activity mass/i)
-      .map((node) => node.closest('div')?.textContent ?? '')
-    expect(summaryRows).toHaveLength(2)
-    expect(summaryRows[0]).toContain('ME_R')
-    expect(summaryRows[1]).toContain('LO_L')
+    const toggle = screen.getByRole('button', {
+      name: /formal neuropil detail|正式神经纤维区明细/i,
+    })
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByText('ME_R')).not.toBeInTheDocument()
+    expect(screen.queryByText('LO_L')).not.toBeInTheDocument()
     expect(screen.queryByText('AL')).not.toBeInTheDocument()
     expect(screen.queryByText('FB')).not.toBeInTheDocument()
+
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText('ME_R')).toBeInTheDocument()
+    expect(screen.getByText('LO_L')).toBeInTheDocument()
+  })
+
+  it('keeps formal neuropil detail collapsed until expanded', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={{
+            ...mockBrainViewPayload,
+            top_regions: [
+              {
+                neuropil_id: 'ME_R',
+                display_name: 'ME',
+                raw_activity_mass: 4.7,
+                signed_activity: 0.5,
+                covered_weight_sum: 1,
+                node_count: 8,
+                is_display_grouped: false,
+              },
+              {
+                neuropil_id: 'LO_L',
+                display_name: 'LO',
+                raw_activity_mass: 4.2,
+                signed_activity: -0.3,
+                covered_weight_sum: 1,
+                node_count: 6,
+                is_display_grouped: false,
+              },
+            ],
+            display_region_activity: [
+              {
+                group_neuropil_id: 'FB',
+                raw_activity_mass: 2.8,
+                signed_activity: 0.4,
+                covered_weight_sum: 3,
+                node_count: 3,
+                member_neuropils: ['FB_L', 'FB_R'],
+                view_mode: 'grouped-neuropil-v1',
+                is_display_transform: true,
+              },
+              {
+                group_neuropil_id: 'AL',
+                raw_activity_mass: 3.1,
+                signed_activity: -0.1,
+                covered_weight_sum: 1,
+                node_count: 2,
+                member_neuropils: ['AL_L'],
+                view_mode: 'grouped-neuropil-v1',
+                is_display_transform: true,
+              },
+            ],
+          }}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    const toggle = screen.getByRole('button', {
+      name: /formal neuropil detail|正式神经纤维区明细/i,
+    })
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByText('ME_R')).not.toBeInTheDocument()
+    expect(screen.queryByText('LO_L')).not.toBeInTheDocument()
+
+    await user.click(toggle)
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText('ME_R')).toBeInTheDocument()
+    expect(screen.getByText('LO_L')).toBeInTheDocument()
+    expect(
+      screen.getByText(/fine-grained formal data|细粒度正式数据/i),
+    ).toBeInTheDocument()
+  })
+
+  it('shows unavailable in formal neuropil detail when top regions are empty', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={{
+            ...mockBrainViewPayload,
+            top_regions: [],
+            display_region_activity: [
+              {
+                group_neuropil_id: 'AL',
+                raw_activity_mass: 3.1,
+                signed_activity: -0.1,
+                covered_weight_sum: 1,
+                node_count: 2,
+                member_neuropils: ['AL_L'],
+                view_mode: 'grouped-neuropil-v1',
+                is_display_transform: true,
+              },
+            ],
+          }}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    const toggle = screen.getByRole('button', {
+      name: /formal neuropil detail|正式神经纤维区明细/i,
+    })
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(toggle)
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    const formalDetailPanel = screen
+      .getByText(/fine-grained formal data|细粒度正式数据/i)
+      .closest('div')
+    expect(formalDetailPanel).not.toBeNull()
+    expect(within(formalDetailPanel as HTMLElement).getByText(/^unavailable$/i)).toBeInTheDocument()
   })
 
   it('renders a replay inspector surface when replay artifacts are available', () => {
