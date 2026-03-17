@@ -187,6 +187,95 @@ describe('ExperimentConsolePage layout', () => {
     expect(bodyCard.querySelectorAll('.console-video-frame').length).toBe(1)
   })
 
+  it('uses grouped display region activity as the default visible summary', () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={{
+            ...mockBrainViewPayload,
+            top_regions: [
+              {
+                neuropil_id: 'ME_R',
+                display_name: 'ME',
+                raw_activity_mass: 99,
+                signed_activity: 0.22,
+                covered_weight_sum: 1,
+                node_count: 8,
+                is_display_grouped: true,
+              },
+              {
+                neuropil_id: 'LO_L',
+                display_name: 'LO',
+                raw_activity_mass: 80,
+                signed_activity: -0.14,
+                covered_weight_sum: 1,
+                node_count: 6,
+                is_display_grouped: true,
+              },
+            ],
+            display_region_activity: [
+              {
+                group_neuropil_id: 'FB',
+                raw_activity_mass: 2.8,
+                signed_activity: 0.4,
+                covered_weight_sum: 3,
+                node_count: 3,
+                member_neuropils: ['FB_L', 'FB_R'],
+                view_mode: 'grouped-neuropil-v1',
+                is_display_transform: true,
+              },
+              {
+                group_neuropil_id: 'AL',
+                raw_activity_mass: 3.1,
+                signed_activity: -0.1,
+                covered_weight_sum: 1,
+                node_count: 2,
+                member_neuropils: ['AL_L'],
+                view_mode: 'grouped-neuropil-v1',
+                is_display_transform: true,
+              },
+            ],
+          }}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    const brainCard = screen.getByTestId('experiment-brain-card')
+    const summaryRows = within(brainCard)
+      .getAllByText(/activity mass/i)
+      .map((node) => node.closest('div')?.textContent ?? '')
+    expect(summaryRows).toHaveLength(2)
+    expect(summaryRows[0]).toContain('AL')
+    expect(summaryRows[1]).toContain('FB')
+    expect(summaryRows[0]).toContain('3.10')
+    expect(summaryRows[1]).toContain('2.80')
+    expect(screen.queryByText('ME_R')).not.toBeInTheDocument()
+    expect(screen.queryByText('LO_L')).not.toBeInTheDocument()
+  })
+
   it('renders a replay inspector surface when replay artifacts are available', () => {
     render(
       <ConsolePreferencesProvider>
@@ -348,31 +437,33 @@ describe('ExperimentConsolePage layout', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders formal neuropil memberships and grouped coverage without fake single labels', () => {
+  it('renders formal node memberships and grouped coverage without fake single labels', () => {
     render(
       <ConsolePreferencesProvider>
         <ExperimentConsolePage
           brainAssets={mockBrainAssetManifest}
           brainView={{
             ...mockBrainViewPayload,
-            top_regions: [
+            display_region_activity: [
               {
-                neuropil_id: 'FB',
-                display_name: 'FB',
-                raw_activity_mass: 0.9,
-                signed_activity: 0.3,
-                covered_weight_sum: 1,
-                node_count: 10,
-                is_display_grouped: false,
-              },
-              {
-                neuropil_id: 'AL_L',
-                display_name: 'AL',
+                group_neuropil_id: 'AL',
                 raw_activity_mass: 0.8,
                 signed_activity: -0.2,
+                covered_weight_sum: 1,
+                node_count: 10,
+                member_neuropils: ['AL_L'],
+                view_mode: 'grouped-neuropil-v1',
+                is_display_transform: true,
+              },
+              {
+                group_neuropil_id: 'FB',
+                raw_activity_mass: 0.9,
+                signed_activity: 0.3,
                 covered_weight_sum: 0.75,
                 node_count: 3,
-                is_display_grouped: true,
+                member_neuropils: ['FB'],
+                view_mode: 'grouped-neuropil-v1',
+                is_display_transform: true,
               },
             ],
             top_nodes: [
@@ -415,10 +506,15 @@ describe('ExperimentConsolePage layout', () => {
       </ConsolePreferencesProvider>,
     )
 
-    expect(screen.getByText('FB')).toBeInTheDocument()
-    expect(screen.getByText(/0\.90 activity mass \| \+0\.30 signed activity/i)).toBeInTheDocument()
-    expect(screen.getByText('AL_L')).toBeInTheDocument()
-    expect(screen.getByText(/0\.80 activity mass \| -0\.20 signed activity/i)).toBeInTheDocument()
+    const brainCard = screen.getByTestId('experiment-brain-card')
+    const summaryRows = within(brainCard)
+      .getAllByText(/activity mass/i)
+      .map((node) => node.closest('div')?.textContent ?? '')
+    expect(summaryRows).toHaveLength(2)
+    expect(summaryRows[0]).toContain('FB')
+    expect(summaryRows[1]).toContain('AL')
+    expect(summaryRows[0]).toContain('0.90')
+    expect(summaryRows[1]).toContain('0.80')
     expect(screen.getByText(/118,320 \/ 139,244/)).toBeInTheDocument()
     expect(screen.getByText(/AL_L 0\.75, LH_R 0\.25/)).toBeInTheDocument()
     expect(screen.getAllByText(/display group: AL/i).length).toBeGreaterThan(0)

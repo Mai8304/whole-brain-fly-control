@@ -18,6 +18,7 @@ import { useConsolePreferences } from '@/providers/console-preferences-provider'
 import type {
   BrainAssetManifestPayload,
   BrainRegionPayload,
+  DisplayRegionActivityPayload,
   BrainTopNodePayload,
   BrainViewPayload,
   ConsoleAction,
@@ -109,6 +110,7 @@ export function ExperimentConsolePage({
   const viewportGlowAvailable =
     brainView.graph_scope_validation_passed === true &&
     (brainView.display_region_activity?.length ?? 0) > 0
+  const groupedSummary = getSortedDisplayRegionActivity(brainView.display_region_activity)
   const brainViewProvenance = formatBrainViewProvenance(brainView, t)
   const environmentFields = getTranslatedStatusFields(leftPanels, 'environment', t)
   const sensoryFields = getTranslatedStatusFields(leftPanels, 'sensory', t)
@@ -197,11 +199,11 @@ export function ExperimentConsolePage({
                             value={formatNumber(brainView.efferent_activity, unavailableLabel)}
                           />
                           <Separator />
-                          {brainView.top_regions.map((region) => (
+                          {groupedSummary.map((region) => (
                             <MetricRow
-                              key={region.neuropil_id}
-                              label={region.neuropil_id}
-                              value={formatRegionSummary(region, t, unavailableLabel)}
+                              key={region.group_neuropil_id}
+                              label={region.group_neuropil_id}
+                              value={formatGroupedRegionSummary(region, t, unavailableLabel)}
                             />
                           ))}
                           <Separator />
@@ -493,7 +495,7 @@ function formatSigned(
   return value == null ? unavailableLabel : signed(value)
 }
 
-function formatRegionSummary(
+export function formatRegionSummary(
   region: BrainRegionPayload,
   t: (key: string) => string,
   unavailableLabel: string,
@@ -512,6 +514,29 @@ function formatRegionSummary(
     )
   }
   return parts.join(' | ')
+}
+
+function formatGroupedRegionSummary(
+  region: DisplayRegionActivityPayload,
+  t: (key: string) => string,
+  unavailableLabel: string,
+) {
+  return [
+    `${formatNumber(region.raw_activity_mass, unavailableLabel)} ${t(
+      'experiment.brain.metric.activityMass',
+    ).toLowerCase()}`,
+    `${formatSigned(region.signed_activity, unavailableLabel)} ${t(
+      'experiment.brain.metric.signedActivity',
+    ).toLowerCase()}`,
+  ].join(' | ')
+}
+
+function getSortedDisplayRegionActivity(
+  regions?: DisplayRegionActivityPayload[],
+): DisplayRegionActivityPayload[] {
+  return [...(regions ?? [])].sort(
+    (a, b) => b.raw_activity_mass - a.raw_activity_mass,
+  )
 }
 
 function formatTopNodeMembershipSummary(
