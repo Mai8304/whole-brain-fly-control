@@ -252,6 +252,7 @@ def _build_brain_view_payload_for_step(
         }
         for neuropil_id in sorted(raw_activity_mass_by_neuropil)
     ]
+    display_region_activity = _build_grouped_display_region_activity(region_activity)
 
     source_id_by_node_idx = {int(row["node_idx"]): str(row["source_id"]) for row in node_index_rows}
     top_nodes = []
@@ -290,6 +291,7 @@ def _build_brain_view_payload_for_step(
     )
     payload.update(
         {
+            "display_region_activity": display_region_activity,
             "artifact_contract_version": RUNTIME_ACTIVITY_ARTIFACT_VERSION,
             "artifact_origin": artifact_origin,
             "data_status": "recorded",
@@ -300,6 +302,58 @@ def _build_brain_view_payload_for_step(
         }
     )
     return payload
+
+
+def _build_grouped_display_region_activity(
+    region_activity: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    group_order = {
+        group_id: index
+        for index, (group_id, _label) in enumerate(DISPLAY_NEUROPIL_MANIFEST)
+    }
+    grouped: dict[str, dict[str, Any]] = {}
+    for region in region_activity:
+        group_id = str(region["display_name"])
+        if group_id not in group_order:
+            continue
+        entry = grouped.setdefault(
+            group_id,
+            {
+                "group_neuropil_id": group_id,
+                "raw_activity_mass": 0.0,
+                "signed_activity": 0.0,
+                "covered_weight_sum": 0.0,
+                "node_count": 0,
+                "member_neuropils": set(),
+                "view_mode": "grouped-neuropil-v1",
+                "is_display_transform": True,
+            },
+        )
+        entry["raw_activity_mass"] += float(region["raw_activity_mass"])
+        entry["signed_activity"] += float(region["signed_activity"])
+        entry["covered_weight_sum"] += float(region["covered_weight_sum"])
+        entry["node_count"] += int(region["node_count"])
+        entry["member_neuropils"].add(str(region["neuropil_id"]))
+
+    return [
+        {
+            "group_neuropil_id": str(entry["group_neuropil_id"]),
+            "raw_activity_mass": float(entry["raw_activity_mass"]),
+            "signed_activity": float(entry["signed_activity"]),
+            "covered_weight_sum": float(entry["covered_weight_sum"]),
+            "node_count": int(entry["node_count"]),
+            "member_neuropils": sorted(entry["member_neuropils"]),
+            "view_mode": str(entry["view_mode"]),
+            "is_display_transform": bool(entry["is_display_transform"]),
+        }
+        for entry in sorted(
+            grouped.values(),
+            key=lambda item: (
+                int(group_order.get(str(item["group_neuropil_id"]), 9999)),
+                str(item["group_neuropil_id"]),
+            ),
+        )
+    ]
 
 
 def _normalize_formal_truth(formal_truth: dict[str, Any] | None) -> dict[str, bool]:

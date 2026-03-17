@@ -175,6 +175,13 @@ def test_console_api_exposes_replay_seek_and_step_synchronized_payloads(tmp_path
             "neuropil_mapped_nodes": 2,
             "total_nodes": 2,
         }
+        approved_group_ids = {"AL", "LH", "PB", "FB", "EB", "NO", "LAL", "GNG"}
+        assert brain_payload["display_region_activity"]
+        first_display = brain_payload["display_region_activity"][0]
+        assert first_display["view_mode"] == "grouped-neuropil-v1"
+        assert first_display["is_display_transform"] is True
+        assert isinstance(first_display["member_neuropils"], list)
+        assert first_display["group_neuropil_id"] in approved_group_ids
         assert brain_payload["top_nodes"] == []
         assert summary_response.json()["step_id"] == 2
         assert timeline_response.json()["current_step"] == 2

@@ -273,3 +273,116 @@ def test_build_replay_brain_view_payload_defaults_missing_synapse_count_to_zero(
             "display_group_hint": "AL",
         }
     ]
+
+
+def test_materialize_runtime_activity_artifacts_emits_grouped_display_region_activity(
+    tmp_path: Path,
+) -> None:
+    from fruitfly.evaluation.runtime_activity_artifacts import (
+        materialize_runtime_activity_artifacts,
+    )
+
+    compiled_graph_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    compiled_graph_dir.mkdir()
+    eval_dir.mkdir()
+
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0},
+                {"source_id": 20, "node_idx": 1},
+            ]
+        ),
+        compiled_graph_dir / "node_index.parquet",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {
+                    "source_id": 10,
+                    "node_idx": 0,
+                    "neuropil": "AL_L",
+                    "occupancy_fraction": 0.25,
+                    "synapse_count": 2,
+                },
+                {
+                    "source_id": 10,
+                    "node_idx": 0,
+                    "neuropil": "AL_R",
+                    "occupancy_fraction": 0.75,
+                    "synapse_count": 6,
+                },
+                {
+                    "source_id": 20,
+                    "node_idx": 1,
+                    "neuropil": "FB",
+                    "occupancy_fraction": 1.0,
+                    "synapse_count": 4,
+                },
+            ]
+        ),
+        compiled_graph_dir / "node_neuropil_occupancy.parquet",
+    )
+    (compiled_graph_dir / "neuropil_truth_validation.json").write_text(
+        json.dumps(
+            {
+                "validation_passed": True,
+                "validation_scope": "graph_source_ids",
+                "roster_alignment": {"alignment_passed": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "task": "straight_walking",
+                "steps_requested": 1,
+                "steps_completed": 1,
+                "terminated_early": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "activity_trace.json").write_text(
+        json.dumps(
+            {
+                "steps_requested": 1,
+                "steps_completed": 1,
+                "snapshots": [
+                    {
+                        "step_id": 1,
+                        "afferent_activity": 0.2,
+                        "intrinsic_activity": 0.4,
+                        "efferent_activity": 0.1,
+                        "top_active_nodes": [],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    np.save(eval_dir / "final_node_activity.npy", np.asarray([-2.0, 0.5], dtype=np.float32))
+
+    payload, _ = materialize_runtime_activity_artifacts(
+        compiled_graph_dir=compiled_graph_dir,
+        eval_dir=eval_dir,
+    ) or ({}, {})
+
+    grouped = {
+        entry["group_neuropil_id"]: entry
+        for entry in payload["display_region_activity"]
+    }
+
+    assert set(grouped) == {"AL", "FB"}
+    assert grouped["AL"]["raw_activity_mass"] == pytest.approx(2.0)
+    assert grouped["AL"]["signed_activity"] == pytest.approx(-2.0)
+    assert grouped["AL"]["member_neuropils"] == ["AL_L", "AL_R"]
+    assert grouped["AL"]["view_mode"] == "grouped-neuropil-v1"
+    assert grouped["AL"]["is_display_transform"] is True
+
+    assert grouped["FB"]["raw_activity_mass"] == pytest.approx(0.5)
+    assert grouped["FB"]["signed_activity"] == pytest.approx(0.5)
+    assert grouped["FB"]["member_neuropils"] == ["FB"]

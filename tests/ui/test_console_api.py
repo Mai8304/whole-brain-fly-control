@@ -451,6 +451,13 @@ def test_console_api_materializes_recorded_brain_and_timeline_from_activity_trac
             "synapse_count": 1,
         }
     ]
+    approved_group_ids = {"AL", "LH", "PB", "FB", "EB", "NO", "LAL", "GNG"}
+    assert brain_payload["display_region_activity"]
+    first_display = brain_payload["display_region_activity"][0]
+    assert first_display["view_mode"] == "grouped-neuropil-v1"
+    assert first_display["is_display_transform"] is True
+    assert isinstance(first_display["member_neuropils"], list)
+    assert first_display["group_neuropil_id"] in approved_group_ids
     assert timeline_payload["data_status"] == "recorded"
     assert timeline_payload["steps_completed"] == 4
     assert len(timeline_payload["events"]) >= 2
