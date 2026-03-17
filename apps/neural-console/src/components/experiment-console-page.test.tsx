@@ -345,6 +345,47 @@ describe('ExperimentConsolePage layout', () => {
     expect(screen.queryByText(/roi name/i)).not.toBeInTheDocument()
   })
 
+  it('surfaces formal neuropil provenance in the brain details panel', () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={{
+            ...mockBrainViewPayload,
+            artifact_contract_version: 1,
+            artifact_origin: 'replay-live-step',
+          }}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    expect(screen.getByText(/formal neuropil truth/i)).toBeInTheDocument()
+    expect(screen.getByText(/contract v1/i)).toBeInTheDocument()
+    expect(screen.getByText(/replay-live-step/i)).toBeInTheDocument()
+  })
+
   it('keeps step zero representable and derives status fields from stable panel ids', () => {
     const localizedPanels = mockLeftPanels.map((panel) => {
       if (panel.title === 'Environment Physics') {

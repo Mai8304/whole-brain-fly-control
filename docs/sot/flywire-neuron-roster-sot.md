@@ -162,6 +162,8 @@
 - `semantic_scope = neuropil`
 - `mapping_mode = node_neuropil_occupancy`
 - `activity_metric = activity_mass`
+- `artifact_contract_version = 当前运行时契约版本`
+- `artifact_origin = initial-materialized | replay-live-step`
 
 并且必须同时保留：
 
@@ -170,6 +172,12 @@
 - `roster_alignment_passed`
 
 作为并列 provenance（来源追踪）字段。
+
+其中：
+
+- `initial /api/console/brain-view` 允许复用 `brain_view.json / timeline.json`，但它们只是可丢弃的 cache artifact（缓存产物），不是事实来源
+- 只要契约字段缺失、结构非法，或任一正式依赖文件更新晚于缓存，运行时就必须重物化
+- `replay /api/console/replay/brain-view` 必须返回同一正式字段集合，只允许 `step_id` 和 `artifact_origin` 与 initial 路径不同
 
 ## 6.2 Grouped display is not raw truth
 

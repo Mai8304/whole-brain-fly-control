@@ -38,6 +38,8 @@ NEUROPIL_TO_DISPLAY_GROUP = {
     "GNG": "GNG",
 }
 
+RUNTIME_ACTIVITY_ARTIFACT_VERSION = 1
+
 
 def materialize_runtime_activity_artifacts(
     *,
@@ -79,11 +81,13 @@ def materialize_runtime_activity_artifacts(
         total_nodes=int(final_node_activity.shape[0]),
         shell=shell,
         formal_truth=formal_truth,
+        artifact_origin="initial-materialized",
     )
     timeline_payload = _build_timeline_payload(
         trace_payload=trace_payload,
         summary_payload=summary_payload,
     )
+    timeline_payload["artifact_contract_version"] = RUNTIME_ACTIVITY_ARTIFACT_VERSION
 
     (eval_dir / "brain_view.json").write_text(
         json.dumps(brain_view_payload, indent=2, sort_keys=True),
@@ -129,6 +133,7 @@ def build_replay_brain_view_payload(
         shell=shell,
         top_active_nodes=top_active_nodes,
         formal_truth=formal_truth,
+        artifact_origin="replay-live-step",
     )
 
 
@@ -157,6 +162,7 @@ def _build_brain_view_payload(
     total_nodes: int,
     shell: dict[str, Any] | None,
     formal_truth: dict[str, Any] | None = None,
+    artifact_origin: str = "initial-materialized",
 ) -> dict[str, Any]:
     snapshots = list(trace_payload.get("snapshots") or [])
     final_snapshot = snapshots[-1] if snapshots else {}
@@ -172,6 +178,7 @@ def _build_brain_view_payload(
         shell=shell,
         top_active_nodes=list(final_snapshot.get("top_active_nodes") or []),
         formal_truth=formal_truth,
+        artifact_origin=artifact_origin,
     )
 
 
@@ -188,6 +195,7 @@ def _build_brain_view_payload_for_step(
     shell: dict[str, Any] | None,
     top_active_nodes: list[dict[str, Any]] | None = None,
     formal_truth: dict[str, Any] | None = None,
+    artifact_origin: str = "initial-materialized",
 ) -> dict[str, Any]:
     raw_activity_mass_by_neuropil: dict[str, float] = {}
     signed_activity_by_neuropil: dict[str, float] = {}
@@ -282,6 +290,8 @@ def _build_brain_view_payload_for_step(
     )
     payload.update(
         {
+            "artifact_contract_version": RUNTIME_ACTIVITY_ARTIFACT_VERSION,
+            "artifact_origin": artifact_origin,
             "data_status": "recorded",
             "step_id": int(step_id),
             "afferent_activity": _float_or_none(afferent_activity),

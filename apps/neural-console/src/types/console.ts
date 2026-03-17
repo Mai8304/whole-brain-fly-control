@@ -81,6 +81,8 @@ export interface BrainShellPayload {
 export interface BrainViewPayload {
   step_id?: number
   data_status?: 'recorded' | 'unavailable'
+  artifact_contract_version?: number
+  artifact_origin?: 'initial-materialized' | 'replay-live-step'
   semantic_scope?: string
   view_mode: string
   mapping_mode: string

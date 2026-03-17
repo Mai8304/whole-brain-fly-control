@@ -78,6 +78,12 @@ The runtime asset / API layer now enforces one formal activity chain:
 - `brain-view（脑图载荷）` only materializes formal neuropil activity from validated `node_neuropil_occupancy.parquet`
 - `graph-scoped validation（运行图范围校验）` and `proofread roster alignment（官方校对名录对齐）` are carried as separate states
 - grouped `AL / LH / LAL` labels in the V1 console are `display transforms（显示变换）`, not raw formal truth IDs
+- both `initial /api/console/brain-view` and `replay /api/console/replay/brain-view` expose
+  `artifact_contract_version` plus `artifact_origin`
+- `artifact_origin` is explicit:
+  - `initial-materialized` for the cached final-step payload
+  - `replay-live-step` for the live replay step payload
+- stale `brain_view.json / timeline.json` cache artifacts are rematerialized whenever contract checks fail or any formal dependency becomes newer
 
 This means the commands above are now the full formal path for neuropil truth generation, validation, and read-only runtime exposure.
 

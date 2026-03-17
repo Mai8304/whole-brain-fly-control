@@ -55,6 +55,8 @@ describe('console api client', () => {
       }
       if (url.endsWith('/api/console/brain-view')) {
         return jsonResponse({
+          artifact_contract_version: 1,
+          artifact_origin: 'initial-materialized',
           semantic_scope: 'neuropil',
           view_mode: 'grouped-neuropil-v1',
           mapping_mode: 'node_neuropil_occupancy',
@@ -165,6 +167,8 @@ describe('console api client', () => {
     expect(requests).not.toContain('/api/console/roi-assets')
     expect(snapshot.brainAssets?.asset_id).toBe('flywire_brain_v141')
     expect(snapshot.brainAssets?.shell.asset_url).toBe('/api/console/brain-shell')
+    expect(snapshot.brainView.artifact_contract_version).toBe(1)
+    expect(snapshot.brainView.artifact_origin).toBe('initial-materialized')
     expect(snapshot.brainView.mapping_mode).toBe('node_neuropil_occupancy')
     expect(snapshot.brainView.activity_metric).toBe('activity_mass')
     expect(snapshot.brainView.mapping_coverage.neuropil_mapped_nodes).toBe(120000)
@@ -219,6 +223,8 @@ describe('console api client', () => {
       }
       if (url.endsWith('/api/console/replay/brain-view')) {
         return jsonResponse({
+          artifact_contract_version: 1,
+          artifact_origin: 'replay-live-step',
           step_id: 8,
           semantic_scope: 'neuropil',
           view_mode: 'grouped-neuropil-v1',
@@ -308,6 +314,8 @@ describe('console api client', () => {
     expect(replaySnapshot.session.current_step).toBe(8)
     expect(replaySnapshot.summary.step_id).toBe(8)
     expect(replaySnapshot.brainView.step_id).toBe(8)
+    expect(replaySnapshot.brainView.artifact_contract_version).toBe(1)
+    expect(replaySnapshot.brainView.artifact_origin).toBe('replay-live-step')
     expect(replaySnapshot.brainView.mapping_mode).toBe('node_neuropil_occupancy')
     expect(replaySnapshot.brainView.top_nodes[0]?.display_group_hint).toBe('FB')
     expect(replaySnapshot.timeline.current_step).toBe(8)

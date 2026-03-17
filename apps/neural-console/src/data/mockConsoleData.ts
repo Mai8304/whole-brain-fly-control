@@ -49,6 +49,8 @@ export const mockPipelineStages: PipelineStagePayload[] = [
 
 export const mockBrainViewPayload: BrainViewPayload = {
   data_status: 'recorded',
+  artifact_contract_version: 1,
+  artifact_origin: 'initial-materialized',
   semantic_scope: 'neuropil',
   view_mode: 'grouped-neuropil-v1',
   mapping_mode: 'node_neuropil_occupancy',

@@ -9,6 +9,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from fruitfly.evaluation.inspector_trace import dump_replay_trace
+from fruitfly.evaluation.runtime_activity_artifacts import RUNTIME_ACTIVITY_ARTIFACT_VERSION
 from fruitfly.ui import ConsoleApiConfig, create_console_api
 
 
@@ -165,6 +166,8 @@ def test_console_api_exposes_replay_seek_and_step_synchronized_payloads(tmp_path
         assert brain_payload["semantic_scope"] == "neuropil"
         assert brain_payload["mapping_mode"] == "node_neuropil_occupancy"
         assert brain_payload["activity_metric"] == "activity_mass"
+        assert brain_payload["artifact_contract_version"] == RUNTIME_ACTIVITY_ARTIFACT_VERSION
+        assert brain_payload["artifact_origin"] == "replay-live-step"
         assert brain_payload["validation_passed"] is True
         assert brain_payload["graph_scope_validation_passed"] is True
         assert brain_payload["roster_alignment_passed"] is True

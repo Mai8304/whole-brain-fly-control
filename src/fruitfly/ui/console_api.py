@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse, Response
 from fruitfly.evaluation.brain_asset_manifest import load_brain_asset_manifest, with_runtime_asset_urls
 from fruitfly.evaluation.console_session import ConsoleSession
 from fruitfly.evaluation.runtime_activity_artifacts import (
+    RUNTIME_ACTIVITY_ARTIFACT_VERSION,
     build_replay_brain_view_payload,
     build_replay_timeline_payload,
     materialize_runtime_activity_artifacts,
@@ -126,11 +127,17 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     def brain_view() -> dict[str, Any]:
         truth_state = _formal_neuropil_truth_state(config)
         if not truth_state["graph_scope_validation_passed"]:
-            return _build_unavailable_brain_view_payload(config, truth_state=truth_state)
+            return _build_unavailable_brain_view_payload(
+                config,
+                truth_state=truth_state,
+                artifact_origin="initial-materialized",
+            )
         _ensure_runtime_activity_artifacts(config)
         payload_path = config.eval_dir / "brain_view.json"
         if payload_path.exists():
             payload = dict(_read_json(payload_path))
+            payload.setdefault("artifact_contract_version", RUNTIME_ACTIVITY_ARTIFACT_VERSION)
+            payload.setdefault("artifact_origin", "initial-materialized")
             payload.setdefault("shell", _brain_shell_payload(config))
             payload.setdefault("data_status", "recorded")
             payload.setdefault("semantic_scope", "neuropil")
@@ -138,7 +145,11 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
             payload.setdefault("mapping_mode", "node_neuropil_occupancy")
             payload.setdefault("activity_metric", "activity_mass")
             return _attach_brain_view_provenance(payload, truth_state=truth_state)
-        return _build_unavailable_brain_view_payload(config, truth_state=truth_state)
+        return _build_unavailable_brain_view_payload(
+            config,
+            truth_state=truth_state,
+            artifact_origin="initial-materialized",
+        )
 
     @app.get("/api/console/brain-assets")
     def brain_assets() -> dict[str, Any]:
@@ -216,7 +227,11 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
         runtime = get_or_create_replay_runtime()
         truth_state = _formal_neuropil_truth_state(config)
         if not truth_state["graph_scope_validation_passed"]:
-            payload = _build_unavailable_brain_view_payload(config, truth_state=truth_state)
+            payload = _build_unavailable_brain_view_payload(
+                config,
+                truth_state=truth_state,
+                artifact_origin="replay-live-step",
+            )
             payload["step_id"] = runtime.current_step
             return payload
         brain_payload = runtime.current_brain_payload()
@@ -313,12 +328,15 @@ def _build_unavailable_brain_view_payload(
     config: ConsoleApiConfig,
     *,
     truth_state: dict[str, Any] | None = None,
+    artifact_origin: str = "initial-materialized",
 ) -> dict[str, Any]:
     graph_stats = _graph_stats(config)
     node_count = int(graph_stats["node_count"])
     if truth_state is None:
         truth_state = _formal_neuropil_truth_state(config)
     payload = {
+        "artifact_contract_version": RUNTIME_ACTIVITY_ARTIFACT_VERSION,
+        "artifact_origin": artifact_origin,
         "semantic_scope": "neuropil",
         "view_mode": "grouped-neuropil-v1",
         "mapping_mode": "node_neuropil_occupancy",
@@ -424,7 +442,11 @@ def _graph_stats(config: ConsoleApiConfig) -> dict[str, Any]:
 def _ensure_runtime_activity_artifacts(config: ConsoleApiConfig) -> None:
     brain_view_path = config.eval_dir / "brain_view.json"
     timeline_path = config.eval_dir / "timeline.json"
-    if brain_view_path.exists() and timeline_path.exists():
+    if _runtime_activity_artifacts_are_current(
+        config=config,
+        brain_view_path=brain_view_path,
+        timeline_path=timeline_path,
+    ):
         return
     truth_state = _formal_neuropil_truth_state(config)
     if not truth_state["graph_scope_validation_passed"]:
@@ -434,6 +456,116 @@ def _ensure_runtime_activity_artifacts(config: ConsoleApiConfig) -> None:
         eval_dir=config.eval_dir,
         shell=_brain_shell_payload(config),
     )
+
+
+def _runtime_activity_artifacts_are_current(
+    *,
+    config: ConsoleApiConfig,
+    brain_view_path: Path,
+    timeline_path: Path,
+) -> bool:
+    if not brain_view_path.exists() or not timeline_path.exists():
+        return False
+    brain_view_payload = _try_read_json_payload(brain_view_path)
+    timeline_payload = _try_read_json_payload(timeline_path)
+    if brain_view_payload is None or timeline_payload is None:
+        return False
+    latest_dependency_mtime = _latest_runtime_activity_dependency_mtime(config)
+    if latest_dependency_mtime is None:
+        return False
+    try:
+        brain_view_mtime = brain_view_path.stat().st_mtime
+        timeline_mtime = timeline_path.stat().st_mtime
+    except OSError:
+        return False
+    if brain_view_mtime < latest_dependency_mtime or timeline_mtime < latest_dependency_mtime:
+        return False
+    return _brain_view_artifact_is_current(brain_view_payload) and _timeline_artifact_is_current(
+        timeline_payload
+    )
+
+
+def _brain_view_artifact_is_current(payload: dict[str, Any]) -> bool:
+    if not _artifact_contract_version_matches(payload):
+        return False
+    if payload.get("semantic_scope") != "neuropil":
+        return False
+    if payload.get("mapping_mode") != "node_neuropil_occupancy":
+        return False
+    if payload.get("activity_metric") != "activity_mass":
+        return False
+    if payload.get("artifact_origin") != "initial-materialized":
+        return False
+    mapping_coverage = payload.get("mapping_coverage")
+    if not isinstance(mapping_coverage, dict) or "neuropil_mapped_nodes" not in mapping_coverage:
+        return False
+    formal_truth = payload.get("formal_truth")
+    if not isinstance(formal_truth, dict):
+        return False
+    region_activity = payload.get("region_activity")
+    if not isinstance(region_activity, list):
+        return False
+    top_regions = payload.get("top_regions")
+    if not isinstance(top_regions, list):
+        return False
+    top_nodes = payload.get("top_nodes")
+    if not isinstance(top_nodes, list):
+        return False
+    return all(
+        isinstance(node, dict) and isinstance(node.get("neuropil_memberships"), list)
+        for node in top_nodes
+    )
+
+
+def _timeline_artifact_is_current(payload: dict[str, Any]) -> bool:
+    if not _artifact_contract_version_matches(payload):
+        return False
+    if payload.get("data_status") != "recorded":
+        return False
+    if not isinstance(payload.get("steps_requested"), int):
+        return False
+    if not isinstance(payload.get("steps_completed"), int):
+        return False
+    if not isinstance(payload.get("current_step"), int):
+        return False
+    if payload.get("brain_view_ref") != "step_id":
+        return False
+    if payload.get("body_view_ref") != "step_id":
+        return False
+    return isinstance(payload.get("events"), list)
+
+
+def _try_read_json_payload(path: Path) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _artifact_contract_version_matches(payload: dict[str, Any]) -> bool:
+    try:
+        version = int(payload.get("artifact_contract_version", 0))
+    except (TypeError, ValueError):
+        return False
+    return version == RUNTIME_ACTIVITY_ARTIFACT_VERSION
+
+
+def _latest_runtime_activity_dependency_mtime(config: ConsoleApiConfig) -> float | None:
+    dependency_paths = [
+        config.eval_dir / "activity_trace.json",
+        config.eval_dir / "final_node_activity.npy",
+        config.eval_dir / "summary.json",
+        config.compiled_graph_dir / "node_neuropil_occupancy.parquet",
+        config.compiled_graph_dir / "neuropil_truth_validation.json",
+        config.compiled_graph_dir / "node_index.parquet",
+    ]
+    if any(not path.exists() for path in dependency_paths):
+        return None
+    try:
+        return max(path.stat().st_mtime for path in dependency_paths)
+    except OSError:
+        return None
 
 
 def _brain_asset_manifest(config: ConsoleApiConfig) -> dict[str, Any]:

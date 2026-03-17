@@ -106,6 +106,7 @@ export function ExperimentConsolePage({
   const hasRecordedBrainActivity =
     sourceStatus === 'LIVE API' && brainView.data_status !== 'unavailable'
   const hasRecordedSummary = sourceStatus === 'LIVE API' && summary.data_status !== 'unavailable'
+  const brainViewProvenance = formatBrainViewProvenance(brainView, t)
   const environmentFields = getTranslatedStatusFields(leftPanels, 'environment', t)
   const sensoryFields = getTranslatedStatusFields(leftPanels, 'sensory', t)
 
@@ -202,6 +203,12 @@ export function ExperimentConsolePage({
                               brainView.mapping_coverage.neuropil_mapped_nodes,
                             )} / ${formatInteger(brainView.mapping_coverage.total_nodes)}`}
                           />
+                          {brainViewProvenance ? (
+                            <MetricRow
+                              label={t('experiment.brain.metric.provenance')}
+                              value={brainViewProvenance}
+                            />
+                          ) : null}
                           <MetricRow
                             label={t('experiment.brain.metric.shellAsset')}
                             value={brainView.shell?.asset_id ?? unavailableLabel}
@@ -519,4 +526,16 @@ function formatTopNodeMembershipSummary(
     ? ` | ${t('experiment.brain.metric.displayGrouping').toLowerCase()}: ${node.display_group_hint}`
     : ''
   return `${node.flow_role}:${node.node_idx} | ${memberships}${displayGroup}`
+}
+
+function formatBrainViewProvenance(
+  brainView: BrainViewPayload,
+  t: (key: string) => string,
+) {
+  if (brainView.artifact_contract_version == null || brainView.artifact_origin == null) {
+    return null
+  }
+  return `${t('experiment.brain.provenance.formalTruth')} · ${t(
+    'experiment.brain.provenance.contract',
+  )} v${brainView.artifact_contract_version} · ${brainView.artifact_origin}`
 }
