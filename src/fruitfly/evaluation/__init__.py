@@ -3,32 +3,18 @@ from __future__ import annotations
 from importlib import import_module
 from typing import Any
 
-from .brain_asset_manifest import build_default_roi_manifest, load_brain_asset_manifest
+from .brain_asset_manifest import build_default_neuropil_manifest, load_brain_asset_manifest
 from .inspector_trace import ReplayTracePayload, dump_replay_trace, load_replay_trace
+from .neuropil_manifest import build_v1_neuropil_manifest
 from .neural_activity import summarize_neural_activity
 from .replay_renderer import RenderedReplayFrame, ReplayRenderer
-from .roi_manifest import build_v1_roi_manifest
 from .walking_eval import summarize_closed_loop_rollout, summarize_gait_initiation, summarize_straight_walking, summarize_turning
 
-_LAZY_EXPORTS = {
-    "build_v1_neuropil_to_roi_map": (".node_roi_compile", "build_v1_neuropil_to_roi_map"),
-    "compile_node_roi_map_batch_rows": (".node_roi_compile", "compile_node_roi_map_batch_rows"),
-    "compile_node_roi_map_rows": (".node_roi_compile", "compile_node_roi_map_rows"),
-    "write_node_roi_map": (".node_roi_compile", "write_node_roi_map"),
-    "build_v1_roi_neuropil_sources": (".roi_mesh_import", "build_v1_roi_neuropil_sources"),
-    "export_v1_roi_meshes": (".roi_mesh_import", "export_v1_roi_meshes"),
-    "load_fafbseg_roi_meshes": (".roi_mesh_import", "load_fafbseg_roi_meshes"),
-}
+_LAZY_EXPORTS: dict[str, tuple[str, str]] = {}
 
 __all__ = [
-    "build_default_roi_manifest",
-    "build_v1_neuropil_to_roi_map",
-    "build_v1_roi_manifest",
-    "build_v1_roi_neuropil_sources",
-    "compile_node_roi_map_batch_rows",
-    "compile_node_roi_map_rows",
-    "export_v1_roi_meshes",
-    "load_fafbseg_roi_meshes",
+    "build_default_neuropil_manifest",
+    "build_v1_neuropil_manifest",
     "load_brain_asset_manifest",
     "load_replay_trace",
     "dump_replay_trace",
@@ -40,7 +26,6 @@ __all__ = [
     "summarize_gait_initiation",
     "summarize_straight_walking",
     "summarize_turning",
-    "write_node_roi_map",
 ]
 
 

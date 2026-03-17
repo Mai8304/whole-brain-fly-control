@@ -226,7 +226,6 @@ def test_eval_flybody_closed_loop_imports_without_pyarrow(monkeypatch) -> None:
 
     monkeypatch.delitem(sys.modules, "scripts.eval_flybody_closed_loop", raising=False)
     monkeypatch.delitem(sys.modules, "fruitfly.evaluation", raising=False)
-    monkeypatch.delitem(sys.modules, "fruitfly.evaluation.node_roi_compile", raising=False)
     monkeypatch.delitem(sys.modules, "pyarrow", raising=False)
     monkeypatch.delitem(sys.modules, "pyarrow.parquet", raising=False)
     monkeypatch.setattr("builtins.__import__", guarded_import)
@@ -245,7 +244,6 @@ def test_evaluation_package_exposes_rollout_summary_without_pyarrow(monkeypatch)
         return original_import(name, globals, locals, fromlist, level)
 
     monkeypatch.delitem(sys.modules, "fruitfly.evaluation", raising=False)
-    monkeypatch.delitem(sys.modules, "fruitfly.evaluation.node_roi_compile", raising=False)
     monkeypatch.delitem(sys.modules, "pyarrow", raising=False)
     monkeypatch.delitem(sys.modules, "pyarrow.parquet", raising=False)
     monkeypatch.setattr("builtins.__import__", guarded_import)

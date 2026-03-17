@@ -6,6 +6,19 @@ import { ConsolePreferencesProvider } from '@/providers/console-preferences-prov
 import { TrainingConsolePage } from './training-console-page'
 
 describe('TrainingConsolePage structure', () => {
+  it('removes the header metric strip and top callout section', () => {
+    const { container } = render(
+      <ConsolePreferencesProvider>
+        <TrainingConsolePage />
+      </ConsolePreferencesProvider>,
+    )
+
+    const header = container.querySelector('header')
+
+    expect(header?.querySelectorAll('.console-metric')).toHaveLength(0)
+    expect(screen.queryByText(/training metadata unavailable/i)).not.toBeInTheDocument()
+  })
+
   it('keeps all primary workflow sections and raw audit area visible', () => {
     render(
       <ConsolePreferencesProvider>

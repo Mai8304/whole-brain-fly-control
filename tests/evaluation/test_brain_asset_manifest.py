@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 
-def test_load_brain_asset_manifest_validates_shell_and_roi_contract(tmp_path: Path) -> None:
+def test_load_brain_asset_manifest_validates_shell_and_neuropil_contract(tmp_path: Path) -> None:
     from fruitfly.evaluation.brain_asset_manifest import load_brain_asset_manifest
 
     manifest_path = tmp_path / "manifest.json"
@@ -27,9 +27,9 @@ def test_load_brain_asset_manifest_validates_shell_and_roi_contract(tmp_path: Pa
                     "base_color": "#89a5ff",
                     "opacity": 0.18,
                 },
-                "roi_manifest": [
+                "neuropil_manifest": [
                     {
-                        "roi_id": "MB",
+                        "neuropil": "MB",
                         "short_label": "MB",
                         "display_name": "Mushroom Body",
                         "display_name_zh": "蘑菇体",
@@ -49,8 +49,8 @@ def test_load_brain_asset_manifest_validates_shell_and_roi_contract(tmp_path: Pa
     assert manifest["asset_id"] == "flywire_brain_v141"
     assert manifest["shell"]["render_asset_path"] == "brain_shell.glb"
     assert manifest["source"]["mesh_segment_id"] == 1
-    assert manifest["roi_manifest"][0] == {
-        "roi_id": "MB",
+    assert manifest["neuropil_manifest"][0] == {
+        "neuropil": "MB",
         "short_label": "MB",
         "display_name": "Mushroom Body",
         "display_name_zh": "蘑菇体",
@@ -61,15 +61,24 @@ def test_load_brain_asset_manifest_validates_shell_and_roi_contract(tmp_path: Pa
     }
 
 
-def test_build_default_roi_manifest_returns_representative_groups() -> None:
-    from fruitfly.evaluation.brain_asset_manifest import build_default_roi_manifest
+def test_build_default_neuropil_manifest_returns_representative_groups() -> None:
+    from fruitfly.evaluation.brain_asset_manifest import build_default_neuropil_manifest
 
-    roi_manifest = build_default_roi_manifest()
+    neuropil_manifest = build_default_neuropil_manifest()
 
-    assert len(roi_manifest) >= 6
-    assert {entry["group"] for entry in roi_manifest} == {
+    assert len(neuropil_manifest) >= 6
+    assert {entry["group"] for entry in neuropil_manifest} == {
         "input-associated",
         "core-processing",
         "output-associated",
     }
-    assert roi_manifest[0]["roi_id"]
+    assert neuropil_manifest[0]["neuropil"]
+
+
+def test_checked_in_brain_asset_manifest_uses_neuropil_contract() -> None:
+    manifest = json.loads(
+        Path("outputs/ui-assets/flywire_brain_v141/manifest.json").read_text(encoding="utf-8")
+    )
+
+    assert manifest["neuropil_manifest"]
+    assert manifest["neuropil_manifest"][0]["neuropil"] == "AL"

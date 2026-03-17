@@ -24,7 +24,6 @@ import type {
   ConsoleField,
   ConsolePanel,
   PipelineStagePayload,
-  RoiAssetPackPayload,
   TimelinePayload,
 } from '@/types/console'
 
@@ -35,7 +34,6 @@ const BrainShellViewport = lazy(async () => {
 
 interface ExperimentConsolePageProps {
   brainAssets: BrainAssetManifestPayload | null
-  roiAssets: RoiAssetPackPayload | null
   brainView: BrainViewPayload
   errorMessage: string | null
   executionLog: string[]
@@ -92,12 +90,11 @@ interface ExperimentConsolePageProps {
 
 export function ExperimentConsolePage({
   brainAssets,
-  roiAssets,
   brainView,
   errorMessage,
   executionLog,
   leftPanels,
-  pipeline,
+  pipeline: _pipeline,
   sourceStatus,
   summary,
   timeline,
@@ -117,34 +114,6 @@ export function ExperimentConsolePage({
       <ConsolePageHeader
         title={t('experiment.header.title')}
         description={t('experiment.header.description')}
-        metrics={[
-          {
-            label: t('app.metric.status'),
-            value: t('app.status.ready'),
-            tone: 'success',
-          },
-          {
-            label: t('app.metric.session'),
-            value: summary.task || 'straight_walking_v1',
-          },
-          {
-            label: t('app.metric.dataSource'),
-            value: translateSourceStatus(sourceStatus, t),
-            tone:
-              sourceStatus === 'LIVE API'
-                ? 'info'
-                : sourceStatus === 'API UNAVAILABLE'
-                  ? 'danger'
-                  : sourceStatus === 'LOADING'
-                    ? 'warning'
-                    : 'warning',
-          },
-          {
-            label: t('app.metric.pendingChanges'),
-            value: sourceStatus === 'LIVE API' ? '0' : '3',
-            tone: sourceStatus === 'LIVE API' ? 'success' : 'warning',
-          },
-        ]}
       />
 
       {sourceStatus === 'API UNAVAILABLE' && errorMessage ? (
@@ -158,26 +127,6 @@ export function ExperimentConsolePage({
           </CardContent>
         </Card>
       ) : null}
-
-      <Card className="console-panel border-none shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle>{t('experiment.pipeline.title')}</CardTitle>
-          <CardDescription>{t('experiment.pipeline.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {pipeline.length ? (
-            <div className="grid gap-3 lg:grid-cols-6">
-              {pipeline.map((stage, index) => (
-                <PipelineStage key={stage.name} stage={stage} index={index} />
-              ))}
-            </div>
-          ) : (
-            <div className="console-empty-state px-4 py-6 text-sm text-muted-foreground">
-              {t('experiment.pipeline.awaiting')}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       <main
         data-testid="experiment-layout"
@@ -263,15 +212,7 @@ export function ExperimentConsolePage({
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.neuropilManifest')}
-                            value={brainAssets ? String(brainAssets.roi_manifest.length) : unavailableLabel}
-                          />
-                          <MetricRow
-                            label={t('experiment.brain.metric.meshPack')}
-                            value={
-                              roiAssets
-                                ? `${roiAssets.roi_meshes.length} ${t('shared.meshes')}`
-                                : unavailableLabel
-                            }
+                            value={brainAssets ? String(brainAssets.neuropil_manifest.length) : unavailableLabel}
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.topNodeMemberships')}
@@ -489,28 +430,6 @@ function ConsolePanelCard({ panel }: { panel: ConsolePanel }) {
   )
 }
 
-function PipelineStage({ stage, index }: { stage: PipelineStagePayload; index: number }) {
-  const { t } = useConsolePreferences()
-  const tone =
-    stage.status === 'done'
-      ? 'border-emerald-500/25 bg-emerald-500/10'
-      : stage.status === 'running'
-        ? 'border-[var(--console-accent-strong)]/25 bg-[var(--console-accent-strong)]/10'
-        : 'border-border/80 bg-background/70'
-
-  return (
-    <div className={`rounded-2xl border px-3 py-3 ${tone}`}>
-      <div className="console-kicker">Stage {index + 1}</div>
-      <div className="mt-2 text-sm font-medium text-foreground">
-        {translatePipelineStage(stage.name, t)}
-      </div>
-      <div className="mt-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-        {stage.status}
-      </div>
-    </div>
-  )
-}
-
 function LabeledField({ field }: { field: ConsoleField }) {
   const { t } = useConsolePreferences()
   const label = field.labelKey ? t(field.labelKey) : field.label
@@ -538,35 +457,6 @@ function MetricRow({ label, value }: { label: string; value: string }) {
       <span className="text-right font-medium text-foreground">{value}</span>
     </div>
   )
-}
-
-function translatePipelineStage(name: string, t: (key: string) => string) {
-  const mapping: Record<string, string> = {
-    'Environment / Input': 'pipeline.environmentInput',
-    Afferent: 'pipeline.afferent',
-    'Whole-Brain': 'pipeline.wholeBrain',
-    Efferent: 'pipeline.efferent',
-    Decoder: 'pipeline.decoder',
-    Body: 'pipeline.body',
-  }
-
-  return mapping[name] ? t(mapping[name]) : name
-}
-
-function translateSourceStatus(
-  sourceStatus: ExperimentConsolePageProps['sourceStatus'],
-  t: (key: string) => string,
-) {
-  switch (sourceStatus) {
-    case 'LIVE API':
-      return t('app.status.liveApi')
-    case 'API UNAVAILABLE':
-      return t('app.status.apiUnavailable')
-    case 'LOADING':
-      return t('app.status.loading')
-    default:
-      return t('app.status.mockFallback')
-  }
 }
 
 function formatNumber(value: number | null | undefined, unavailableLabel: string) {

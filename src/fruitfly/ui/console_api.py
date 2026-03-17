@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-import subprocess
+from contextlib import asynccontextmanager, suppress
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -12,13 +12,13 @@ from fastapi.responses import FileResponse, Response
 
 from fruitfly.evaluation.brain_asset_manifest import load_brain_asset_manifest, with_runtime_asset_urls
 from fruitfly.evaluation.console_session import ConsoleSession
-from fruitfly.evaluation.roi_asset_pack import load_roi_asset_pack_manifest
 from fruitfly.evaluation.runtime_activity_artifacts import (
     build_replay_brain_view_payload,
     build_replay_timeline_payload,
     materialize_runtime_activity_artifacts,
 )
 from fruitfly.evaluation.timeline import build_shared_timeline_payload
+from fruitfly.ui.replay_frame_worker import ReplayFrameWorkerClient
 from fruitfly.ui.replay_runtime import ReplayRuntime
 
 
@@ -29,7 +29,6 @@ class ConsoleApiConfig:
     checkpoint_path: Path | None = None
     replay_renderer_python: Path | None = None
     brain_asset_dir: Path | None = None
-    roi_asset_dir: Path | None = None
     mode: str = "Experiment"
     task: str = "straight_walking"
     environment_physics: dict[str, str] = field(
@@ -50,6 +49,7 @@ class ConsoleApiConfig:
 
 def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     replay_runtime: ReplayRuntime | None = None
+    replay_frame_client: Any | None = None
 
     def get_or_create_replay_runtime() -> ReplayRuntime:
         nonlocal replay_runtime
@@ -63,11 +63,33 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
                 ) from exc
         return replay_runtime
 
+    def get_or_create_replay_frame_client() -> Any:
+        nonlocal replay_frame_client
+        if replay_frame_client is None:
+            replay_frame_client = _create_replay_frame_client(config=config)
+        return replay_frame_client
+
+    def close_replay_frame_client() -> None:
+        nonlocal replay_frame_client
+        if replay_frame_client is None:
+            return
+        with suppress(Exception):
+            replay_frame_client.close()
+        replay_frame_client = None
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        try:
+            yield
+        finally:
+            close_replay_frame_client()
+
     app = FastAPI(
         title="Fruitfly Neural Console API",
         version="0.1.0",
         docs_url="/api/docs",
         redoc_url=None,
+        lifespan=lifespan,
     )
 
     @app.get("/api/health")
@@ -122,18 +144,6 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     def brain_assets() -> dict[str, Any]:
         manifest = _brain_asset_manifest(config)
         return with_runtime_asset_urls(manifest, shell_asset_url="/api/console/brain-shell")
-
-    @app.get("/api/console/roi-assets")
-    def roi_assets() -> dict[str, Any]:
-        manifest = dict(_roi_asset_pack_manifest(config))
-        manifest["roi_meshes"] = [
-            {
-                **entry,
-                "asset_url": f'/api/console/roi-mesh/{entry["roi_id"]}',
-            }
-            for entry in manifest["roi_meshes"]
-        ]
-        return manifest
 
     @app.get("/api/console/timeline")
     def timeline() -> dict[str, Any]:
@@ -241,13 +251,18 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     @app.get("/api/console/replay/frame")
     def replay_frame(width: int = 320, height: int = 240) -> Response:
         runtime = get_or_create_replay_runtime()
-        frame_bytes = _render_replay_frame_bytes(
-            config=config,
-            step=runtime.current_step,
-            camera=runtime.camera_preset,
-            width=int(width),
-            height=int(height),
-        )
+        try:
+            frame_bytes = _render_replay_frame_bytes(
+                step=runtime.current_step,
+                camera=runtime.camera_preset,
+                width=int(width),
+                height=int(height),
+                client=get_or_create_replay_frame_client(),
+            )
+        except Exception as exc:
+            close_replay_frame_client()
+            message = str(exc).strip() or "replay frame rendering failed"
+            raise HTTPException(status_code=503, detail=message) from exc
         return Response(content=frame_bytes, media_type="image/jpeg")
 
     @app.get("/api/console/video")
@@ -264,18 +279,6 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
         if not shell_path.exists():
             raise HTTPException(status_code=404, detail=f"{shell_path.name} not found")
         return FileResponse(shell_path, media_type="model/gltf-binary", filename=shell_path.name)
-
-    @app.get("/api/console/roi-mesh/{roi_id}")
-    def roi_mesh(roi_id: str) -> FileResponse:
-        manifest = _roi_asset_pack_manifest(config)
-        mesh_entry = next((entry for entry in manifest["roi_meshes"] if entry["roi_id"] == roi_id), None)
-        if mesh_entry is None:
-            raise HTTPException(status_code=404, detail=f"roi mesh not found for {roi_id}")
-        assert config.roi_asset_dir is not None
-        mesh_path = config.roi_asset_dir / mesh_entry["render_asset_path"]
-        if not mesh_path.exists():
-            raise HTTPException(status_code=404, detail=f"{mesh_path.name} not found")
-        return FileResponse(mesh_path, media_type="model/gltf-binary", filename=mesh_path.name)
 
     return app
 
@@ -372,42 +375,37 @@ def _build_unavailable_summary_payload(config: ConsoleApiConfig) -> dict[str, An
 
 def _render_replay_frame_bytes(
     *,
-    config: ConsoleApiConfig,
     step: int,
     camera: str,
     width: int,
     height: int,
+    client: Any,
 ) -> bytes:
+    payload = client.render_frame(
+        step=int(step),
+        camera=str(camera),
+        width=int(width),
+        height=int(height),
+    )
+    if isinstance(payload, bytes):
+        return payload
+    return bytes(getattr(payload, "bytes"))
+
+
+def _create_replay_frame_client(*, config: ConsoleApiConfig) -> ReplayFrameWorkerClient:
     renderer_python = _resolve_replay_renderer_python(config)
     if renderer_python is None:
-        raise HTTPException(status_code=503, detail="replay renderer environment is not configured")
+        raise RuntimeError("replay renderer environment is not configured")
 
-    script_path = Path(__file__).resolve().parents[3] / "scripts" / "render_replay_frame.py"
-    if not script_path.exists():
-        raise HTTPException(status_code=503, detail="replay frame renderer script is not available")
+    worker_script = Path(__file__).resolve().parents[3] / "scripts" / "replay_frame_worker.py"
+    if not worker_script.exists():
+        raise RuntimeError("replay frame renderer worker script is not available")
 
-    result = subprocess.run(
-        [
-            str(renderer_python),
-            str(script_path),
-            "--eval-dir",
-            str(config.eval_dir),
-            "--step",
-            str(int(step)),
-            "--camera",
-            str(camera),
-            "--width",
-            str(int(width)),
-            "--height",
-            str(int(height)),
-        ],
-        check=False,
-        capture_output=True,
+    return ReplayFrameWorkerClient.start(
+        python_executable=renderer_python,
+        worker_script=worker_script,
+        eval_dir=config.eval_dir,
     )
-    if result.returncode != 0:
-        message = result.stderr.decode("utf-8", errors="ignore").strip() or "replay frame rendering failed"
-        raise HTTPException(status_code=503, detail=message)
-    return bytes(result.stdout)
 
 
 def _resolve_replay_renderer_python(config: ConsoleApiConfig) -> Path | None:
@@ -466,16 +464,6 @@ def _brain_shell_payload(config: ConsoleApiConfig) -> dict[str, Any] | None:
 def _brain_shell_path(config: ConsoleApiConfig, manifest: dict[str, Any]) -> Path:
     assert config.brain_asset_dir is not None
     return config.brain_asset_dir / manifest["shell"]["render_asset_path"]
-
-
-def _roi_asset_pack_manifest(config: ConsoleApiConfig) -> dict[str, Any]:
-    if config.roi_asset_dir is None:
-        raise HTTPException(status_code=404, detail="roi asset pack not configured")
-    manifest_path = config.roi_asset_dir / "manifest.json"
-    if not manifest_path.exists():
-        raise HTTPException(status_code=404, detail="roi asset pack manifest not found")
-    return load_roi_asset_pack_manifest(manifest_path)
-
 
 def _formal_neuropil_truth_state(config: ConsoleApiConfig) -> dict[str, Any]:
     occupancy_path = config.compiled_graph_dir / "node_neuropil_occupancy.parquet"

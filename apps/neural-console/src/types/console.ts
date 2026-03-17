@@ -118,8 +118,8 @@ export interface BrainViewPayload {
   }
 }
 
-export interface BrainAssetRoiPayload {
-  roi_id: string
+export interface BrainAssetNeuropilPayload {
+  neuropil: string
   short_label: string
   display_name: string
   display_name_zh: string
@@ -149,30 +149,7 @@ export interface BrainAssetManifestPayload {
     opacity: number
     asset_url?: string
   }
-  roi_manifest: BrainAssetRoiPayload[]
-}
-
-export interface RoiMeshAssetPayload {
-  roi_id: string
-  render_asset_path: string
-  render_format: string
-  asset_url?: string
-}
-
-export interface RoiAssetPackPayload {
-  asset_id: string
-  asset_version: string
-  shell: {
-    render_asset_path: string
-    render_format: string
-  }
-  roi_manifest_path: string
-  node_roi_map_path: string
-  roi_meshes: RoiMeshAssetPayload[]
-  mapping_coverage: {
-    roi_mapped_nodes: number
-    total_nodes: number
-  }
+  neuropil_manifest: BrainAssetNeuropilPayload[]
 }
 
 export interface TimelineEventPayload {

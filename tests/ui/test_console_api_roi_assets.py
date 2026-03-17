@@ -4,19 +4,17 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 
-def test_console_api_exposes_roi_asset_pack_and_mesh_routes(tmp_path: Path) -> None:
+def test_console_api_does_not_expose_legacy_roi_asset_routes(tmp_path: Path) -> None:
     from fruitfly.ui import ConsoleApiConfig, create_console_api
 
     compiled_dir = tmp_path / "compiled"
     eval_dir = tmp_path / "eval"
     brain_asset_dir = tmp_path / "brain_assets"
-    roi_asset_dir = tmp_path / "roi_assets"
     checkpoint_path = tmp_path / "epoch_0001.pt"
 
     compiled_dir.mkdir()
     eval_dir.mkdir()
     brain_asset_dir.mkdir()
-    (roi_asset_dir / "roi_mesh").mkdir(parents=True)
     checkpoint_path.write_bytes(b"checkpoint")
     (compiled_dir / "graph_stats.json").write_text(
         json.dumps(
@@ -71,53 +69,18 @@ def test_console_api_exposes_roi_asset_pack_and_mesh_routes(tmp_path: Path) -> N
                     "base_color": "#89a5ff",
                     "opacity": 0.18,
                 },
-                "roi_manifest": [
+                "neuropil_manifest": [
                     {
-                        "roi_id": "AL",
+                        "neuropil": "AL",
                         "short_label": "AL",
                         "display_name": "Antennal Lobe",
                         "display_name_zh": "触角叶",
                         "group": "input-associated",
-                        "description_zh": "V1 中作为气味输入相关脑区的代表。",
+                        "description_zh": "正式显示的神经纤维区。",
                         "default_color": "#4ea8de",
                         "priority": 1,
                     }
                 ],
-            }
-        ),
-        encoding="utf-8",
-    )
-    (roi_asset_dir / "roi_manifest.json").write_text(
-        json.dumps(
-            [
-                {
-                    "roi_id": "AL",
-                    "short_label": "AL",
-                    "display_name": "Antennal Lobe",
-                    "display_name_zh": "触角叶",
-                    "group": "input-associated",
-                    "description_zh": "V1 中作为气味输入相关脑区的代表。",
-                    "default_color": "#4ea8de",
-                    "priority": 1,
-                }
-            ]
-        ),
-        encoding="utf-8",
-    )
-    (roi_asset_dir / "node_roi_map.parquet").write_bytes(b"parquet")
-    (roi_asset_dir / "roi_mesh" / "AL.glb").write_bytes(b"roi-glb")
-    (roi_asset_dir / "manifest.json").write_text(
-        json.dumps(
-            {
-                "asset_id": "flywire_roi_pack_v1",
-                "asset_version": "v1",
-                "shell": {"render_asset_path": "brain_shell.glb", "render_format": "glb"},
-                "roi_manifest_path": "roi_manifest.json",
-                "node_roi_map_path": "node_roi_map.parquet",
-                "roi_meshes": [
-                    {"roi_id": "AL", "render_asset_path": "roi_mesh/AL.glb", "render_format": "glb"}
-                ],
-                "mapping_coverage": {"roi_mapped_nodes": 120000, "total_nodes": 139244},
             }
         ),
         encoding="utf-8",
@@ -129,19 +92,16 @@ def test_console_api_exposes_roi_asset_pack_and_mesh_routes(tmp_path: Path) -> N
             eval_dir=eval_dir,
             checkpoint_path=checkpoint_path,
             brain_asset_dir=brain_asset_dir,
-            roi_asset_dir=roi_asset_dir,
         )
     )
     client = TestClient(app)
 
+    route_paths = {route.path for route in app.routes}
+    assert "/api/console/roi-assets" not in route_paths
+    assert "/api/console/roi-mesh/{roi_id}" not in route_paths
+
     roi_assets_response = client.get("/api/console/roi-assets")
-    assert roi_assets_response.status_code == 200
-    roi_assets_payload = roi_assets_response.json()
-    assert roi_assets_payload["asset_id"] == "flywire_roi_pack_v1"
-    assert roi_assets_payload["roi_meshes"][0]["asset_url"] == "/api/console/roi-mesh/AL"
-    assert roi_assets_payload["mapping_coverage"] == {"roi_mapped_nodes": 120000, "total_nodes": 139244}
+    assert roi_assets_response.status_code == 404
 
     roi_mesh_response = client.get("/api/console/roi-mesh/AL")
-    assert roi_mesh_response.status_code == 200
-    assert roi_mesh_response.headers["content-type"] == "model/gltf-binary"
-    assert roi_mesh_response.content == b"roi-glb"
+    assert roi_mesh_response.status_code == 404

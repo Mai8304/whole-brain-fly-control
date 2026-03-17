@@ -7,7 +7,6 @@ import {
   mockExecutionLog,
   mockLeftPanels,
   mockPipelineStages,
-  mockRoiAssetPack,
   mockSession,
   mockTimelinePayload,
   mockVideoSrc,
@@ -54,7 +53,6 @@ export interface ConsoleDataState {
   pipeline: PipelineStagePayload[]
   brainView: BrainViewPayload
   brainAssets: typeof mockBrainAssetManifest | null
-  roiAssets: typeof mockRoiAssetPack | null
   timeline: TimelinePayload
   summary: ClosedLoopSummaryPayload
   executionLog: string[]
@@ -132,7 +130,6 @@ const mockState: ConsoleDataState = {
   pipeline: mockPipelineStages,
   brainView: mockBrainViewPayload,
   brainAssets: mockBrainAssetManifest,
-  roiAssets: mockRoiAssetPack,
   timeline: mockTimelinePayload,
   summary: mockClosedLoopSummary,
   executionLog: mockExecutionLog,
@@ -147,7 +144,6 @@ const loadingState: ConsoleDataState = {
   pipeline: [],
   brainView: unavailableBrainView,
   brainAssets: null,
-  roiAssets: null,
   timeline: unavailableTimeline,
   summary: unavailableSummary,
   executionLog: ['[strict] waiting for live API'],
@@ -536,14 +532,12 @@ function buildLiveState(snapshot: Awaited<ReturnType<typeof fetchConsoleSnapshot
     pipeline: snapshot.pipeline,
     brainView: snapshot.brainView,
     brainAssets: snapshot.brainAssets,
-    roiAssets: snapshot.roiAssets,
     timeline: snapshot.timeline,
     summary: snapshot.summary,
     executionLog: [
       '[live] session loaded from /api/console/session',
       '[live] summary loaded from /api/console/summary',
       '[live] brain assets loaded from /api/console/brain-assets',
-      '[live] roi assets loaded from /api/console/roi-assets',
       '[live] timeline loaded from /api/console/timeline',
     ],
     videoSrc: snapshot.videoSrc,

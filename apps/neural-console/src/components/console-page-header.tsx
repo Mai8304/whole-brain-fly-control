@@ -1,20 +1,22 @@
 import { Badge } from '@/components/ui/badge'
 import { useConsolePreferences } from '@/providers/console-preferences-provider'
 
+interface ConsolePageHeaderMetric {
+  label: string
+  value: string
+  tone?: 'default' | 'success' | 'warning' | 'danger' | 'info'
+}
+
 interface ConsolePageHeaderProps {
   title: string
   description: string
-  metrics: {
-    label: string
-    value: string
-    tone?: 'default' | 'success' | 'warning' | 'danger' | 'info'
-  }[]
+  metrics?: ConsolePageHeaderMetric[]
 }
 
 export function ConsolePageHeader({
   title,
   description,
-  metrics,
+  metrics = [],
 }: ConsolePageHeaderProps) {
   const { t } = useConsolePreferences()
 
@@ -27,28 +29,30 @@ export function ConsolePageHeader({
             <Badge variant="outline">{t('app.stack')}</Badge>
           </div>
           <div className="space-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-              <p className="max-w-4xl text-sm leading-6 text-muted-foreground">{description}</p>
-            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+            <p className="max-w-4xl text-sm leading-6 text-muted-foreground">{description}</p>
           </div>
-
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-          {metrics.map((metric) => (
-            <div
-              key={metric.label}
-              className="console-metric rounded-2xl border px-3 py-2"
-            >
-              <div className="console-kicker">{metric.label}</div>
-              <div className={metricToneClass(metric.tone)}>{metric.value}</div>
-            </div>
-          ))}
         </div>
+
+        {metrics.length ? (
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            {metrics.map((metric) => (
+              <div
+                key={metric.label}
+                className="console-metric rounded-2xl border px-3 py-2"
+              >
+                <div className="console-kicker">{metric.label}</div>
+                <div className={metricToneClass(metric.tone)}>{metric.value}</div>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </header>
   )
 }
 
-function metricToneClass(tone: ConsolePageHeaderProps['metrics'][number]['tone']) {
+function metricToneClass(tone: ConsolePageHeaderMetric['tone']) {
   switch (tone) {
     case 'success':
       return 'mt-1 text-sm font-medium text-emerald-500 dark:text-emerald-300'

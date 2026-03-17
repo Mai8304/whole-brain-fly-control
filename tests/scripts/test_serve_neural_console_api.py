@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 
 def test_serve_neural_console_api_cli_invokes_uvicorn(tmp_path, monkeypatch) -> None:
     from scripts import serve_neural_console_api
@@ -54,3 +56,29 @@ def test_serve_neural_console_api_cli_invokes_uvicorn(tmp_path, monkeypatch) -> 
     assert captured["reload"] is True
     assert captured["app"] is not None
     assert captured["config"].brain_asset_dir == brain_asset_dir
+    assert not hasattr(captured["config"], "roi_asset_dir")
+
+
+def test_serve_neural_console_api_rejects_legacy_roi_asset_dir_flag(tmp_path) -> None:
+    from scripts import serve_neural_console_api
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    roi_asset_dir = tmp_path / "roi_assets"
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    roi_asset_dir.mkdir()
+
+    with pytest.raises(SystemExit) as exc_info:
+        serve_neural_console_api.main(
+            [
+                "--compiled-graph-dir",
+                str(compiled_dir),
+                "--eval-dir",
+                str(eval_dir),
+                "--roi-asset-dir",
+                str(roi_asset_dir),
+            ]
+        )
+
+    assert exc_info.value.code == 2

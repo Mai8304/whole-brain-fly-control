@@ -28,11 +28,14 @@ describe('Neural console shell', () => {
   it('renders unavailable state instead of fake data when the API is offline', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
 
-    render(<App />)
+    const { container } = render(<App />)
 
     expect(screen.getByRole('heading', { name: /whole-brain fly console/i })).toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.getByText(/^API UNAVAILABLE$/i)).toBeInTheDocument()
+      expect(
+        screen.getAllByText(/live api unavailable\. research mode disables mock fallback\./i)
+          .length,
+      ).toBeGreaterThan(0)
     })
     expect(screen.getByRole('button', { name: /experiment console/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /training console/i })).toBeInTheDocument()
@@ -45,10 +48,7 @@ describe('Neural console shell', () => {
     expect(screen.getAllByText(/^Fly Body Live$/).length).toBeGreaterThan(0)
     expect(screen.getByTestId('experiment-brain-card')).toBeInTheDocument()
     expect(screen.getByTestId('experiment-body-card')).toBeInTheDocument()
-    expect(
-      screen.getAllByText(/live api unavailable\. research mode disables mock fallback\./i).length,
-    ).toBeGreaterThan(0)
-    expect(screen.getByText(/^API UNAVAILABLE$/i)).toBeInTheDocument()
+    expect(container.querySelectorAll('.console-metric')).toHaveLength(0)
     expect(screen.queryByText(/^LIVE API$/i)).not.toBeInTheDocument()
   })
 
@@ -57,10 +57,13 @@ describe('Neural console shell', () => {
 
     const user = userEvent.setup()
 
-    render(<App />)
+    const { container } = render(<App />)
 
     await waitFor(() => {
-      expect(screen.getByText(/^API UNAVAILABLE$/i)).toBeInTheDocument()
+      expect(
+        screen.getAllByText(/live api unavailable\. research mode disables mock fallback\./i)
+          .length,
+      ).toBeGreaterThan(0)
     })
 
     await user.click(screen.getByRole('button', { name: /training console/i }))
@@ -73,6 +76,8 @@ describe('Neural console shell', () => {
     expect(screen.getAllByText(/^Data$/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/^Graph$/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/^Registry$/).length).toBeGreaterThan(0)
+    expect(container.querySelectorAll('.console-metric')).toHaveLength(0)
+    expect(screen.queryByText(/training metadata unavailable/i)).not.toBeInTheDocument()
   })
 
   it('opens the training page from the pathname without changing the home page default', async () => {
@@ -89,6 +94,7 @@ describe('Neural console shell', () => {
   })
 
   it('hydrates from the read-only UI backend when API responses are available', async () => {
+    const requests: string[] = []
     const jsonResponse = (payload: unknown) =>
       Promise.resolve({
         ok: true,
@@ -97,6 +103,7 @@ describe('Neural console shell', () => {
 
     vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
       const url = String(input)
+      requests.push(url)
       if (url.endsWith('/api/console/session')) {
         return jsonResponse({
           mode: 'Experiment',
@@ -182,9 +189,9 @@ describe('Neural console shell', () => {
             opacity: 0.18,
             asset_url: '/api/console/brain-shell',
           },
-          roi_manifest: [
+          neuropil_manifest: [
             {
-              roi_id: 'MB',
+              neuropil: 'MB',
               short_label: 'MB',
               display_name: 'Mushroom Body',
               display_name_zh: '蘑菇体',
@@ -194,27 +201,6 @@ describe('Neural console shell', () => {
               priority: 1,
             },
           ],
-        })
-      }
-      if (url.endsWith('/api/console/roi-assets')) {
-        return jsonResponse({
-          asset_id: 'flywire_roi_pack_v1',
-          asset_version: 'v1',
-          shell: {
-            render_asset_path: 'brain_shell.glb',
-            render_format: 'glb',
-          },
-          roi_manifest_path: 'roi_manifest.json',
-          node_roi_map_path: 'node_roi_map.parquet',
-          roi_meshes: [
-            {
-              roi_id: 'AL',
-              render_asset_path: 'roi_mesh/AL.glb',
-              render_format: 'glb',
-              asset_url: '/api/console/roi-mesh/AL',
-            },
-          ],
-          mapping_coverage: { roi_mapped_nodes: 120000, total_nodes: 139244 },
         })
       }
       if (url.endsWith('/api/console/timeline')) {
@@ -318,10 +304,10 @@ describe('Neural console shell', () => {
       return Promise.reject(new Error(`unexpected url: ${url}`))
     })
 
-    render(<App />)
+    const { container } = render(<App />)
 
     await waitFor(() => {
-      expect(screen.getByText(/live api/i)).toBeInTheDocument()
+      expect(screen.getByDisplayValue('rough')).toBeInTheDocument()
     })
 
     expect(screen.getByDisplayValue('rough')).toBeInTheDocument()
@@ -331,5 +317,7 @@ describe('Neural console shell', () => {
       expect.stringContaining('/api/console/replay/frame'),
     )
     expect(screen.getAllByText(/flywire_brain_v141/i).length).toBeGreaterThan(0)
+    expect(requests).not.toContain('/api/console/roi-assets')
+    expect(container.querySelectorAll('.console-metric')).toHaveLength(0)
   })
 })

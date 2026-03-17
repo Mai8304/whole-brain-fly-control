@@ -8,7 +8,6 @@ import {
   mockExecutionLog,
   mockLeftPanels,
   mockPipelineStages,
-  mockRoiAssetPack,
   mockTimelinePayload,
   mockVideoSrc,
 } from '@/data/mockConsoleData'
@@ -32,12 +31,118 @@ afterAll(() => {
 })
 
 describe('ExperimentConsolePage layout', () => {
+  it('does not render the legacy mesh-pack metric in the brain details panel', () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={mockBrainViewPayload}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    expect(screen.queryByText(/neuropil mesh pack/i)).not.toBeInTheDocument()
+  })
+
+  it('omits header metrics so the hero only keeps the title area', () => {
+    const { container } = render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={mockBrainViewPayload}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    const header = container.querySelector('header')
+    expect(header?.querySelectorAll('.console-metric')).toHaveLength(0)
+  })
+
+  it('removes the flow status pipeline card from the page header area', () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={mockBrainViewPayload}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    expect(screen.queryByText(/^(Pipeline Status|流程状态)$/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^(Environment \/ Input|环境 \/ 输入)$/)).not.toBeInTheDocument()
+  })
+
   it('uses content-sized columns instead of stretched right-side rows', () => {
     render(
       <ConsolePreferencesProvider>
         <ExperimentConsolePage
           brainAssets={mockBrainAssetManifest}
-          roiAssets={mockRoiAssetPack}
           brainView={mockBrainViewPayload}
           errorMessage={null}
           executionLog={mockExecutionLog}
@@ -87,7 +192,6 @@ describe('ExperimentConsolePage layout', () => {
       <ConsolePreferencesProvider>
         <ExperimentConsolePage
           brainAssets={mockBrainAssetManifest}
-          roiAssets={mockRoiAssetPack}
           brainView={{ ...mockBrainViewPayload, step_id: 12 }}
           errorMessage={null}
           executionLog={mockExecutionLog}
@@ -169,7 +273,6 @@ describe('ExperimentConsolePage layout', () => {
       <ConsolePreferencesProvider>
         <ExperimentConsolePage
           brainAssets={mockBrainAssetManifest}
-          roiAssets={mockRoiAssetPack}
           brainView={{
             ...mockBrainViewPayload,
             top_regions: [
@@ -257,7 +360,6 @@ describe('ExperimentConsolePage layout', () => {
       <ConsolePreferencesProvider>
         <ExperimentConsolePage
           brainAssets={mockBrainAssetManifest}
-          roiAssets={mockRoiAssetPack}
           brainView={{ ...mockBrainViewPayload, step_id: 0 }}
           errorMessage={null}
           executionLog={mockExecutionLog}

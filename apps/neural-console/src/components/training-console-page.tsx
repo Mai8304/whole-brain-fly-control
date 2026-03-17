@@ -23,34 +23,7 @@ export function TrainingConsolePage() {
       <ConsolePageHeader
         title={t('training.header.title')}
         description={t('training.header.description')}
-        metrics={[
-          {
-            label: t('training.metric.status'),
-            value: t('training.value.pendingBackend'),
-            tone: 'warning',
-          },
-          {
-            label: t('training.metric.activeRun'),
-            value: t('training.value.none'),
-          },
-          {
-            label: t('training.metric.registry'),
-            value: t('training.state.unregistered'),
-            tone: 'warning',
-          },
-          {
-            label: t('training.metric.lastEval'),
-            value: t('shared.unavailable'),
-          },
-        ]}
       />
-
-      <section className="console-detail-section">
-        <div className="console-detail-header">
-          <h2 className="text-base font-semibold text-foreground">{t('training.callout.title')}</h2>
-          <p className="text-sm text-muted-foreground">{t('training.callout.description')}</p>
-        </div>
-      </section>
 
       <main
         data-testid="training-console-layout"

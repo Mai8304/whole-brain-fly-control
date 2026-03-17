@@ -18,7 +18,6 @@ The read-only `neural console（神经控制台）` backend serves:
 - `session（控制台会话）`
 - `pipeline（执行流程）`
 - `brain-view（脑图载荷）`
-- `roi-assets（脑区资产包）`
 - `timeline（共享时间轴）`
 - `summary（闭环评估摘要）`
 - `video（闭环视频）`
@@ -45,9 +44,6 @@ Run it against an existing compiled graph and evaluation artifact directory:
 ./.venv-flywire/bin/python scripts/import_flywire_brain_mesh.py \
   --output-dir outputs/ui-assets/flywire_brain_v141
 
-./.venv-flywire/bin/python scripts/import_flywire_roi_meshes.py \
-  --output-dir outputs/ui-assets/flywire_roi_meshes_v1
-
 ./.venv-flywire/bin/python scripts/build_synapse_roi_assignment.py \
   --compiled-graph-dir outputs/compiled/flywire_public_full_v783 \
   --raw-source-dir data/raw/flywire_783_neuropil \
@@ -66,26 +62,18 @@ Run it against an existing compiled graph and evaluation artifact directory:
   --json
 ```
 
-The current formal `neuropil truth（神经纤维区真值）` route distinguishes:
+The current formal `neuropil truth（神经纤维区真值）` runtime uses:
 
 - `brain shell asset（整脑外壳资产）`
-- `neuropil asset pack（神经纤维区资产包）`
+- `node_neuropil_occupancy.parquet（节点级神经纤维区占据真值）`
+- `neuropil_truth_validation.json（神经纤维区真值校验结果）`
 
-The asset-pack layout is:
-
-- `manifest.json`
-- `roi_manifest.json`
-- `node_neuropil_occupancy.parquet`
-- `roi_mesh/<roi_id>.glb`
-
-`node_neuropil_occupancy.parquet` is a compiled offline occupancy artifact derived from formal synapse-level truth. It is not inferred by the UI at runtime.
+`node_neuropil_occupancy.parquet` is a compiled offline occupancy artifact derived from formal synapse-level truth. It is never inferred by the UI at runtime.
 `scripts/build_synapse_roi_assignment.py` compiles `synapse_neuropil_assignment.parquet` from the official `flywire_synapses_783.feather` raw source.
 `scripts/build_node_neuropil_occupancy.py` aggregates that synapse-level truth into node-level neuropil occupancy.
 `scripts/validate_neuropil_truth.py` must pass against the official `per_neuron_neuropil_count_*_783.feather` files before the UI or API is allowed to expose formal neuropil activity.
-`scripts/import_flywire_roi_meshes.py` exports the V1 ROI geometry from `fafbseg.flywire.get_neuropil_volumes（FlyWire 官方 Python 工具中的脑区几何入口）`, which ships a `FlyWire / FAFB14.1`-aligned neuropil mesh archive locally inside the `fafbseg` package.
-If `--roi-mesh-dir` is provided, it should contain real `<ROI_ID>.glb` files for the V1 ROI set. If omitted, the builder currently emits placeholder ROI mesh files.
 
-The runtime asset-pack / API layer now enforces one formal activity chain:
+The runtime asset / API layer now enforces one formal activity chain:
 
 - `brain-view（脑图载荷）` only materializes formal neuropil activity from validated `node_neuropil_occupancy.parquet`
 - `graph-scoped validation（运行图范围校验）` and `proofread roster alignment（官方校对名录对齐）` are carried as separate states

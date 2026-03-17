@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .roi_manifest import REQUIRED_ROI_MANIFEST_KEYS, build_v1_roi_manifest
+from .neuropil_manifest import REQUIRED_NEUROPIL_MANIFEST_KEYS, build_v1_neuropil_manifest
 
 DEFAULT_FLYWIRE_BRAIN_CLOUDPATH = (
     "precomputed://gs://flywire_neuropil_meshes/whole_neuropil/brain_mesh_v141.surf"
@@ -21,8 +21,10 @@ _REQUIRED_SHELL_KEYS = {
     "base_color",
     "opacity",
 }
-def build_default_roi_manifest() -> list[dict[str, Any]]:
-    return build_v1_roi_manifest()
+
+
+def build_default_neuropil_manifest() -> list[dict[str, Any]]:
+    return build_v1_neuropil_manifest()
 
 
 def build_brain_asset_manifest(
@@ -31,7 +33,7 @@ def build_brain_asset_manifest(
     asset_version: str,
     source: dict[str, Any],
     shell: dict[str, Any],
-    roi_manifest: list[dict[str, Any]] | None = None,
+    neuropil_manifest: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     manifest = {
         "asset_id": str(asset_id),
@@ -52,7 +54,7 @@ def build_brain_asset_manifest(
             "base_color": str(shell["base_color"]),
             "opacity": float(shell["opacity"]),
         },
-        "roi_manifest": list(roi_manifest or build_default_roi_manifest()),
+        "neuropil_manifest": list(neuropil_manifest or build_default_neuropil_manifest()),
     }
     _validate_brain_asset_manifest(manifest)
     return manifest
@@ -83,7 +85,7 @@ def with_runtime_asset_urls(
 
 
 def _validate_brain_asset_manifest(manifest: dict[str, Any]) -> None:
-    missing_top_level = {"asset_id", "asset_version", "source", "shell", "roi_manifest"} - set(
+    missing_top_level = {"asset_id", "asset_version", "source", "shell", "neuropil_manifest"} - set(
         manifest
     )
     if missing_top_level:
@@ -97,10 +99,12 @@ def _validate_brain_asset_manifest(manifest: dict[str, Any]) -> None:
     if missing_shell:
         raise ValueError(f"brain asset shell missing keys: {sorted(missing_shell)}")
 
-    roi_manifest = manifest["roi_manifest"]
-    if not isinstance(roi_manifest, list) or not roi_manifest:
-        raise ValueError("brain asset manifest roi_manifest must be a non-empty list")
-    for entry in roi_manifest:
-        missing_roi_keys = REQUIRED_ROI_MANIFEST_KEYS - set(entry)
-        if missing_roi_keys:
-            raise ValueError(f"brain asset roi entry missing keys: {sorted(missing_roi_keys)}")
+    neuropil_manifest = manifest["neuropil_manifest"]
+    if not isinstance(neuropil_manifest, list) or not neuropil_manifest:
+        raise ValueError("brain asset manifest neuropil_manifest must be a non-empty list")
+    for entry in neuropil_manifest:
+        unexpected_missing = REQUIRED_NEUROPIL_MANIFEST_KEYS - set(entry)
+        if unexpected_missing:
+            raise ValueError(
+                f"brain asset neuropil entry missing keys: {sorted(unexpected_missing)}"
+            )

@@ -14,7 +14,8 @@ afterEach(() => {
 })
 
 describe('console api client', () => {
-  it('parses roi asset pack payloads when the backend exposes them', async () => {
+  it('does not request legacy roi asset pack payloads', async () => {
+    const requests: string[] = []
     const jsonResponse = (payload: unknown) =>
       Promise.resolve({
         ok: true,
@@ -23,6 +24,7 @@ describe('console api client', () => {
 
     vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
       const url = String(input)
+      requests.push(url)
       if (url.endsWith('/api/console/session')) {
         return jsonResponse({
           mode: 'Experiment',
@@ -125,28 +127,7 @@ describe('console api client', () => {
             opacity: 0.18,
             asset_url: '/api/console/brain-shell',
           },
-          roi_manifest: [],
-        })
-      }
-      if (url.endsWith('/api/console/roi-assets')) {
-        return jsonResponse({
-          asset_id: 'flywire_roi_pack_v1',
-          asset_version: 'v1',
-          shell: {
-            render_asset_path: 'brain_shell.glb',
-            render_format: 'glb',
-          },
-          roi_manifest_path: 'roi_manifest.json',
-          node_roi_map_path: 'node_roi_map.parquet',
-          roi_meshes: [
-            {
-              roi_id: 'AL',
-              render_asset_path: 'roi_mesh/AL.glb',
-              render_format: 'glb',
-              asset_url: '/api/console/roi-mesh/AL',
-            },
-          ],
-          mapping_coverage: { roi_mapped_nodes: 120000, total_nodes: 139244 },
+          neuropil_manifest: [],
         })
       }
       if (url.endsWith('/api/console/timeline')) {
@@ -181,8 +162,9 @@ describe('console api client', () => {
 
     const snapshot = await fetchConsoleSnapshot()
 
-    expect(snapshot.roiAssets?.asset_id).toBe('flywire_roi_pack_v1')
-    expect(snapshot.roiAssets?.roi_meshes[0]?.asset_url).toBe('/api/console/roi-mesh/AL')
+    expect(requests).not.toContain('/api/console/roi-assets')
+    expect(snapshot.brainAssets?.asset_id).toBe('flywire_brain_v141')
+    expect(snapshot.brainAssets?.shell.asset_url).toBe('/api/console/brain-shell')
     expect(snapshot.brainView.mapping_mode).toBe('node_neuropil_occupancy')
     expect(snapshot.brainView.activity_metric).toBe('activity_mass')
     expect(snapshot.brainView.mapping_coverage.neuropil_mapped_nodes).toBe(120000)

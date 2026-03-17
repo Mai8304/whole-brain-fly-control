@@ -7,7 +7,6 @@ import type {
   PipelineStagePayload,
   TimelinePayload,
 } from '@/types/console'
-import { mockRoiAssetPack } from '@/data/mockRoiAssetPack'
 
 export const mockSession: ConsoleSessionPayload = {
   mode: 'Experiment',
@@ -158,9 +157,9 @@ export const mockBrainAssetManifest: BrainAssetManifestPayload = {
     opacity: 0.18,
     asset_url: '/mock/brain_shell.glb',
   },
-  roi_manifest: [
+  neuropil_manifest: [
     {
-      roi_id: 'AL',
+      neuropil: 'AL',
       short_label: 'AL',
       display_name: 'Antennal Lobe',
       display_name_zh: '触角叶',
@@ -170,7 +169,7 @@ export const mockBrainAssetManifest: BrainAssetManifestPayload = {
       priority: 1,
     },
     {
-      roi_id: 'LAL',
+      neuropil: 'LAL',
       short_label: 'LAL',
       display_name: 'Lateral Accessory Lobe',
       display_name_zh: '外侧附属叶',
@@ -180,7 +179,7 @@ export const mockBrainAssetManifest: BrainAssetManifestPayload = {
       priority: 5,
     },
     {
-      roi_id: 'FB',
+      neuropil: 'FB',
       short_label: 'FB',
       display_name: 'Fan-shaped Body',
       display_name_zh: '扇形体',
@@ -191,8 +190,6 @@ export const mockBrainAssetManifest: BrainAssetManifestPayload = {
     },
   ],
 }
-
-export { mockRoiAssetPack }
 
 export const mockTimelinePayload: TimelinePayload = {
   data_status: 'recorded',

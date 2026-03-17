@@ -6,7 +6,6 @@ import type {
   PipelineStagePayload,
   ReplayCameraPreset,
   ReplaySessionPayload,
-  RoiAssetPackPayload,
   TimelinePayload,
 } from '@/types/console'
 
@@ -15,7 +14,6 @@ export interface ConsoleApiSnapshot {
   pipeline: PipelineStagePayload[]
   brainView: BrainViewPayload
   brainAssets: BrainAssetManifestPayload | null
-  roiAssets: RoiAssetPackPayload | null
   timeline: TimelinePayload
   summary: ClosedLoopSummaryPayload
   videoSrc: string
@@ -31,13 +29,12 @@ export interface ReplayApiSnapshot {
 const API_BASE_URL = import.meta.env.VITE_CONSOLE_API_BASE_URL?.trim() ?? ''
 
 export async function fetchConsoleSnapshot(): Promise<ConsoleApiSnapshot> {
-  const [session, pipelinePayload, brainView, brainAssets, roiAssets, timeline, summary] =
+  const [session, pipelinePayload, brainView, brainAssets, timeline, summary] =
     await Promise.all([
       fetchJson<ConsoleSessionPayload>('/api/console/session'),
       fetchJson<{ stages: PipelineStagePayload[] }>('/api/console/pipeline'),
       fetchJson<BrainViewPayload>('/api/console/brain-view'),
       fetchOptionalJson<BrainAssetManifestPayload>('/api/console/brain-assets'),
-      fetchOptionalJson<RoiAssetPackPayload>('/api/console/roi-assets'),
       fetchJson<TimelinePayload>('/api/console/timeline'),
       fetchJson<ClosedLoopSummaryPayload & { video_url?: string | null }>('/api/console/summary'),
     ])
@@ -47,7 +44,6 @@ export async function fetchConsoleSnapshot(): Promise<ConsoleApiSnapshot> {
     pipeline: pipelinePayload.stages,
     brainView,
     brainAssets,
-    roiAssets,
     timeline,
     summary,
     videoSrc: summary.video_url ? resolveUrl(summary.video_url) : '',

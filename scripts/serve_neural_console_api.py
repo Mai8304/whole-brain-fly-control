@@ -26,12 +26,6 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Optional directory with FlyWire brain asset manifest and shell asset",
     )
-    parser.add_argument(
-        "--roi-asset-dir",
-        type=Path,
-        default=None,
-        help="Optional directory with ROI asset-pack manifest, roi_manifest.json, node_roi_map.parquet, and roi_mesh assets",
-    )
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind")
     parser.add_argument("--port", type=int, default=8000, help="Port to bind")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload for local development")
@@ -42,11 +36,6 @@ def main(argv: list[str] | None = None) -> int:
         root=ROOT,
         predicate=_looks_like_brain_asset_dir,
     )
-    roi_asset_dir = _resolve_default_asset_dir(
-        explicit=args.roi_asset_dir,
-        root=ROOT,
-        predicate=_looks_like_roi_asset_dir,
-    )
 
     app = create_console_api(
         ConsoleApiConfig(
@@ -54,7 +43,6 @@ def main(argv: list[str] | None = None) -> int:
             eval_dir=args.eval_dir,
             checkpoint_path=args.checkpoint,
             brain_asset_dir=brain_asset_dir,
-            roi_asset_dir=roi_asset_dir,
         )
     )
     uvicorn.run(app, host=args.host, port=args.port, reload=args.reload)
@@ -84,10 +72,6 @@ def _resolve_default_asset_dir(
 
 def _looks_like_brain_asset_dir(path: Path) -> bool:
     return (path / "manifest.json").exists() and (path / "brain_shell.glb").exists()
-
-
-def _looks_like_roi_asset_dir(path: Path) -> bool:
-    return (path / "manifest.json").exists() and any(path.glob("roi_mesh/*.glb"))
 
 
 if __name__ == "__main__":

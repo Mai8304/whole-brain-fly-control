@@ -73,9 +73,9 @@ def test_console_api_serves_realistic_read_only_payloads(tmp_path: Path) -> None
                     "base_color": "#89a5ff",
                     "opacity": 0.18,
                 },
-                "roi_manifest": [
+                "neuropil_manifest": [
                     {
-                        "roi_id": "MB",
+                        "neuropil": "MB",
                         "short_label": "MB",
                         "display_name": "Mushroom Body",
                         "display_name_zh": "蘑菇体",
@@ -148,6 +148,7 @@ def test_console_api_serves_realistic_read_only_payloads(tmp_path: Path) -> None
     brain_assets_payload = brain_assets_response.json()
     assert brain_assets_payload["asset_id"] == "flywire_brain_v141"
     assert brain_assets_payload["shell"]["asset_url"] == "/api/console/brain-shell"
+    assert brain_assets_payload["neuropil_manifest"][0]["neuropil"] == "MB"
 
     brain_shell_response = client.get("/api/console/brain-shell")
     assert brain_shell_response.status_code == 200
