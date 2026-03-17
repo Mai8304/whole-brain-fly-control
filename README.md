@@ -81,17 +81,17 @@ The asset-pack layout is:
 `node_neuropil_occupancy.parquet` is a compiled offline occupancy artifact derived from formal synapse-level truth. It is not inferred by the UI at runtime.
 `scripts/build_synapse_roi_assignment.py` compiles `synapse_neuropil_assignment.parquet` from the official `flywire_synapses_783.feather` raw source.
 `scripts/build_node_neuropil_occupancy.py` aggregates that synapse-level truth into node-level neuropil occupancy.
-`scripts/validate_neuropil_truth.py` must pass against the official `per_neuron_neuropil_count_*_783.feather` files before the UI is allowed to expose formal neuropil activity.
+`scripts/validate_neuropil_truth.py` must pass against the official `per_neuron_neuropil_count_*_783.feather` files before the UI or API is allowed to expose formal neuropil activity.
 `scripts/import_flywire_roi_meshes.py` exports the V1 ROI geometry from `fafbseg.flywire.get_neuropil_volumes（FlyWire 官方 Python 工具中的脑区几何入口）`, which ships a `FlyWire / FAFB14.1`-aligned neuropil mesh archive locally inside the `fafbseg` package.
 If `--roi-mesh-dir` is provided, it should contain real `<ROI_ID>.glb` files for the V1 ROI set. If omitted, the builder currently emits placeholder ROI mesh files.
 
-The runtime asset-pack / API layer is still mid-migration:
+The runtime asset-pack / API layer now enforces one formal activity chain:
 
-- `build_roi_asset_pack.py` and `serve_neural_console_api.py` still use legacy `roi` naming
-- formal `neuropil truth（神经纤维区真值）` artifacts now exist as compile/validation steps
-- the final runtime switch to validated `node_neuropil_occupancy.parquet` has not been completed yet
+- `brain-view（脑图载荷）` only materializes formal neuropil activity from validated `node_neuropil_occupancy.parquet`
+- `graph-scoped validation（运行图范围校验）` and `proofread roster alignment（官方校对名录对齐）` are carried as separate states
+- grouped `AL / LH / LAL` labels in the V1 console are `display transforms（显示变换）`, not raw formal truth IDs
 
-So the commands above stop at formal truth generation and validation. The final runtime wiring is a follow-up task, not yet a completed formal path.
+This means the commands above are now the full formal path for neuropil truth generation, validation, and read-only runtime exposure.
 
 For the `React（前端框架） + shadcn/ui（组件体系）` console shell:
 
@@ -103,7 +103,7 @@ pnpm dev
 
 During local development, `Vite（前端构建工具）` proxies `/api` to `http://127.0.0.1:8000`.
 If the API is running elsewhere, set `VITE_CONSOLE_API_BASE_URL` before starting the frontend.
-By default the console runs in `research strict mode（科研严格模式）`: if the live API is unavailable, or if formal `neuropil truth（神经纤维区真值）` artifacts are missing or unvalidated, the UI shows unavailable state instead of falling back to mock data. Set `VITE_ENABLE_MOCK_FALLBACK=true` only for explicit UI development work.
+By default the console runs in `research strict mode（科研严格模式）`: if the live API is unavailable, or if formal `neuropil truth（神经纤维区真值）` artifacts are missing or unvalidated, the UI and API return unavailable state instead of falling back to mock data. Set `VITE_ENABLE_MOCK_FALLBACK=true` only for explicit UI development work.
 
 ## Compiled Graph Standard
 

@@ -141,6 +141,51 @@
 
 不允许再把这两个状态混成单个“官方全部通过/失败”。
 
+## 6.1 Runtime brain-view contract
+
+正式 `brain-view（脑图载荷）` 只允许沿这一条数据链暴露：
+
+- `FlyWire 783 official raw truth（FlyWire 783 官方原始真值）`
+- `synapse_neuropil_assignment.parquet（突触级神经纤维区归属表）`
+- `node_neuropil_occupancy.parquet（节点级神经纤维区占据表）`
+- `neuropil_truth_validation.json（神经纤维区真值校验结果）`
+- runtime `node_activity -> neuropil activity（节点活动到神经纤维区活动）` 聚合
+
+因此：
+
+- 缺少 `node_neuropil_occupancy.parquet` 时，正式 neuropil activity 不可暴露
+- 缺少 `neuropil_truth_validation.json` 时，正式 neuropil activity 不可暴露
+- `validation_passed != true` 时，正式 neuropil activity 不可暴露
+
+`brain-view` 的正式运行时聚合语义应保持：
+
+- `semantic_scope = neuropil`
+- `mapping_mode = node_neuropil_occupancy`
+- `activity_metric = activity_mass`
+
+并且必须同时保留：
+
+- `validation_passed`
+- `graph_scope_validation_passed`
+- `roster_alignment_passed`
+
+作为并列 provenance（来源追踪）字段。
+
+## 6.2 Grouped display is not raw truth
+
+当前 V1 控制台把 `AL_L / AL_R -> AL`、`LH_L / LH_R -> LH`、`LAL_L / LAL_R -> LAL` 用于显示聚合。
+
+这层语义必须被解释为：
+
+- `grouped-neuropil-v1（V1 分组神经纤维区视图）`
+- `display transform（显示变换）`
+
+而不是：
+
+- `formal neuropil truth（正式神经纤维区真值）`
+
+因此，正式字段必须继续保留原始 `neuropil_id`，不能只剩分组后的显示标签。
+
 ## 7. Forward Path
 
 如果目标是完全对齐官方 `proofread roster`，下一步应当：

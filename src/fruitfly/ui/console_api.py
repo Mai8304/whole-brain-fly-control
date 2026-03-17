@@ -102,6 +102,9 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
 
     @app.get("/api/console/brain-view")
     def brain_view() -> dict[str, Any]:
+        truth_state = _formal_neuropil_truth_state(config)
+        if not truth_state["graph_scope_validation_passed"]:
+            return _build_unavailable_brain_view_payload(config, truth_state=truth_state)
         _ensure_runtime_activity_artifacts(config)
         payload_path = config.eval_dir / "brain_view.json"
         if payload_path.exists():
@@ -109,8 +112,11 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
             payload.setdefault("shell", _brain_shell_payload(config))
             payload.setdefault("data_status", "recorded")
             payload.setdefault("semantic_scope", "neuropil")
-            return payload
-        return _build_unavailable_brain_view_payload(config)
+            payload.setdefault("view_mode", "grouped-neuropil-v1")
+            payload.setdefault("mapping_mode", "node_neuropil_occupancy")
+            payload.setdefault("activity_metric", "activity_mass")
+            return _attach_brain_view_provenance(payload, truth_state=truth_state)
+        return _build_unavailable_brain_view_payload(config, truth_state=truth_state)
 
     @app.get("/api/console/brain-assets")
     def brain_assets() -> dict[str, Any]:
@@ -198,8 +204,13 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     @app.get("/api/console/replay/brain-view")
     def replay_brain_view() -> dict[str, Any]:
         runtime = get_or_create_replay_runtime()
+        truth_state = _formal_neuropil_truth_state(config)
+        if not truth_state["graph_scope_validation_passed"]:
+            payload = _build_unavailable_brain_view_payload(config, truth_state=truth_state)
+            payload["step_id"] = runtime.current_step
+            return payload
         brain_payload = runtime.current_brain_payload()
-        return build_replay_brain_view_payload(
+        payload = build_replay_brain_view_payload(
             compiled_graph_dir=config.compiled_graph_dir,
             step_id=int(brain_payload["step_id"]),
             node_activity=brain_payload["node_activity"],
@@ -213,7 +224,10 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
             if brain_payload.get("efferent_activity") is not None
             else None,
             shell=_brain_shell_payload(config),
+            top_active_nodes=list(brain_payload.get("top_active_nodes") or []),
+            formal_truth=truth_state,
         )
+        return _attach_brain_view_provenance(payload, truth_state=truth_state)
 
     @app.get("/api/console/replay/timeline")
     def replay_timeline() -> dict[str, Any]:
@@ -292,17 +306,24 @@ def _build_session_payload(config: ConsoleApiConfig) -> dict[str, Any]:
     }
 
 
-def _build_unavailable_brain_view_payload(config: ConsoleApiConfig) -> dict[str, Any]:
+def _build_unavailable_brain_view_payload(
+    config: ConsoleApiConfig,
+    *,
+    truth_state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     graph_stats = _graph_stats(config)
     node_count = int(graph_stats["node_count"])
-    truth_state = _formal_neuropil_truth_state(config)
-    return {
-        "view_mode": "neuropil-occupancy",
-        "data_status": "unavailable",
+    if truth_state is None:
+        truth_state = _formal_neuropil_truth_state(config)
+    payload = {
         "semantic_scope": "neuropil",
+        "view_mode": "grouped-neuropil-v1",
+        "mapping_mode": "node_neuropil_occupancy",
+        "activity_metric": "activity_mass",
+        "data_status": "unavailable",
         "shell": _brain_shell_payload(config),
         "mapping_coverage": {
-            "roi_mapped_nodes": truth_state["mapped_nodes"],
+            "neuropil_mapped_nodes": truth_state["mapped_nodes"],
             "total_nodes": node_count,
         },
         "region_activity": [],
@@ -313,6 +334,7 @@ def _build_unavailable_brain_view_payload(config: ConsoleApiConfig) -> dict[str,
         "efferent_activity": None,
         "formal_truth": truth_state,
     }
+    return _attach_brain_view_provenance(payload, truth_state=truth_state)
 
 
 def _build_unavailable_timeline_payload(config: ConsoleApiConfig) -> dict[str, Any]:
@@ -406,6 +428,9 @@ def _ensure_runtime_activity_artifacts(config: ConsoleApiConfig) -> None:
     timeline_path = config.eval_dir / "timeline.json"
     if brain_view_path.exists() and timeline_path.exists():
         return
+    truth_state = _formal_neuropil_truth_state(config)
+    if not truth_state["graph_scope_validation_passed"]:
+        return
     materialize_runtime_activity_artifacts(
         compiled_graph_dir=config.compiled_graph_dir,
         eval_dir=config.eval_dir,
@@ -452,23 +477,6 @@ def _roi_asset_pack_manifest(config: ConsoleApiConfig) -> dict[str, Any]:
     return load_roi_asset_pack_manifest(manifest_path)
 
 
-def _mapping_coverage(config: ConsoleApiConfig, *, total_nodes: int) -> dict[str, int]:
-    if config.roi_asset_dir is not None:
-        try:
-            manifest = _roi_asset_pack_manifest(config)
-        except HTTPException:
-            pass
-        else:
-            return {
-                "roi_mapped_nodes": int(manifest["mapping_coverage"]["roi_mapped_nodes"]),
-                "total_nodes": int(manifest["mapping_coverage"]["total_nodes"]),
-            }
-    return {
-        "roi_mapped_nodes": int(total_nodes * 0.85),
-        "total_nodes": total_nodes,
-    }
-
-
 def _formal_neuropil_truth_state(config: ConsoleApiConfig) -> dict[str, Any]:
     occupancy_path = config.compiled_graph_dir / "node_neuropil_occupancy.parquet"
     validation_path = config.compiled_graph_dir / "neuropil_truth_validation.json"
@@ -477,10 +485,16 @@ def _formal_neuropil_truth_state(config: ConsoleApiConfig) -> dict[str, Any]:
     if validation_path.exists():
         validation_payload = _read_json(validation_path)
     validation_passed = bool(validation_payload and validation_payload.get("validation_passed") is True)
+    graph_scope_validation_passed = validation_passed
     validation_scope = str(validation_payload.get("validation_scope")) if validation_payload else None
     roster_alignment = dict(validation_payload.get("roster_alignment") or {}) if validation_payload else {}
-    roster_alignment_passed = roster_alignment.get("alignment_passed")
-    mapped_nodes = _count_occupancy_nodes(occupancy_path) if occupancy_exists else 0
+    roster_alignment_passed = bool(roster_alignment.get("alignment_passed"))
+    occupancy_summary = _read_occupancy_truth_summary(occupancy_path) if occupancy_exists else {
+        "mapped_nodes": 0,
+        "materialization": None,
+        "dataset": None,
+    }
+    mapped_nodes = int(occupancy_summary["mapped_nodes"])
     if occupancy_exists and validation_passed:
         if roster_alignment_passed is False:
             reason = "graph-scoped formal neuropil truth present; proofread roster alignment differs"
@@ -497,20 +511,91 @@ def _formal_neuropil_truth_state(config: ConsoleApiConfig) -> dict[str, Any]:
         "occupancy_exists": occupancy_exists,
         "validation_path": str(validation_path),
         "validation_passed": validation_passed,
+        "graph_scope_validation_passed": graph_scope_validation_passed,
         "validation_scope": validation_scope,
         "roster_alignment_passed": roster_alignment_passed,
         "graph_only_root_count": roster_alignment.get("graph_only_root_count"),
         "proofread_only_root_count": roster_alignment.get("proofread_only_root_count"),
         "mapped_nodes": mapped_nodes,
+        "materialization": occupancy_summary["materialization"],
+        "dataset": occupancy_summary["dataset"],
         "reason": reason,
     }
 
 
-def _count_occupancy_nodes(path: Path) -> int:
+def _read_occupancy_truth_summary(path: Path) -> dict[str, Any]:
     if not path.exists():
-        return 0
-    table = pq.read_table(path, columns=["source_id"])
-    return len({int(value.as_py()) for value in table.column("source_id")})
+        return {
+            "mapped_nodes": 0,
+            "materialization": None,
+            "dataset": None,
+        }
+    parquet_file = pq.ParquetFile(path)
+    available_columns = set(parquet_file.schema_arrow.names)
+    columns = [
+        column
+        for column in ("source_id", "materialization", "dataset")
+        if column in available_columns
+    ]
+    source_ids: set[int] = set()
+    materializations: set[int] = set()
+    datasets: set[str] = set()
+    for batch in parquet_file.iter_batches(columns=columns):
+        batch_payload = batch.to_pydict()
+        for value in batch_payload.get("source_id", []):
+            if value is not None:
+                source_ids.add(int(value))
+        for value in batch_payload.get("materialization", []):
+            if value is not None:
+                materializations.add(int(value))
+        for value in batch_payload.get("dataset", []):
+            if value is not None:
+                datasets.add(str(value))
+    return {
+        "mapped_nodes": len(source_ids),
+        "materialization": next(iter(materializations)) if len(materializations) == 1 else None,
+        "dataset": next(iter(datasets)) if len(datasets) == 1 else None,
+    }
+
+
+def _attach_brain_view_provenance(
+    payload: dict[str, Any],
+    *,
+    truth_state: dict[str, Any],
+) -> dict[str, Any]:
+    formal_truth = dict(payload.get("formal_truth") or {})
+    formal_truth.update(
+        {
+            "occupancy_exists": bool(truth_state.get("occupancy_exists")),
+            "validation_path": truth_state.get("validation_path"),
+            "validation_passed": bool(truth_state.get("validation_passed")),
+            "graph_scope_validation_passed": bool(
+                truth_state.get("graph_scope_validation_passed")
+            ),
+            "validation_scope": truth_state.get("validation_scope"),
+            "roster_alignment_passed": bool(
+                truth_state.get("roster_alignment_passed")
+            ),
+            "graph_only_root_count": truth_state.get("graph_only_root_count"),
+            "proofread_only_root_count": truth_state.get("proofread_only_root_count"),
+            "mapped_nodes": int(truth_state.get("mapped_nodes", 0)),
+            "materialization": truth_state.get("materialization"),
+            "dataset": truth_state.get("dataset"),
+            "reason": truth_state.get("reason"),
+        }
+    )
+    payload["formal_truth"] = formal_truth
+    payload["validation_passed"] = bool(truth_state.get("validation_passed"))
+    payload["graph_scope_validation_passed"] = bool(
+        truth_state.get("graph_scope_validation_passed")
+    )
+    payload["roster_alignment_passed"] = bool(
+        truth_state.get("roster_alignment_passed")
+    )
+    payload["validation_scope"] = truth_state.get("validation_scope")
+    payload["materialization"] = truth_state.get("materialization")
+    payload["dataset"] = truth_state.get("dataset")
+    return payload
 
 
 def _summary_payload(config: ConsoleApiConfig) -> dict[str, Any]:

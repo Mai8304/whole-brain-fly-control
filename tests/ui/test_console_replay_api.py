@@ -44,6 +44,20 @@ def test_console_api_exposes_replay_seek_and_step_synchronized_payloads(tmp_path
         ),
         compiled_dir / "node_neuropil_occupancy.parquet",
     )
+    (compiled_dir / "neuropil_truth_validation.json").write_text(
+        json.dumps(
+            {
+                "validation_passed": True,
+                "validation_scope": "graph_source_ids",
+                "roster_alignment": {
+                    "alignment_passed": True,
+                    "graph_only_root_count": 0,
+                    "proofread_only_root_count": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
     dump_replay_trace(
         output_dir=eval_dir,
         session={
@@ -129,7 +143,19 @@ def test_console_api_exposes_replay_seek_and_step_synchronized_payloads(tmp_path
     assert brain_response.status_code == 200
     assert summary_response.status_code == 200
     assert timeline_response.status_code == 200
-    assert brain_response.json()["step_id"] == 2
+    brain_payload = brain_response.json()
+    assert brain_payload["step_id"] == 2
+    assert brain_payload["semantic_scope"] == "neuropil"
+    assert brain_payload["mapping_mode"] == "node_neuropil_occupancy"
+    assert brain_payload["activity_metric"] == "activity_mass"
+    assert brain_payload["validation_passed"] is True
+    assert brain_payload["graph_scope_validation_passed"] is True
+    assert brain_payload["roster_alignment_passed"] is True
+    assert brain_payload["mapping_coverage"] == {
+        "neuropil_mapped_nodes": 2,
+        "total_nodes": 2,
+    }
+    assert brain_payload["top_nodes"] == []
     assert summary_response.json()["step_id"] == 2
     assert timeline_response.json()["current_step"] == 2
 
@@ -190,3 +216,110 @@ def test_console_api_returns_404_when_replay_artifacts_are_missing(tmp_path: Pat
     response = client.get("/api/console/replay/session")
     assert response.status_code == 404
     assert response.json()["detail"] == "Replay inspector artifacts are unavailable"
+
+
+def test_console_api_replay_brain_view_returns_unavailable_when_validation_is_missing(tmp_path: Path) -> None:
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 2, "edge_count": 1, "afferent_count": 1, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0},
+                {"source_id": 20, "node_idx": 1},
+            ]
+        ),
+        compiled_dir / "node_index.parquet",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {
+                    "source_id": 10,
+                    "node_idx": 0,
+                    "neuropil": "AL_L",
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+                {
+                    "source_id": 20,
+                    "node_idx": 1,
+                    "neuropil": "FB",
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+            ]
+        ),
+        compiled_dir / "node_neuropil_occupancy.parquet",
+    )
+    dump_replay_trace(
+        output_dir=eval_dir,
+        session={
+            "session_id": "sess-1",
+            "task": "straight_walking",
+            "default_camera": "follow",
+            "steps_requested": 1,
+            "steps_completed": 1,
+        },
+        state_arrays={
+            "step_id": np.asarray([1], dtype=np.int64),
+            "reward": np.asarray([0.1], dtype=np.float64),
+            "forward_velocity": np.asarray([0.4], dtype=np.float64),
+            "body_upright": np.asarray([0.8], dtype=np.float64),
+            "terminated": np.asarray([True], dtype=bool),
+            "qpos": np.zeros((1, 2), dtype=np.float64),
+            "qvel": np.zeros((1, 2), dtype=np.float64),
+            "ctrl": np.zeros((1, 2), dtype=np.float64),
+            "sim_time": np.asarray([0.1], dtype=np.float64),
+        },
+        neural_arrays={
+            "step_id": np.asarray([1], dtype=np.int64),
+            "node_activity": np.asarray([[0.2, 0.4]], dtype=np.float32),
+            "afferent_activity": np.asarray([0.2], dtype=np.float32),
+            "intrinsic_activity": np.asarray([0.4], dtype=np.float32),
+            "efferent_activity": np.asarray([0.0], dtype=np.float32),
+        },
+        events=[],
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "task": "straight_walking",
+                "steps_requested": 1,
+                "steps_completed": 1,
+                "reward_mean": 0.1,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+        )
+    )
+    client = TestClient(app)
+
+    payload = client.get("/api/console/replay/brain-view").json()
+
+    assert payload["data_status"] == "unavailable"
+    assert payload["mapping_mode"] == "node_neuropil_occupancy"
+    assert payload["validation_passed"] is False
+    assert payload["graph_scope_validation_passed"] is False
+    assert payload["mapping_coverage"] == {
+        "neuropil_mapped_nodes": 2,
+        "total_nodes": 2,
+    }
+    assert payload["region_activity"] == []
+    assert payload["top_nodes"] == []
