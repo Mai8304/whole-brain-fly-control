@@ -4,19 +4,57 @@ import { Canvas } from '@react-three/fiber'
 import { Html, OrbitControls, useGLTF } from '@react-three/drei'
 import { Box3, Group, Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three'
 
-import { getBrainShellMaterialAppearance } from '@/components/brain-shell-appearance'
+import {
+  getBrainShellMaterialAppearance,
+  getNeuropilGlowMaterialAppearance,
+} from '@/components/brain-shell-appearance'
 import { useConsolePreferences } from '@/providers/console-preferences-provider'
-import type { BrainAssetManifestPayload, BrainShellPayload } from '@/types/console'
+import type {
+  BrainAssetManifestPayload,
+  BrainShellPayload,
+  DisplayRegionActivityPayload,
+} from '@/types/console'
 
 const CAN_RENDER_THREE = typeof window !== 'undefined' && import.meta.env.MODE !== 'test'
 
 interface BrainShellViewportProps {
   shell: BrainShellPayload | null | undefined
   brainAssets: BrainAssetManifestPayload | null
+  displayRegionActivity: readonly DisplayRegionActivityPayload[]
+  glowAvailable: boolean
 }
 
-export function BrainShellViewport({ shell, brainAssets }: BrainShellViewportProps) {
+interface GlowMeshEntry {
+  groupNeuropilId: string
+  assetUrl: string
+  defaultColor: string
+  glowStrength: number
+}
+
+export function BrainShellViewport({
+  shell,
+  brainAssets,
+  displayRegionActivity,
+  glowAvailable,
+}: BrainShellViewportProps) {
   const { resolvedTheme, t } = useConsolePreferences()
+  const glowMeshes = useMemo(
+    () =>
+      resolveGlowMeshes({
+        brainAssets,
+        displayRegionActivity,
+        glowAvailable,
+      }),
+    [brainAssets, displayRegionActivity, glowAvailable],
+  )
+  const hasRenderableGlow = glowMeshes.length > 0
+  const glowDetail = hasRenderableGlow
+    ? t('experiment.viewport.detail.glowAvailable')
+    : t('experiment.viewport.detail.glowUnavailable')
+  const glowFooter = hasRenderableGlow
+    ? t('experiment.viewport.footer.glowAvailable')
+    : t('experiment.viewport.footer.glowUnavailable')
+
   if (!shell) {
     return (
       <ViewportFrame>
@@ -35,8 +73,8 @@ export function BrainShellViewport({ shell, brainAssets }: BrainShellViewportPro
           title={t('experiment.viewport.title.ready')}
           detail={
             brainAssets
-              ? `${brainAssets.shell.render_format.toUpperCase()} · ${brainAssets.shell.vertex_count.toLocaleString()} vertices`
-              : `Asset: ${shell.asset_id}`
+              ? `${brainAssets.shell.render_format.toUpperCase()} · ${brainAssets.shell.vertex_count.toLocaleString()} vertices · ${glowDetail}`
+              : `Asset: ${shell.asset_id} · ${glowDetail}`
           }
         />
       </ViewportFrame>
@@ -64,7 +102,7 @@ export function BrainShellViewport({ shell, brainAssets }: BrainShellViewportPro
           color={resolvedTheme === 'dark' ? '#7aa7ff' : '#2563eb'}
         />
         <Suspense fallback={<Html center className="text-xs text-muted-foreground">{t('experiment.brain.loading')}</Html>}>
-          <BrainShellModel shell={shell} theme={resolvedTheme} />
+          <BrainShellModel shell={shell} theme={resolvedTheme} glowMeshes={glowMeshes} />
         </Suspense>
         <OrbitControls
           autoRotate
@@ -81,7 +119,7 @@ export function BrainShellViewport({ shell, brainAssets }: BrainShellViewportPro
         </div>
       </div>
       <div className="console-overlay-chip pointer-events-none absolute bottom-4 left-4 px-3 py-2 text-xs">
-        {t('experiment.viewport.footer')}
+        {glowFooter}
       </div>
     </ViewportFrame>
   )
@@ -90,13 +128,15 @@ export function BrainShellViewport({ shell, brainAssets }: BrainShellViewportPro
 function BrainShellModel({
   shell,
   theme,
+  glowMeshes,
 }: {
   shell: BrainShellPayload
   theme: 'light' | 'dark'
+  glowMeshes: GlowMeshEntry[]
 }) {
   const gltf = useGLTF(shell.asset_url)
 
-  const { centeredScene, scale } = useMemo(() => {
+  const { shellScene, frameCenter, frameScale } = useMemo(() => {
     const scene = gltf.scene.clone() as Group
     const appearance = getBrainShellMaterialAppearance({
       baseColor: shell.base_color,
@@ -113,17 +153,57 @@ function BrainShellModel({
     const size = bounds.getSize(new Vector3())
     const center = bounds.getCenter(new Vector3())
     const maxDimension = Math.max(size.x, size.y, size.z) || 1
-    const nextScale = 2 / maxDimension
+    const scale = 2 / maxDimension
 
-    scene.position.set(-center.x, -center.y, -center.z)
-    return { centeredScene: scene, scale: nextScale }
+    return { shellScene: scene, frameCenter: center, frameScale: scale }
   }, [gltf.scene, shell.base_color, shell.opacity, theme])
 
   return (
-    <group scale={[scale, scale, scale]} rotation={[-0.2, 0.55, 0]}>
-      <primitive object={centeredScene} />
+    <group scale={[frameScale, frameScale, frameScale]} rotation={[-0.2, 0.55, 0]}>
+      <group position={[-frameCenter.x, -frameCenter.y, -frameCenter.z]}>
+        <primitive object={shellScene} />
+        {glowMeshes.map((entry) => (
+          <GroupedNeuropilGlowMesh
+            key={`${entry.groupNeuropilId}:${entry.assetUrl}`}
+            assetUrl={entry.assetUrl}
+            defaultColor={entry.defaultColor}
+            glowStrength={entry.glowStrength}
+            theme={theme}
+          />
+        ))}
+      </group>
     </group>
   )
+}
+
+function GroupedNeuropilGlowMesh({
+  assetUrl,
+  defaultColor,
+  glowStrength,
+  theme,
+}: {
+  assetUrl: string
+  defaultColor: string
+  glowStrength: number
+  theme: 'light' | 'dark'
+}) {
+  const gltf = useGLTF(assetUrl)
+  const glowScene = useMemo(() => {
+    const scene = gltf.scene.clone() as Group
+    const appearance = getNeuropilGlowMaterialAppearance({
+      baseColor: defaultColor,
+      glowStrength,
+      theme,
+    })
+    scene.traverse((child: Object3D) => {
+      if (child instanceof Mesh) {
+        child.material = new MeshStandardMaterial(appearance)
+      }
+    })
+    return scene
+  }, [assetUrl, defaultColor, glowStrength, gltf.scene, theme])
+
+  return <primitive object={glowScene} />
 }
 
 function ViewportFrame({ children }: { children: React.ReactNode }) {
@@ -139,4 +219,62 @@ function FallbackCopy({ title, detail }: { title: string; detail: string }) {
       </div>
     </div>
   )
+}
+
+function resolveGlowMeshes({
+  brainAssets,
+  displayRegionActivity,
+  glowAvailable,
+}: {
+  brainAssets: BrainAssetManifestPayload | null
+  displayRegionActivity: readonly DisplayRegionActivityPayload[]
+  glowAvailable: boolean
+}): GlowMeshEntry[] {
+  if (!glowAvailable || !brainAssets || displayRegionActivity.length === 0) {
+    return []
+  }
+
+  const manifestByNeuropil = new Map(
+    brainAssets.neuropil_manifest.map((entry) => [entry.neuropil, entry]),
+  )
+
+  const renderCandidates = displayRegionActivity.map((activity) => {
+    const manifest = manifestByNeuropil.get(activity.group_neuropil_id)
+    if (!manifest || typeof manifest.asset_url !== 'string' || manifest.asset_url.length === 0) {
+      return null
+    }
+    return {
+      activity,
+      manifest,
+    }
+  })
+
+  // Research strict mode: if any declared grouped neuropil cannot map to a declared asset, disable glow.
+  if (renderCandidates.some((candidate) => candidate == null)) {
+    return []
+  }
+
+  const typedCandidates = renderCandidates.filter((candidate) => candidate != null)
+  if (typedCandidates.length === 0) {
+    return []
+  }
+  const maxActivityMass = Math.max(
+    ...typedCandidates.map((candidate) => candidate.activity.raw_activity_mass),
+  )
+
+  return typedCandidates
+    .sort((left, right) => left.manifest.priority - right.manifest.priority)
+    .map((candidate) => ({
+      groupNeuropilId: candidate.activity.group_neuropil_id,
+      assetUrl: candidate.manifest.asset_url as string,
+      defaultColor: candidate.manifest.default_color,
+      glowStrength: toGlowStrength(candidate.activity.raw_activity_mass, maxActivityMass),
+    }))
+}
+
+function toGlowStrength(rawActivityMass: number, maxActivityMass: number) {
+  if (maxActivityMass <= 0) {
+    return 0
+  }
+  return Math.min(1, Math.log1p(rawActivityMass) / Math.log1p(maxActivityMass))
 }

@@ -27,3 +27,34 @@ export function getBrainShellMaterialAppearance({
     emissiveStrength,
   }
 }
+
+interface NeuropilGlowMaterialAppearanceInput {
+  baseColor: string
+  glowStrength: number
+  theme: ResolvedTheme
+}
+
+export function getNeuropilGlowMaterialAppearance({
+  baseColor,
+  glowStrength,
+  theme,
+}: NeuropilGlowMaterialAppearanceInput) {
+  const resolvedStrength = Math.min(1, Math.max(0, glowStrength))
+  const minOpacity = theme === 'dark' ? 0.12 : 0.1
+  const maxOpacity = theme === 'dark' ? 0.72 : 0.64
+  const opacity = minOpacity + (maxOpacity - minOpacity) * resolvedStrength
+  const baseEmissiveStrength = theme === 'dark' ? 0.32 : 0.26
+  const emissiveStrength = baseEmissiveStrength + resolvedStrength * 0.88
+  const base = new Color(baseColor)
+
+  return {
+    color: base,
+    opacity,
+    transparent: true,
+    roughness: theme === 'dark' ? 0.42 : 0.38,
+    metalness: 0.06,
+    depthWrite: false,
+    emissive: base.clone().multiplyScalar(0.45 + 0.55 * resolvedStrength),
+    emissiveIntensity: emissiveStrength,
+  }
+}

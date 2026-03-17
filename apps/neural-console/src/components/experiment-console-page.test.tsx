@@ -268,6 +268,86 @@ describe('ExperimentConsolePage layout', () => {
     expect(screen.queryByTitle('Fly rollout video')).not.toBeInTheDocument()
   })
 
+  it('passes grouped display activity into the viewport and surfaces glow-ready copy', async () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={mockBrainViewPayload}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    expect(
+      await screen.findByText(/grouped neuropil glow ready|分组神经纤维区发光已就绪/i),
+    ).toBeInTheDocument()
+  })
+
+  it('falls back to shell-only copy when grouped glow data is unavailable', async () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={{
+            ...mockBrainViewPayload,
+            graph_scope_validation_passed: false,
+            display_region_activity: [],
+          }}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    expect(
+      await screen.findByText(
+        /grouped neuropil glow unavailable|分组神经纤维区发光不可用（仅显示脑壳）/i,
+      ),
+    ).toBeInTheDocument()
+  })
+
   it('renders formal neuropil memberships and grouped coverage without fake single labels', () => {
     render(
       <ConsolePreferencesProvider>

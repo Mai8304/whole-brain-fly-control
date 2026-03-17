@@ -65,6 +65,18 @@ describe('console api client', () => {
           graph_scope_validation_passed: true,
           roster_alignment_passed: false,
           mapping_coverage: { neuropil_mapped_nodes: 120000, total_nodes: 139244 },
+          display_region_activity: [
+            {
+              group_neuropil_id: 'AL',
+              raw_activity_mass: 0.8,
+              signed_activity: -0.2,
+              covered_weight_sum: 1.0,
+              node_count: 3,
+              member_neuropils: ['AL_L'],
+              view_mode: 'grouped-neuropil-v1',
+              is_display_transform: true,
+            },
+          ],
           region_activity: [
             {
               neuropil_id: 'AL_L',
@@ -129,7 +141,21 @@ describe('console api client', () => {
             opacity: 0.18,
             asset_url: '/api/console/brain-shell',
           },
-          neuropil_manifest: [],
+          neuropil_manifest: [
+            {
+              neuropil: 'AL',
+              short_label: 'AL',
+              display_name: 'Antennal Lobe',
+              display_name_zh: '触角叶',
+              group: 'input-associated',
+              description_zh: 'test',
+              default_color: '#4ea8de',
+              priority: 1,
+              render_asset_path: '../flywire_roi_meshes_v1/AL.glb',
+              render_format: 'glb',
+              asset_url: '/api/console/brain-mesh/AL',
+            },
+          ],
         })
       }
       if (url.endsWith('/api/console/timeline')) {
@@ -167,11 +193,13 @@ describe('console api client', () => {
     expect(requests).not.toContain('/api/console/roi-assets')
     expect(snapshot.brainAssets?.asset_id).toBe('flywire_brain_v141')
     expect(snapshot.brainAssets?.shell.asset_url).toBe('/api/console/brain-shell')
+    expect(snapshot.brainAssets?.neuropil_manifest[0]?.asset_url).toBe('/api/console/brain-mesh/AL')
     expect(snapshot.brainView.artifact_contract_version).toBe(1)
     expect(snapshot.brainView.artifact_origin).toBe('initial-materialized')
     expect(snapshot.brainView.mapping_mode).toBe('node_neuropil_occupancy')
     expect(snapshot.brainView.activity_metric).toBe('activity_mass')
     expect(snapshot.brainView.mapping_coverage.neuropil_mapped_nodes).toBe(120000)
+    expect(snapshot.brainView.display_region_activity?.[0]?.group_neuropil_id).toBe('AL')
     expect(snapshot.brainView.region_activity[0]?.neuropil_id).toBe('AL_L')
     expect(snapshot.brainView.top_nodes[0]?.neuropil_memberships[0]?.occupancy_fraction).toBe(0.75)
   })
@@ -234,6 +262,18 @@ describe('console api client', () => {
           graph_scope_validation_passed: true,
           roster_alignment_passed: true,
           mapping_coverage: { neuropil_mapped_nodes: 120000, total_nodes: 139255 },
+          display_region_activity: [
+            {
+              group_neuropil_id: 'FB',
+              raw_activity_mass: 0.9,
+              signed_activity: 0.4,
+              covered_weight_sum: 1.0,
+              node_count: 4,
+              member_neuropils: ['FB'],
+              view_mode: 'grouped-neuropil-v1',
+              is_display_transform: true,
+            },
+          ],
           region_activity: [
             {
               neuropil_id: 'FB',
@@ -317,6 +357,7 @@ describe('console api client', () => {
     expect(replaySnapshot.brainView.artifact_contract_version).toBe(1)
     expect(replaySnapshot.brainView.artifact_origin).toBe('replay-live-step')
     expect(replaySnapshot.brainView.mapping_mode).toBe('node_neuropil_occupancy')
+    expect(replaySnapshot.brainView.display_region_activity?.[0]?.group_neuropil_id).toBe('FB')
     expect(replaySnapshot.brainView.top_nodes[0]?.display_group_hint).toBe('FB')
     expect(replaySnapshot.timeline.current_step).toBe(8)
     expect(seekPayload.current_step).toBe(12)

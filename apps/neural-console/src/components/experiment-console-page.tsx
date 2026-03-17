@@ -106,6 +106,9 @@ export function ExperimentConsolePage({
   const hasRecordedBrainActivity =
     sourceStatus === 'LIVE API' && brainView.data_status !== 'unavailable'
   const hasRecordedSummary = sourceStatus === 'LIVE API' && summary.data_status !== 'unavailable'
+  const viewportGlowAvailable =
+    brainView.graph_scope_validation_passed === true &&
+    (brainView.display_region_activity?.length ?? 0) > 0
   const brainViewProvenance = formatBrainViewProvenance(brainView, t)
   const environmentFields = getTranslatedStatusFields(leftPanels, 'environment', t)
   const sensoryFields = getTranslatedStatusFields(leftPanels, 'sensory', t)
@@ -159,7 +162,12 @@ export function ExperimentConsolePage({
                     </div>
                   }
                 >
-                  <BrainShellViewport shell={brainView.shell} brainAssets={brainAssets} />
+                  <BrainShellViewport
+                    shell={brainView.shell}
+                    brainAssets={brainAssets}
+                    displayRegionActivity={brainView.display_region_activity ?? []}
+                    glowAvailable={viewportGlowAvailable}
+                  />
                 </Suspense>
 
                 <div className="grid gap-4">

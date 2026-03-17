@@ -78,6 +78,17 @@ export interface BrainShellPayload {
   opacity: number
 }
 
+export interface DisplayRegionActivityPayload {
+  group_neuropil_id: string
+  raw_activity_mass: number
+  signed_activity: number
+  covered_weight_sum: number
+  node_count: number
+  member_neuropils: readonly string[]
+  view_mode: 'grouped-neuropil-v1'
+  is_display_transform: true
+}
+
 export interface BrainViewPayload {
   step_id?: number
   data_status?: 'recorded' | 'unavailable'
@@ -98,6 +109,7 @@ export interface BrainViewPayload {
     neuropil_mapped_nodes: number
     total_nodes: number
   }
+  display_region_activity?: DisplayRegionActivityPayload[]
   region_activity: BrainRegionPayload[]
   top_regions: BrainRegionPayload[]
   top_nodes: BrainTopNodePayload[]
@@ -129,6 +141,9 @@ export interface BrainAssetNeuropilPayload {
   description_zh: string
   default_color: string
   priority: number
+  render_asset_path: string
+  render_format: string
+  asset_url?: string
 }
 
 export interface BrainAssetManifestPayload {

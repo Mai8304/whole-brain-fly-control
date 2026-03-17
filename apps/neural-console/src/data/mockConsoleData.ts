@@ -71,6 +71,28 @@ export const mockBrainViewPayload: BrainViewPayload = {
     neuropil_mapped_nodes: 118320,
     total_nodes: 139244,
   },
+  display_region_activity: [
+    {
+      group_neuropil_id: 'AL',
+      raw_activity_mass: 0.8,
+      signed_activity: -0.2,
+      covered_weight_sum: 1,
+      node_count: 3,
+      member_neuropils: ['AL_L'],
+      view_mode: 'grouped-neuropil-v1',
+      is_display_transform: true,
+    },
+    {
+      group_neuropil_id: 'FB',
+      raw_activity_mass: 0.9,
+      signed_activity: 0.3,
+      covered_weight_sum: 1,
+      node_count: 4,
+      member_neuropils: ['FB'],
+      view_mode: 'grouped-neuropil-v1',
+      is_display_transform: true,
+    },
+  ],
   region_activity: [
     {
       neuropil_id: 'AL_L',
@@ -169,6 +191,9 @@ export const mockBrainAssetManifest: BrainAssetManifestPayload = {
       description_zh: 'V1 中作为气味输入相关脑区的代表。',
       default_color: '#7dcfb6',
       priority: 1,
+      render_asset_path: '../flywire_roi_meshes_v1/AL.glb',
+      render_format: 'glb',
+      asset_url: '/api/console/brain-mesh/AL',
     },
     {
       neuropil: 'LAL',
@@ -179,6 +204,9 @@ export const mockBrainAssetManifest: BrainAssetManifestPayload = {
       description_zh: 'V1 中作为接近运动输出的代表脑区。',
       default_color: '#ef6f6c',
       priority: 5,
+      render_asset_path: '../flywire_roi_meshes_v1/LAL.glb',
+      render_format: 'glb',
+      asset_url: '/api/console/brain-mesh/LAL',
     },
     {
       neuropil: 'FB',
@@ -189,6 +217,9 @@ export const mockBrainAssetManifest: BrainAssetManifestPayload = {
       description_zh: 'V1 中作为中央复合体处理层展示。',
       default_color: '#f6bd60',
       priority: 4,
+      render_asset_path: '../flywire_roi_meshes_v1/FB.glb',
+      render_format: 'glb',
+      asset_url: '/api/console/brain-mesh/FB',
     },
   ],
 }

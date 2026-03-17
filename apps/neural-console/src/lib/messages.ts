@@ -105,9 +105,14 @@ const messages = {
     'experiment.viewport.detail.missing':
       'The live API has not provided a renderable brain shell asset.',
     'experiment.viewport.title.ready': '3D brain shell ready',
+    'experiment.viewport.detail.glowAvailable': 'grouped neuropil glow ready',
+    'experiment.viewport.detail.glowUnavailable': 'grouped neuropil glow unavailable (shell-only)',
     'experiment.viewport.overlay.orbit': 'drag to orbit',
     'experiment.viewport.footer':
       'shell live · top-neuron 3D overlay pending node position mapping',
+    'experiment.viewport.footer.glowAvailable': 'shell live · grouped neuropil glow active',
+    'experiment.viewport.footer.glowUnavailable':
+      'shell live · grouped neuropil glow unavailable in strict mode',
     'experiment.panel.session.title': 'Session',
     'experiment.panel.session.description': 'Manage session mode, run name, and random seed.',
     'experiment.panel.session.unavailableDescription':
@@ -386,8 +391,13 @@ const messages = {
     'experiment.viewport.title.missing': '脑壳未配置',
     'experiment.viewport.detail.missing': '实时接口尚未提供可渲染的脑壳资产。',
     'experiment.viewport.title.ready': '三维脑壳已就绪',
+    'experiment.viewport.detail.glowAvailable': '分组神经纤维区发光已就绪',
+    'experiment.viewport.detail.glowUnavailable': '分组神经纤维区发光不可用（仅显示脑壳）',
     'experiment.viewport.overlay.orbit': '拖拽旋转',
     'experiment.viewport.footer': '脑壳在线 · 最活跃神经元三维叠加仍等待节点坐标映射',
+    'experiment.viewport.footer.glowAvailable': '脑壳在线 · 分组神经纤维区发光已启用',
+    'experiment.viewport.footer.glowUnavailable':
+      '脑壳在线 · 严格模式下分组神经纤维区发光不可用',
     'experiment.panel.session.title': '会话',
     'experiment.panel.session.description': '管理会话模式、运行名和随机种子。',
     'experiment.panel.session.unavailableDescription': '科研严格模式下仅显示真实控制台会话数据。',
