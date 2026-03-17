@@ -1,0 +1,91 @@
+{
+  "provider": "fafbseg.flywire",
+  "space": "FlyWire/FAFB14.1",
+  "source_function": "fafbseg.flywire.get_neuropil_volumes",
+  "source_archive": "JFRC2NP.surf.fw.zip",
+  "roi_meshes": [
+    {
+      "roi_id": "AL",
+      "source_neuropils": [
+        "AL_L",
+        "AL_R"
+      ],
+      "render_asset_path": "AL.glb",
+      "render_format": "glb",
+      "vertex_count": 1234,
+      "face_count": 2468
+    },
+    {
+      "roi_id": "LH",
+      "source_neuropils": [
+        "LH_L",
+        "LH_R"
+      ],
+      "render_asset_path": "LH.glb",
+      "render_format": "glb",
+      "vertex_count": 714,
+      "face_count": 1420
+    },
+    {
+      "roi_id": "PB",
+      "source_neuropils": [
+        "PB"
+      ],
+      "render_asset_path": "PB.glb",
+      "render_format": "glb",
+      "vertex_count": 298,
+      "face_count": 592
+    },
+    {
+      "roi_id": "FB",
+      "source_neuropils": [
+        "FB"
+      ],
+      "render_asset_path": "FB.glb",
+      "render_format": "glb",
+      "vertex_count": 614,
+      "face_count": 1224
+    },
+    {
+      "roi_id": "EB",
+      "source_neuropils": [
+        "EB"
+      ],
+      "render_asset_path": "EB.glb",
+      "render_format": "glb",
+      "vertex_count": 252,
+      "face_count": 506
+    },
+    {
+      "roi_id": "NO",
+      "source_neuropils": [
+        "NO"
+      ],
+      "render_asset_path": "NO.glb",
+      "render_format": "glb",
+      "vertex_count": 101,
+      "face_count": 198
+    },
+    {
+      "roi_id": "LAL",
+      "source_neuropils": [
+        "LAL_L",
+        "LAL_R"
+      ],
+      "render_asset_path": "LAL.glb",
+      "render_format": "glb",
+      "vertex_count": 790,
+      "face_count": 1572
+    },
+    {
+      "roi_id": "GNG",
+      "source_neuropils": [
+        "GNG"
+      ],
+      "render_asset_path": "GNG.glb",
+      "render_format": "glb",
+      "vertex_count": 1737,
+      "face_count": 3470
+    }
+  ]
+}

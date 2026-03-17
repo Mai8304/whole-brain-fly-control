@@ -1,0 +1,35 @@
+{
+  "@type": "neuroglancer_multiscale_volume",
+  "data_type": "uint64",
+  "num_channels": 1,
+  "scales": [
+    {
+      "chunk_sizes": [
+        [
+          64,
+          64,
+          64
+        ]
+      ],
+      "compressed_segmentation_block_size": [
+        8,
+        8,
+        8
+      ],
+      "encoding": "compressed_segmentation",
+      "key": "4096.0x4096.0x5120.0",
+      "resolution": [
+        4096,
+        4096,
+        5120
+      ],
+      "size": [
+        243,
+        131,
+        56
+      ]
+    }
+  ],
+  "type": "segmentation",
+  "mesh": "mesh"
+}

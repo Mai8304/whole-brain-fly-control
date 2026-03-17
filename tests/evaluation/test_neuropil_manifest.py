@@ -52,3 +52,12 @@ def test_build_v1_neuropil_manifest_uses_information_flow_grouping() -> None:
     assert groups["NO"] == "core-processing"
     assert groups["LAL"] == "output-associated"
     assert groups["GNG"] == "output-associated"
+
+
+def test_build_v1_neuropil_manifest_points_to_runtime_bundle_assets() -> None:
+    from fruitfly.evaluation.neuropil_manifest import build_v1_neuropil_manifest
+
+    neuropil_manifest = build_v1_neuropil_manifest()
+
+    for entry in neuropil_manifest:
+        assert str(entry["render_asset_path"]).startswith("../flywire_roi_meshes_v1/")

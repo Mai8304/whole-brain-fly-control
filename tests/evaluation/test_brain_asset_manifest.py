@@ -134,3 +134,6 @@ def test_checked_in_brain_asset_manifest_uses_neuropil_contract() -> None:
     assert manifest["neuropil_manifest"]
     assert manifest["neuropil_manifest"][0]["neuropil"] == "AL"
     assert manifest["neuropil_manifest"][0]["render_asset_path"].endswith(".glb")
+    assert manifest["neuropil_manifest"][0]["render_asset_path"].startswith(
+        "../flywire_roi_meshes_v1/"
+    )

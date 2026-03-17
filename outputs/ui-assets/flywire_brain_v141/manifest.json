@@ -1,0 +1,126 @@
+{
+  "asset_id": "flywire_brain_v141",
+  "asset_version": "v141",
+  "source": {
+    "provider": "flywire",
+    "cloudpath": "precomputed://gs://flywire_neuropil_meshes/whole_neuropil/brain_mesh_v141.surf",
+    "info_url": "https://storage.googleapis.com/flywire_neuropil_meshes/whole_neuropil/brain_mesh_v141.surf/info",
+    "mesh_segment_id": 1
+  },
+  "shell": {
+    "render_asset_path": "brain_shell.glb",
+    "render_format": "glb",
+    "vertex_count": 8997,
+    "face_count": 18000,
+    "bbox_min": [
+      213120.0,
+      77504.0,
+      760.0
+    ],
+    "bbox_max": [
+      840512.0,
+      388160.0,
+      269560.0
+    ],
+    "base_color": "#89a5ff",
+    "opacity": 0.18
+  },
+  "neuropil_manifest": [
+    {
+      "neuropil": "AL",
+      "short_label": "AL",
+      "display_name": "Antennal Lobe",
+      "display_name_zh": "\u89e6\u89d2\u53f6",
+      "group": "input-associated",
+      "description_zh": "V1 \u4e2d\u4f5c\u4e3a\u6c14\u5473\u8f93\u5165\u76f8\u5173\u795e\u7ecf\u7ea4\u7ef4\u533a\u7684\u4ee3\u8868\u3002",
+      "default_color": "#4ea8de",
+      "priority": 1,
+      "render_asset_path": "../flywire_roi_meshes_v1/AL.glb",
+      "render_format": "glb"
+    },
+    {
+      "neuropil": "LH",
+      "short_label": "LH",
+      "display_name": "Lateral Horn",
+      "display_name_zh": "\u5916\u4fa7\u89d2",
+      "group": "input-associated",
+      "description_zh": "V1 \u4e2d\u4f5c\u4e3a\u8f93\u5165\u5411\u4e2d\u95f4\u5904\u7406\u8fc7\u6e21\u7684\u4ee3\u8868\u795e\u7ecf\u7ea4\u7ef4\u533a\u3002",
+      "default_color": "#56cfe1",
+      "priority": 2,
+      "render_asset_path": "../flywire_roi_meshes_v1/LH.glb",
+      "render_format": "glb"
+    },
+    {
+      "neuropil": "PB",
+      "short_label": "PB",
+      "display_name": "Protocerebral Bridge",
+      "display_name_zh": "\u524d\u5927\u8111\u6865",
+      "group": "core-processing",
+      "description_zh": "V1 \u4e2d\u4f5c\u4e3a\u4e2d\u592e\u590d\u5408\u4f53\u6838\u5fc3\u5904\u7406\u4e2d\u67a2\u7684\u4e00\u90e8\u5206\u5c55\u793a\u3002",
+      "default_color": "#f4a261",
+      "priority": 3,
+      "render_asset_path": "../flywire_roi_meshes_v1/PB.glb",
+      "render_format": "glb"
+    },
+    {
+      "neuropil": "FB",
+      "short_label": "FB",
+      "display_name": "Fan-shaped Body",
+      "display_name_zh": "\u6247\u5f62\u4f53",
+      "group": "core-processing",
+      "description_zh": "V1 \u4e2d\u4f5c\u4e3a\u4e2d\u592e\u590d\u5408\u4f53\u5904\u7406\u5c42\u5c55\u793a\u3002",
+      "default_color": "#f6bd60",
+      "priority": 4,
+      "render_asset_path": "../flywire_roi_meshes_v1/FB.glb",
+      "render_format": "glb"
+    },
+    {
+      "neuropil": "EB",
+      "short_label": "EB",
+      "display_name": "Ellipsoid Body",
+      "display_name_zh": "\u692d\u5706\u4f53",
+      "group": "core-processing",
+      "description_zh": "V1 \u4e2d\u4f5c\u4e3a\u6838\u5fc3\u5bfc\u822a/\u6574\u5408\u76f8\u5173\u795e\u7ecf\u7ea4\u7ef4\u533a\u7684\u4ee3\u8868\u3002",
+      "default_color": "#f7d08a",
+      "priority": 5,
+      "render_asset_path": "../flywire_roi_meshes_v1/EB.glb",
+      "render_format": "glb"
+    },
+    {
+      "neuropil": "NO",
+      "short_label": "NO",
+      "display_name": "Noduli",
+      "display_name_zh": "\u8282\u7403",
+      "group": "core-processing",
+      "description_zh": "V1 \u4e2d\u4f5c\u4e3a\u4e2d\u592e\u590d\u5408\u4f53\u9644\u5c5e\u5904\u7406\u795e\u7ecf\u7ea4\u7ef4\u533a\u5c55\u793a\u3002",
+      "default_color": "#e9c46a",
+      "priority": 6,
+      "render_asset_path": "../flywire_roi_meshes_v1/NO.glb",
+      "render_format": "glb"
+    },
+    {
+      "neuropil": "LAL",
+      "short_label": "LAL",
+      "display_name": "Lateral Accessory Lobe",
+      "display_name_zh": "\u5916\u4fa7\u9644\u5c5e\u53f6",
+      "group": "output-associated",
+      "description_zh": "V1 \u4e2d\u4f5c\u4e3a\u63a5\u8fd1\u8fd0\u52a8\u8f93\u51fa\u7684\u4ee3\u8868\u795e\u7ecf\u7ea4\u7ef4\u533a\u3002",
+      "default_color": "#e76f51",
+      "priority": 7,
+      "render_asset_path": "../flywire_roi_meshes_v1/LAL.glb",
+      "render_format": "glb"
+    },
+    {
+      "neuropil": "GNG",
+      "short_label": "GNG",
+      "display_name": "Gnathal Ganglion",
+      "display_name_zh": "\u989a\u795e\u7ecf\u8282",
+      "group": "output-associated",
+      "description_zh": "V1 \u4e2d\u4f5c\u4e3a\u66f4\u9760\u8fd1\u8eab\u4f53\u8fd0\u52a8\u63a7\u5236\u7684\u8f93\u51fa\u76f8\u5173\u795e\u7ecf\u7ea4\u7ef4\u533a\u3002",
+      "default_color": "#d1495b",
+      "priority": 8,
+      "render_asset_path": "../flywire_roi_meshes_v1/GNG.glb",
+      "render_format": "glb"
+    }
+  ]
+}

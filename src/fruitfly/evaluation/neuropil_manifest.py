@@ -27,7 +27,7 @@ def build_v1_neuropil_manifest() -> list[dict[str, Any]]:
             "description_zh": "V1 中作为气味输入相关神经纤维区的代表。",
             "default_color": "#4ea8de",
             "priority": 1,
-            "render_asset_path": "AL.glb",
+            "render_asset_path": "../flywire_roi_meshes_v1/AL.glb",
             "render_format": "glb",
         },
         {
@@ -39,7 +39,7 @@ def build_v1_neuropil_manifest() -> list[dict[str, Any]]:
             "description_zh": "V1 中作为输入向中间处理过渡的代表神经纤维区。",
             "default_color": "#56cfe1",
             "priority": 2,
-            "render_asset_path": "LH.glb",
+            "render_asset_path": "../flywire_roi_meshes_v1/LH.glb",
             "render_format": "glb",
         },
         {
@@ -51,7 +51,7 @@ def build_v1_neuropil_manifest() -> list[dict[str, Any]]:
             "description_zh": "V1 中作为中央复合体核心处理中枢的一部分展示。",
             "default_color": "#f4a261",
             "priority": 3,
-            "render_asset_path": "PB.glb",
+            "render_asset_path": "../flywire_roi_meshes_v1/PB.glb",
             "render_format": "glb",
         },
         {
@@ -63,7 +63,7 @@ def build_v1_neuropil_manifest() -> list[dict[str, Any]]:
             "description_zh": "V1 中作为中央复合体处理层展示。",
             "default_color": "#f6bd60",
             "priority": 4,
-            "render_asset_path": "FB.glb",
+            "render_asset_path": "../flywire_roi_meshes_v1/FB.glb",
             "render_format": "glb",
         },
         {
@@ -75,7 +75,7 @@ def build_v1_neuropil_manifest() -> list[dict[str, Any]]:
             "description_zh": "V1 中作为核心导航/整合相关神经纤维区的代表。",
             "default_color": "#f7d08a",
             "priority": 5,
-            "render_asset_path": "EB.glb",
+            "render_asset_path": "../flywire_roi_meshes_v1/EB.glb",
             "render_format": "glb",
         },
         {
@@ -87,7 +87,7 @@ def build_v1_neuropil_manifest() -> list[dict[str, Any]]:
             "description_zh": "V1 中作为中央复合体附属处理神经纤维区展示。",
             "default_color": "#e9c46a",
             "priority": 6,
-            "render_asset_path": "NO.glb",
+            "render_asset_path": "../flywire_roi_meshes_v1/NO.glb",
             "render_format": "glb",
         },
         {
@@ -99,7 +99,7 @@ def build_v1_neuropil_manifest() -> list[dict[str, Any]]:
             "description_zh": "V1 中作为接近运动输出的代表神经纤维区。",
             "default_color": "#e76f51",
             "priority": 7,
-            "render_asset_path": "LAL.glb",
+            "render_asset_path": "../flywire_roi_meshes_v1/LAL.glb",
             "render_format": "glb",
         },
         {
@@ -111,7 +111,7 @@ def build_v1_neuropil_manifest() -> list[dict[str, Any]]:
             "description_zh": "V1 中作为更靠近身体运动控制的输出相关神经纤维区。",
             "default_color": "#d1495b",
             "priority": 8,
-            "render_asset_path": "GNG.glb",
+            "render_asset_path": "../flywire_roi_meshes_v1/GNG.glb",
             "render_format": "glb",
         },
     ]
