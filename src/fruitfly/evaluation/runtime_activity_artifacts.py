@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 import pyarrow.parquet as pq
 
+from .brain_view_contract import build_brain_view_payload
 from .timeline import build_shared_timeline_payload
 
 DISPLAY_NEUROPIL_MANIFEST = (
@@ -62,10 +63,11 @@ def materialize_runtime_activity_artifacts(
     trace_payload = json.loads(trace_path.read_text(encoding="utf-8"))
     summary_payload = json.loads(summary_path.read_text(encoding="utf-8"))
     final_node_activity = np.load(final_node_activity_path)
+    formal_truth = _load_formal_truth(compiled_graph_dir)
 
     occupancy_rows = pq.read_table(
         occupancy_path,
-        columns=["source_id", "node_idx", "neuropil", "occupancy_fraction"],
+        columns=["source_id", "node_idx", "neuropil", "occupancy_fraction", "synapse_count"],
     ).to_pylist()
     node_index_rows = pq.read_table(
         node_index_path,
@@ -79,6 +81,7 @@ def materialize_runtime_activity_artifacts(
         node_index_rows=node_index_rows,
         total_nodes=int(final_node_activity.shape[0]),
         shell=shell,
+        formal_truth=formal_truth,
     )
     timeline_payload = _build_timeline_payload(
         trace_payload=trace_payload,
@@ -105,12 +108,16 @@ def build_replay_brain_view_payload(
     intrinsic_activity: float | None,
     efferent_activity: float | None,
     shell: dict[str, Any] | None = None,
+    top_active_nodes: list[dict[str, Any]] | None = None,
+    formal_truth: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    if formal_truth is None:
+        formal_truth = _load_formal_truth(compiled_graph_dir)
     occupancy_path = compiled_graph_dir / "node_neuropil_occupancy.parquet"
     node_index_path = compiled_graph_dir / "node_index.parquet"
     occupancy_rows = pq.read_table(
         occupancy_path,
-        columns=["source_id", "node_idx", "neuropil", "occupancy_fraction"],
+        columns=["source_id", "node_idx", "neuropil", "occupancy_fraction", "synapse_count"],
     ).to_pylist()
     node_index_rows = pq.read_table(
         node_index_path,
@@ -126,6 +133,8 @@ def build_replay_brain_view_payload(
         efferent_activity=efferent_activity,
         step_id=step_id,
         shell=shell,
+        top_active_nodes=top_active_nodes,
+        formal_truth=formal_truth,
     )
 
 
@@ -153,6 +162,7 @@ def _build_brain_view_payload(
     node_index_rows: list[dict[str, Any]],
     total_nodes: int,
     shell: dict[str, Any] | None,
+    formal_truth: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     snapshots = list(trace_payload.get("snapshots") or [])
     final_snapshot = snapshots[-1] if snapshots else {}
@@ -167,6 +177,7 @@ def _build_brain_view_payload(
         step_id=int(final_snapshot.get("step_id", trace_payload.get("steps_completed", 0) or 0)),
         shell=shell,
         top_active_nodes=list(final_snapshot.get("top_active_nodes") or []),
+        formal_truth=formal_truth,
     )
 
 
@@ -182,77 +193,142 @@ def _build_brain_view_payload_for_step(
     step_id: int,
     shell: dict[str, Any] | None,
     top_active_nodes: list[dict[str, Any]] | None = None,
+    formal_truth: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    activity_by_group = {roi_id: 0.0 for roi_id, _ in DISPLAY_NEUROPIL_MANIFEST}
-    node_membership = {roi_id: set() for roi_id, _ in DISPLAY_NEUROPIL_MANIFEST}
-    dominant_group_by_node_idx: dict[int, tuple[str, float]] = {}
+    raw_activity_mass_by_neuropil: dict[str, float] = {}
+    signed_activity_by_neuropil: dict[str, float] = {}
+    covered_weight_sum_by_neuropil: dict[str, float] = {}
+    display_name_by_neuropil: dict[str, str] = {}
+    node_membership: dict[str, set[int]] = {}
+    memberships_by_node_idx: dict[int, list[dict[str, Any]]] = {}
+    group_weight_by_node_idx: dict[int, dict[str, float]] = {}
 
     for row in occupancy_rows:
         node_idx = int(row["node_idx"])
-        mapped_group = NEUROPIL_TO_DISPLAY_GROUP.get(str(row["neuropil"]))
-        if mapped_group is None:
-            continue
+        formal_neuropil = str(row["neuropil"])
+        display_name = NEUROPIL_TO_DISPLAY_GROUP.get(formal_neuropil, formal_neuropil)
         occupancy_fraction = float(row["occupancy_fraction"])
         if node_idx < 0 or node_idx >= total_nodes:
             continue
-        contribution = abs(float(node_activity[node_idx])) * occupancy_fraction
-        activity_by_group[mapped_group] += contribution
-        node_membership[mapped_group].add(node_idx)
+        activity_value = float(node_activity[node_idx])
+        raw_activity_mass_by_neuropil[formal_neuropil] = (
+            raw_activity_mass_by_neuropil.get(formal_neuropil, 0.0)
+            + abs(activity_value) * occupancy_fraction
+        )
+        signed_activity_by_neuropil[formal_neuropil] = (
+            signed_activity_by_neuropil.get(formal_neuropil, 0.0)
+            + activity_value * occupancy_fraction
+        )
+        covered_weight_sum_by_neuropil[formal_neuropil] = (
+            covered_weight_sum_by_neuropil.get(formal_neuropil, 0.0)
+            + occupancy_fraction
+        )
+        display_name_by_neuropil[formal_neuropil] = display_name
+        node_membership.setdefault(formal_neuropil, set()).add(node_idx)
 
-        previous = dominant_group_by_node_idx.get(node_idx)
-        if previous is None or occupancy_fraction > previous[1]:
-            dominant_group_by_node_idx[node_idx] = (mapped_group, occupancy_fraction)
+        memberships_by_node_idx.setdefault(node_idx, []).append(
+            {
+                "neuropil": formal_neuropil,
+                "occupancy_fraction": occupancy_fraction,
+                "synapse_count": int(row.get("synapse_count", 0)),
+            }
+        )
+        group_weight_by_node_idx.setdefault(node_idx, {})
+        group_weight_by_node_idx[node_idx][display_name] = (
+            group_weight_by_node_idx[node_idx].get(display_name, 0.0) + occupancy_fraction
+        )
 
     region_activity = [
         {
-            "roi_id": roi_id,
-            "roi_name": display_name,
-            "activity_value": float(activity_by_group[roi_id]),
-            "activity_delta": 0.0,
-            "node_count": len(node_membership[roi_id]),
+            "neuropil_id": neuropil_id,
+            "display_name": display_name_by_neuropil[neuropil_id],
+            "raw_activity_mass": float(raw_activity_mass_by_neuropil[neuropil_id]),
+            "signed_activity": float(signed_activity_by_neuropil[neuropil_id]),
+            "covered_weight_sum": float(covered_weight_sum_by_neuropil[neuropil_id]),
+            "node_count": len(node_membership[neuropil_id]),
+            "is_display_grouped": display_name_by_neuropil[neuropil_id] != neuropil_id,
         }
-        for roi_id, display_name in DISPLAY_NEUROPIL_MANIFEST
+        for neuropil_id in sorted(raw_activity_mass_by_neuropil)
     ]
-    top_regions = sorted(
-        region_activity,
-        key=lambda region: (-float(region["activity_value"]), str(region["roi_id"])),
-    )[:5]
 
     source_id_by_node_idx = {int(row["node_idx"]): str(row["source_id"]) for row in node_index_rows}
     top_nodes = []
     for node in top_active_nodes or []:
         node_idx = int(node["node_idx"])
-        dominant_group = dominant_group_by_node_idx.get(node_idx, ("unmapped", 0.0))[0]
-        top_nodes.append(
-            {
-                "node_idx": node_idx,
-                "source_id": source_id_by_node_idx.get(node_idx, "unknown"),
-                "activity_value": float(node["activity_value"]),
-                "flow_role": str(node["flow_role"]),
-                "roi_name": dominant_group,
-            }
-        )
+        normalized_node: dict[str, Any] = {
+            "node_idx": node_idx,
+            "source_id": source_id_by_node_idx.get(node_idx, "unknown"),
+            "activity_value": float(node["activity_value"]),
+            "flow_role": str(node["flow_role"]),
+            "neuropil_memberships": list(memberships_by_node_idx.get(node_idx, [])),
+        }
+        grouped_weights = group_weight_by_node_idx.get(node_idx, {})
+        if grouped_weights:
+            display_group_hint = sorted(
+                grouped_weights.items(),
+                key=lambda item: (-float(item[1]), str(item[0])),
+            )[0][0]
+            normalized_node["display_group_hint"] = display_group_hint
+        top_nodes.append(normalized_node)
 
     mapped_nodes = len(set().union(*node_membership.values())) if node_membership else 0
-    payload: dict[str, Any] = {
-        "data_status": "recorded",
-        "step_id": int(step_id),
-        "semantic_scope": "neuropil",
-        "view_mode": "neuropil-occupancy",
-        "mapping_coverage": {
-            "roi_mapped_nodes": int(mapped_nodes),
+    payload = build_brain_view_payload(
+        semantic_scope="neuropil",
+        view_mode="grouped-neuropil-v1",
+        mapping_mode="node_neuropil_occupancy",
+        activity_metric="activity_mass",
+        formal_truth=_normalize_formal_truth(formal_truth),
+        shell=shell,
+        mapping_coverage={
+            "neuropil_mapped_nodes": int(mapped_nodes),
             "total_nodes": int(total_nodes),
         },
-        "region_activity": region_activity,
-        "top_regions": top_regions,
-        "top_nodes": top_nodes,
-        "afferent_activity": _float_or_none(afferent_activity),
-        "intrinsic_activity": _float_or_none(intrinsic_activity),
-        "efferent_activity": _float_or_none(efferent_activity),
-    }
-    if shell is not None:
-        payload["shell"] = shell
+        region_activity=region_activity,
+        top_nodes=top_nodes,
+    )
+    payload.update(
+        {
+            "data_status": "recorded",
+            "step_id": int(step_id),
+            "afferent_activity": _float_or_none(afferent_activity),
+            "intrinsic_activity": _float_or_none(intrinsic_activity),
+            "efferent_activity": _float_or_none(efferent_activity),
+        }
+    )
     return payload
+
+
+def _normalize_formal_truth(formal_truth: dict[str, Any] | None) -> dict[str, bool]:
+    if formal_truth is None:
+        return {
+            "validation_passed": False,
+            "graph_scope_validation_passed": False,
+            "roster_alignment_passed": False,
+        }
+    return {
+        "validation_passed": bool(formal_truth.get("validation_passed")),
+        "graph_scope_validation_passed": bool(
+            formal_truth.get(
+                "graph_scope_validation_passed",
+                formal_truth.get("validation_passed"),
+            )
+        ),
+        "roster_alignment_passed": bool(
+            formal_truth.get(
+                "roster_alignment_passed",
+                (formal_truth.get("roster_alignment") or {}).get("alignment_passed"),
+            )
+        ),
+    }
+
+
+def _load_formal_truth(compiled_graph_dir: Path) -> dict[str, bool]:
+    validation_path = compiled_graph_dir / "neuropil_truth_validation.json"
+    if not validation_path.exists():
+        return _normalize_formal_truth(None)
+    return _normalize_formal_truth(
+        json.loads(validation_path.read_text(encoding="utf-8"))
+    )
 
 
 def _build_timeline_payload(
