@@ -164,6 +164,84 @@ describe('ExperimentConsolePage layout', () => {
     expect(screen.queryByTitle('Fly rollout video')).not.toBeInTheDocument()
   })
 
+  it('renders formal neuropil memberships and grouped coverage without fake single labels', () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          roiAssets={mockRoiAssetPack}
+          brainView={{
+            ...mockBrainViewPayload,
+            top_regions: [
+              {
+                neuropil_id: 'FB',
+                display_name: 'FB',
+                raw_activity_mass: 0.9,
+                signed_activity: 0.3,
+                covered_weight_sum: 1,
+                node_count: 10,
+                is_display_grouped: false,
+              },
+              {
+                neuropil_id: 'AL_L',
+                display_name: 'AL',
+                raw_activity_mass: 0.8,
+                signed_activity: -0.2,
+                covered_weight_sum: 0.75,
+                node_count: 3,
+                is_display_grouped: true,
+              },
+            ],
+            top_nodes: [
+              {
+                node_idx: 5,
+                source_id: '1005',
+                activity_value: 0.7,
+                flow_role: 'intrinsic',
+                neuropil_memberships: [
+                  { neuropil: 'AL_L', occupancy_fraction: 0.75, synapse_count: 3 },
+                  { neuropil: 'LH_R', occupancy_fraction: 0.25, synapse_count: 1 },
+                ],
+                display_group_hint: 'AL',
+              },
+            ],
+          }}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    expect(screen.getByText('FB')).toBeInTheDocument()
+    expect(screen.getByText(/0\.90 activity mass \| \+0\.30 signed activity/i)).toBeInTheDocument()
+    expect(screen.getByText('AL_L')).toBeInTheDocument()
+    expect(screen.getByText(/0\.80 activity mass \| -0\.20 signed activity/i)).toBeInTheDocument()
+    expect(screen.getByText(/118,320 \/ 139,244/)).toBeInTheDocument()
+    expect(screen.getByText(/AL_L 0\.75, LH_R 0\.25/)).toBeInTheDocument()
+    expect(screen.getAllByText(/display group: AL/i).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/roi name/i)).not.toBeInTheDocument()
+  })
+
   it('keeps step zero representable and derives status fields from stable panel ids', () => {
     const localizedPanels = mockLeftPanels.map((panel) => {
       if (panel.title === 'Environment Physics') {

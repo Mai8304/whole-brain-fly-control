@@ -17,6 +17,8 @@ import { Separator } from '@/components/ui/separator'
 import { useConsolePreferences } from '@/providers/console-preferences-provider'
 import type {
   BrainAssetManifestPayload,
+  BrainRegionPayload,
+  BrainTopNodePayload,
   BrainViewPayload,
   ConsoleAction,
   ConsoleField,
@@ -239,16 +241,16 @@ export function ExperimentConsolePage({
                           <Separator />
                           {brainView.top_regions.map((region) => (
                             <MetricRow
-                              key={region.roi_id}
-                              label={region.roi_id}
-                              value={`${formatNumber(region.activity_value, unavailableLabel)} (${signed(region.activity_delta)})`}
+                              key={region.neuropil_id}
+                              label={region.neuropil_id}
+                              value={formatRegionSummary(region, t, unavailableLabel)}
                             />
                           ))}
                           <Separator />
                           <MetricRow
                             label={t('experiment.brain.metric.coverage')}
                             value={`${formatInteger(
-                              brainView.mapping_coverage.roi_mapped_nodes,
+                              brainView.mapping_coverage.neuropil_mapped_nodes,
                             )} / ${formatInteger(brainView.mapping_coverage.total_nodes)}`}
                           />
                           <MetricRow
@@ -272,10 +274,16 @@ export function ExperimentConsolePage({
                             }
                           />
                           <MetricRow
-                            label={t('experiment.brain.metric.topNeuropils')}
-                            value={brainView.top_nodes
-                              .map((node) => `${node.flow_role}:${node.node_idx}`)
-                              .join(', ')}
+                            label={t('experiment.brain.metric.topNodeMemberships')}
+                            value={
+                              brainView.top_nodes.length
+                                ? brainView.top_nodes
+                                    .map((node) =>
+                                      formatTopNodeMembershipSummary(node, t, unavailableLabel),
+                                    )
+                                    .join('; ')
+                                : unavailableLabel
+                            }
                           />
                         </>
                       ) : (
@@ -561,8 +569,8 @@ function translateSourceStatus(
   }
 }
 
-function formatNumber(value: number | null, unavailableLabel: string) {
-  return value === null ? unavailableLabel : value.toFixed(2)
+function formatNumber(value: number | null | undefined, unavailableLabel: string) {
+  return value == null ? unavailableLabel : value.toFixed(2)
 }
 
 function formatInteger(value: number) {
@@ -571,4 +579,54 @@ function formatInteger(value: number) {
 
 function signed(value: number) {
   return `${value >= 0 ? '+' : ''}${value.toFixed(2)}`
+}
+
+function formatSigned(
+  value: number | null | undefined,
+  unavailableLabel: string,
+) {
+  return value == null ? unavailableLabel : signed(value)
+}
+
+function formatRegionSummary(
+  region: BrainRegionPayload,
+  t: (key: string) => string,
+  unavailableLabel: string,
+) {
+  const parts = [
+    `${formatNumber(region.raw_activity_mass, unavailableLabel)} ${t(
+      'experiment.brain.metric.activityMass',
+    ).toLowerCase()}`,
+    `${formatSigned(region.signed_activity, unavailableLabel)} ${t(
+      'experiment.brain.metric.signedActivity',
+    ).toLowerCase()}`,
+  ]
+  if (region.is_display_grouped) {
+    parts.push(
+      `${t('experiment.brain.metric.displayGrouping').toLowerCase()}: ${region.display_name}`,
+    )
+  }
+  return parts.join(' | ')
+}
+
+function formatTopNodeMembershipSummary(
+  node: BrainTopNodePayload,
+  t: (key: string) => string,
+  unavailableLabel: string,
+) {
+  const memberships = node.neuropil_memberships.length
+    ? node.neuropil_memberships
+        .map(
+          (membership) =>
+            `${membership.neuropil} ${formatNumber(
+              membership.occupancy_fraction,
+              unavailableLabel,
+            )}`,
+        )
+        .join(', ')
+    : unavailableLabel
+  const displayGroup = node.display_group_hint
+    ? ` | ${t('experiment.brain.metric.displayGrouping').toLowerCase()}: ${node.display_group_hint}`
+    : ''
+  return `${node.flow_role}:${node.node_idx} | ${memberships}${displayGroup}`
 }
