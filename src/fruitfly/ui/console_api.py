@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse, Response
 from fruitfly.evaluation.brain_asset_manifest import load_brain_asset_manifest, with_runtime_asset_urls
 from fruitfly.evaluation.console_session import ConsoleSession
 from fruitfly.evaluation.runtime_activity_artifacts import (
+    DISPLAY_NEUROPIL_MANIFEST,
     RUNTIME_ACTIVITY_ARTIFACT_VERSION,
     build_replay_brain_view_payload,
     build_replay_timeline_payload,
@@ -502,6 +503,8 @@ def _brain_view_artifact_is_current(payload: dict[str, Any]) -> bool:
         return False
     if payload.get("semantic_scope") != "neuropil":
         return False
+    if payload.get("view_mode") != "grouped-neuropil-v1":
+        return False
     if payload.get("mapping_mode") != "node_neuropil_occupancy":
         return False
     if payload.get("activity_metric") != "activity_mass":
@@ -517,6 +520,11 @@ def _brain_view_artifact_is_current(payload: dict[str, Any]) -> bool:
     region_activity = payload.get("region_activity")
     if not isinstance(region_activity, list):
         return False
+    display_region_activity = payload.get("display_region_activity")
+    if not isinstance(display_region_activity, list):
+        return False
+    if not all(_display_region_activity_entry_is_current(entry) for entry in display_region_activity):
+        return False
     top_regions = payload.get("top_regions")
     if not isinstance(top_regions, list):
         return False
@@ -527,6 +535,38 @@ def _brain_view_artifact_is_current(payload: dict[str, Any]) -> bool:
         isinstance(node, dict) and isinstance(node.get("neuropil_memberships"), list)
         for node in top_nodes
     )
+
+
+def _display_region_activity_entry_is_current(entry: Any) -> bool:
+    if not isinstance(entry, dict):
+        return False
+    group_neuropil_id = entry.get("group_neuropil_id")
+    if not isinstance(group_neuropil_id, str):
+        return False
+    approved_group_ids = {group_id for group_id, _label in DISPLAY_NEUROPIL_MANIFEST}
+    if group_neuropil_id not in approved_group_ids:
+        return False
+    if not _is_json_number(entry.get("raw_activity_mass")):
+        return False
+    if not _is_json_number(entry.get("signed_activity")):
+        return False
+    if not _is_json_number(entry.get("covered_weight_sum")):
+        return False
+    node_count = entry.get("node_count")
+    if not isinstance(node_count, int) or isinstance(node_count, bool) or node_count < 0:
+        return False
+    if entry.get("view_mode") != "grouped-neuropil-v1":
+        return False
+    if entry.get("is_display_transform") is not True:
+        return False
+    member_neuropils = entry.get("member_neuropils")
+    return isinstance(member_neuropils, list) and all(
+        isinstance(neuropil, str) for neuropil in member_neuropils
+    )
+
+
+def _is_json_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 def _timeline_artifact_is_current(payload: dict[str, Any]) -> bool:

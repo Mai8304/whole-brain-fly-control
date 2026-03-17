@@ -780,6 +780,473 @@ def test_console_api_rematerializes_stale_brain_view_contract(tmp_path: Path) ->
     assert stored_payload["artifact_origin"] == "initial-materialized"
 
 
+def test_console_api_rematerializes_when_display_region_activity_missing(tmp_path: Path) -> None:
+    from fruitfly.evaluation.runtime_activity_artifacts import (
+        RUNTIME_ACTIVITY_ARTIFACT_VERSION,
+    )
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 2, "edge_count": 1, "afferent_count": 1, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0},
+                {"source_id": 20, "node_idx": 1},
+            ]
+        ),
+        compiled_dir / "node_index.parquet",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {
+                    "source_id": 10,
+                    "node_idx": 0,
+                    "neuropil": "AL_L",
+                    "synapse_count": 1,
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+                {
+                    "source_id": 20,
+                    "node_idx": 1,
+                    "neuropil": "FB",
+                    "synapse_count": 1,
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+            ]
+        ),
+        compiled_dir / "node_neuropil_occupancy.parquet",
+    )
+    (compiled_dir / "neuropil_truth_validation.json").write_text(
+        json.dumps(
+            {
+                "validation_passed": True,
+                "validation_scope": "graph_source_ids",
+                "roster_alignment": {
+                    "alignment_passed": True,
+                    "graph_only_root_count": 0,
+                    "proofread_only_root_count": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "task": "straight_walking",
+                "steps_requested": 2,
+                "steps_completed": 2,
+                "terminated_early": False,
+                "reward_mean": 0.4,
+                "final_reward": 0.8,
+                "mean_action_norm": 1.0,
+                "forward_velocity_mean": 0.2,
+                "forward_velocity_std": 0.1,
+                "body_upright_mean": 0.9,
+                "final_heading_delta": 0.0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "activity_trace.json").write_text(
+        json.dumps(
+            {
+                "task": "straight_walking",
+                "steps_requested": 2,
+                "steps_completed": 2,
+                "terminated_early": False,
+                "snapshots": [
+                    {
+                        "step_id": 2,
+                        "afferent_activity": 0.3,
+                        "intrinsic_activity": 0.5,
+                        "efferent_activity": 0.1,
+                        "top_active_nodes": [{"node_idx": 1, "activity_value": 0.9, "flow_role": "intrinsic"}],
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    np.save(eval_dir / "final_node_activity.npy", np.asarray([0.2, 0.9], dtype=np.float32))
+
+    brain_view_path = eval_dir / "brain_view.json"
+    timeline_path = eval_dir / "timeline.json"
+    brain_view_path.write_text(
+        json.dumps(
+            {
+                "artifact_contract_version": RUNTIME_ACTIVITY_ARTIFACT_VERSION,
+                "artifact_origin": "initial-materialized",
+                "data_status": "recorded",
+                "semantic_scope": "neuropil",
+                "view_mode": "grouped-neuropil-v1",
+                "mapping_mode": "node_neuropil_occupancy",
+                "activity_metric": "activity_mass",
+                "formal_truth": {
+                    "validation_passed": True,
+                    "graph_scope_validation_passed": True,
+                    "roster_alignment_passed": True,
+                },
+                "mapping_coverage": {"neuropil_mapped_nodes": 2, "total_nodes": 2},
+                "region_activity": [
+                    {
+                        "neuropil_id": "AL_L",
+                        "display_name": "AL",
+                        "raw_activity_mass": 0.2,
+                        "signed_activity": 0.2,
+                        "covered_weight_sum": 1.0,
+                        "node_count": 1,
+                        "is_display_grouped": True,
+                    },
+                    {
+                        "neuropil_id": "FB",
+                        "display_name": "FB",
+                        "raw_activity_mass": 0.9,
+                        "signed_activity": 0.9,
+                        "covered_weight_sum": 1.0,
+                        "node_count": 1,
+                        "is_display_grouped": False,
+                    },
+                ],
+                "display_region_activity": None,
+                "top_regions": [
+                    {
+                        "neuropil_id": "FB",
+                        "display_name": "FB",
+                        "raw_activity_mass": 0.9,
+                        "signed_activity": 0.9,
+                        "covered_weight_sum": 1.0,
+                        "node_count": 1,
+                        "is_display_grouped": False,
+                    }
+                ],
+                "top_nodes": [
+                    {
+                        "node_idx": 1,
+                        "source_id": "20",
+                        "activity_value": 0.9,
+                        "flow_role": "intrinsic",
+                        "display_group_hint": "FB",
+                        "neuropil_memberships": [
+                            {
+                                "neuropil": "FB",
+                                "occupancy_fraction": 1.0,
+                                "synapse_count": 1,
+                            }
+                        ],
+                    }
+                ],
+                "afferent_activity": 0.3,
+                "intrinsic_activity": 0.5,
+                "efferent_activity": 0.1,
+            }
+        ),
+        encoding="utf-8",
+    )
+    timeline_path.write_text(
+        json.dumps(
+            {
+                "artifact_contract_version": RUNTIME_ACTIVITY_ARTIFACT_VERSION,
+                "data_status": "recorded",
+                "steps_requested": 2,
+                "steps_completed": 2,
+                "current_step": 2,
+                "brain_view_ref": "step_id",
+                "body_view_ref": "step_id",
+                "events": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    fresh_at = time.time()
+    stale_at = fresh_at - 100
+    for path in (
+        eval_dir / "summary.json",
+        eval_dir / "activity_trace.json",
+        eval_dir / "final_node_activity.npy",
+        compiled_dir / "node_index.parquet",
+        compiled_dir / "node_neuropil_occupancy.parquet",
+        compiled_dir / "neuropil_truth_validation.json",
+    ):
+        os.utime(path, (stale_at, stale_at))
+    os.utime(brain_view_path, (fresh_at, fresh_at))
+    os.utime(timeline_path, (fresh_at, fresh_at))
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+        )
+    )
+    client = TestClient(app)
+
+    brain_payload = client.get("/api/console/brain-view").json()
+
+    assert brain_payload["display_region_activity"]
+    assert brain_payload["display_region_activity"][0]["group_neuropil_id"] in {"AL", "FB"}
+    stored_payload = json.loads(brain_view_path.read_text(encoding="utf-8"))
+    assert stored_payload["display_region_activity"]
+    assert stored_payload["display_region_activity"][0]["view_mode"] == "grouped-neuropil-v1"
+
+
+def test_console_api_rematerializes_when_display_region_activity_entry_is_invalid(tmp_path: Path) -> None:
+    from fruitfly.evaluation.runtime_activity_artifacts import (
+        RUNTIME_ACTIVITY_ARTIFACT_VERSION,
+    )
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 2, "edge_count": 1, "afferent_count": 1, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {"source_id": 10, "node_idx": 0},
+                {"source_id": 20, "node_idx": 1},
+            ]
+        ),
+        compiled_dir / "node_index.parquet",
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {
+                    "source_id": 10,
+                    "node_idx": 0,
+                    "neuropil": "AL_L",
+                    "synapse_count": 1,
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+                {
+                    "source_id": 20,
+                    "node_idx": 1,
+                    "neuropil": "FB",
+                    "synapse_count": 1,
+                    "occupancy_fraction": 1.0,
+                    "materialization": 783,
+                    "dataset": "public",
+                },
+            ]
+        ),
+        compiled_dir / "node_neuropil_occupancy.parquet",
+    )
+    (compiled_dir / "neuropil_truth_validation.json").write_text(
+        json.dumps(
+            {
+                "validation_passed": True,
+                "validation_scope": "graph_source_ids",
+                "roster_alignment": {
+                    "alignment_passed": True,
+                    "graph_only_root_count": 0,
+                    "proofread_only_root_count": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "task": "straight_walking",
+                "steps_requested": 2,
+                "steps_completed": 2,
+                "terminated_early": False,
+                "reward_mean": 0.4,
+                "final_reward": 0.8,
+                "mean_action_norm": 1.0,
+                "forward_velocity_mean": 0.2,
+                "forward_velocity_std": 0.1,
+                "body_upright_mean": 0.9,
+                "final_heading_delta": 0.0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "activity_trace.json").write_text(
+        json.dumps(
+            {
+                "task": "straight_walking",
+                "steps_requested": 2,
+                "steps_completed": 2,
+                "terminated_early": False,
+                "snapshots": [
+                    {
+                        "step_id": 2,
+                        "afferent_activity": 0.3,
+                        "intrinsic_activity": 0.5,
+                        "efferent_activity": 0.1,
+                        "top_active_nodes": [{"node_idx": 1, "activity_value": 0.9, "flow_role": "intrinsic"}],
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    np.save(eval_dir / "final_node_activity.npy", np.asarray([0.2, 0.9], dtype=np.float32))
+
+    brain_view_path = eval_dir / "brain_view.json"
+    timeline_path = eval_dir / "timeline.json"
+    brain_view_path.write_text(
+        json.dumps(
+            {
+                "artifact_contract_version": RUNTIME_ACTIVITY_ARTIFACT_VERSION,
+                "artifact_origin": "initial-materialized",
+                "data_status": "recorded",
+                "semantic_scope": "neuropil",
+                "view_mode": "grouped-neuropil-v1",
+                "mapping_mode": "node_neuropil_occupancy",
+                "activity_metric": "activity_mass",
+                "formal_truth": {
+                    "validation_passed": True,
+                    "graph_scope_validation_passed": True,
+                    "roster_alignment_passed": True,
+                },
+                "mapping_coverage": {"neuropil_mapped_nodes": 2, "total_nodes": 2},
+                "region_activity": [
+                    {
+                        "neuropil_id": "AL_L",
+                        "display_name": "AL",
+                        "raw_activity_mass": 0.2,
+                        "signed_activity": 0.2,
+                        "covered_weight_sum": 1.0,
+                        "node_count": 1,
+                        "is_display_grouped": True,
+                    },
+                    {
+                        "neuropil_id": "FB",
+                        "display_name": "FB",
+                        "raw_activity_mass": 0.9,
+                        "signed_activity": 0.9,
+                        "covered_weight_sum": 1.0,
+                        "node_count": 1,
+                        "is_display_grouped": False,
+                    },
+                ],
+                "display_region_activity": [
+                    {
+                        "group_neuropil_id": "ME",
+                        "raw_activity_mass": "0.9",
+                        "signed_activity": 0.9,
+                        "covered_weight_sum": 1.0,
+                        "node_count": 1,
+                        "member_neuropils": ["FB"],
+                        "view_mode": "grouped-neuropil-v1",
+                        "is_display_transform": True,
+                    }
+                ],
+                "top_regions": [
+                    {
+                        "neuropil_id": "FB",
+                        "display_name": "FB",
+                        "raw_activity_mass": 0.9,
+                        "signed_activity": 0.9,
+                        "covered_weight_sum": 1.0,
+                        "node_count": 1,
+                        "is_display_grouped": False,
+                    }
+                ],
+                "top_nodes": [
+                    {
+                        "node_idx": 1,
+                        "source_id": "20",
+                        "activity_value": 0.9,
+                        "flow_role": "intrinsic",
+                        "display_group_hint": "FB",
+                        "neuropil_memberships": [
+                            {
+                                "neuropil": "FB",
+                                "occupancy_fraction": 1.0,
+                                "synapse_count": 1,
+                            }
+                        ],
+                    }
+                ],
+                "afferent_activity": 0.3,
+                "intrinsic_activity": 0.5,
+                "efferent_activity": 0.1,
+            }
+        ),
+        encoding="utf-8",
+    )
+    timeline_path.write_text(
+        json.dumps(
+            {
+                "artifact_contract_version": RUNTIME_ACTIVITY_ARTIFACT_VERSION,
+                "data_status": "recorded",
+                "steps_requested": 2,
+                "steps_completed": 2,
+                "current_step": 2,
+                "brain_view_ref": "step_id",
+                "body_view_ref": "step_id",
+                "events": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    fresh_at = time.time()
+    stale_at = fresh_at - 100
+    for path in (
+        eval_dir / "summary.json",
+        eval_dir / "activity_trace.json",
+        eval_dir / "final_node_activity.npy",
+        compiled_dir / "node_index.parquet",
+        compiled_dir / "node_neuropil_occupancy.parquet",
+        compiled_dir / "neuropil_truth_validation.json",
+    ):
+        os.utime(path, (stale_at, stale_at))
+    os.utime(brain_view_path, (fresh_at, fresh_at))
+    os.utime(timeline_path, (fresh_at, fresh_at))
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+        )
+    )
+    client = TestClient(app)
+
+    brain_payload = client.get("/api/console/brain-view").json()
+
+    assert brain_payload["display_region_activity"]
+    assert {entry["group_neuropil_id"] for entry in brain_payload["display_region_activity"]} == {
+        "AL",
+        "FB",
+    }
+    stored_payload = json.loads(brain_view_path.read_text(encoding="utf-8"))
+    assert {entry["group_neuropil_id"] for entry in stored_payload["display_region_activity"]} == {
+        "AL",
+        "FB",
+    }
+    assert all(isinstance(entry["raw_activity_mass"], float) for entry in stored_payload["display_region_activity"])
+
+
 def test_brain_view_artifact_current_check_fails_closed_for_malformed_payloads() -> None:
     from fruitfly.ui.console_api import _brain_view_artifact_is_current
 
@@ -797,6 +1264,57 @@ def test_brain_view_artifact_current_check_fails_closed_for_malformed_payloads()
                 "graph_scope_validation_passed": True,
                 "roster_alignment_passed": True,
             },
+            "top_nodes": [],
+        }
+    ) is False
+    assert _brain_view_artifact_is_current(
+        {
+            "artifact_contract_version": 1,
+            "semantic_scope": "neuropil",
+            "view_mode": "grouped-neuropil-v1",
+            "mapping_mode": "node_neuropil_occupancy",
+            "activity_metric": "activity_mass",
+            "artifact_origin": "initial-materialized",
+            "mapping_coverage": {"neuropil_mapped_nodes": 2, "total_nodes": 2},
+            "formal_truth": {
+                "validation_passed": True,
+                "graph_scope_validation_passed": True,
+                "roster_alignment_passed": True,
+            },
+            "region_activity": [],
+            "display_region_activity": None,
+            "top_regions": [],
+            "top_nodes": [],
+        }
+    ) is False
+    assert _brain_view_artifact_is_current(
+        {
+            "artifact_contract_version": 1,
+            "semantic_scope": "neuropil",
+            "view_mode": "grouped-neuropil-v1",
+            "mapping_mode": "node_neuropil_occupancy",
+            "activity_metric": "activity_mass",
+            "artifact_origin": "initial-materialized",
+            "mapping_coverage": {"neuropil_mapped_nodes": 2, "total_nodes": 2},
+            "formal_truth": {
+                "validation_passed": True,
+                "graph_scope_validation_passed": True,
+                "roster_alignment_passed": True,
+            },
+            "region_activity": [],
+            "display_region_activity": [
+                {
+                    "group_neuropil_id": "ME",
+                    "raw_activity_mass": "0.9",
+                    "signed_activity": 0.9,
+                    "covered_weight_sum": 1.0,
+                    "node_count": 1,
+                    "member_neuropils": ["FB"],
+                    "view_mode": "grouped-neuropil-v1",
+                    "is_display_transform": True,
+                }
+            ],
+            "top_regions": [],
             "top_nodes": [],
         }
     ) is False
