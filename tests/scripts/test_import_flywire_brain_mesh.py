@@ -19,6 +19,13 @@ def test_import_flywire_brain_mesh_cli_writes_manifest_and_assets(
         manifest = {
             "asset_id": "flywire_brain_v141",
             "shell": {"render_asset_path": "brain_shell.glb", "render_format": "glb"},
+            "neuropil_manifest": [
+                {
+                    "neuropil": "AL",
+                    "render_asset_path": "AL.glb",
+                    "render_format": "glb",
+                }
+            ],
         }
         (output_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
         return manifest

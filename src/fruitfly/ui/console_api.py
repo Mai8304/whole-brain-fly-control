@@ -295,6 +295,18 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
             raise HTTPException(status_code=404, detail=f"{shell_path.name} not found")
         return FileResponse(shell_path, media_type="model/gltf-binary", filename=shell_path.name)
 
+    @app.get("/api/console/brain-mesh/{neuropil}")
+    def brain_mesh(neuropil: str) -> FileResponse:
+        manifest = _brain_asset_manifest(config)
+        entry = _find_grouped_neuropil_asset(manifest, neuropil)
+        if entry is None:
+            raise HTTPException(status_code=404, detail=f"{neuropil} mesh not found")
+        assert config.brain_asset_dir is not None
+        mesh_path = config.brain_asset_dir / str(entry["render_asset_path"])
+        if not mesh_path.exists():
+            raise HTTPException(status_code=404, detail=f"{mesh_path.name} not found")
+        return FileResponse(mesh_path, media_type="model/gltf-binary", filename=mesh_path.name)
+
     return app
 
 
@@ -596,6 +608,20 @@ def _brain_shell_payload(config: ConsoleApiConfig) -> dict[str, Any] | None:
 def _brain_shell_path(config: ConsoleApiConfig, manifest: dict[str, Any]) -> Path:
     assert config.brain_asset_dir is not None
     return config.brain_asset_dir / manifest["shell"]["render_asset_path"]
+
+
+def _find_grouped_neuropil_asset(
+    manifest: dict[str, Any],
+    neuropil: str,
+) -> dict[str, Any] | None:
+    entries = manifest.get("neuropil_manifest")
+    if not isinstance(entries, list):
+        return None
+    return next(
+        (entry for entry in entries if str(entry.get("neuropil")) == str(neuropil)),
+        None,
+    )
+
 
 def _formal_neuropil_truth_state(config: ConsoleApiConfig) -> dict[str, Any]:
     occupancy_path = config.compiled_graph_dir / "node_neuropil_occupancy.parquet"

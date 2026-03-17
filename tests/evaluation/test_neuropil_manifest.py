@@ -35,6 +35,8 @@ def test_build_v1_neuropil_manifest_includes_required_fields() -> None:
         assert entry["display_name_zh"]
         assert entry["description_zh"]
         assert isinstance(entry["priority"], int)
+        assert str(entry["render_asset_path"]).endswith(".glb")
+        assert entry["render_format"] == "glb"
 
 
 def test_build_v1_neuropil_manifest_uses_information_flow_grouping() -> None:

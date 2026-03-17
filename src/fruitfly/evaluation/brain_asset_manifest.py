@@ -81,6 +81,15 @@ def with_runtime_asset_urls(
     if shell_asset_url is not None:
         payload.setdefault("shell", {})
         payload["shell"]["asset_url"] = shell_asset_url
+    neuropil_manifest = payload.get("neuropil_manifest")
+    if isinstance(neuropil_manifest, list):
+        payload["neuropil_manifest"] = [
+            {
+                **entry,
+                "asset_url": f"/api/console/brain-mesh/{entry['neuropil']}",
+            }
+            for entry in neuropil_manifest
+        ]
     return payload
 
 

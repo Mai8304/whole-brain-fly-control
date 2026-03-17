@@ -54,6 +54,7 @@ def test_console_api_serves_realistic_read_only_payloads(tmp_path: Path) -> None
     )
     (eval_dir / "rollout.mp4").write_bytes(b"fake-video")
     (brain_asset_dir / "brain_shell.glb").write_bytes(b"glb")
+    (brain_asset_dir / "AL.glb").write_bytes(b"al-glb")
     (brain_asset_dir / "manifest.json").write_text(
         json.dumps(
             {
@@ -77,14 +78,16 @@ def test_console_api_serves_realistic_read_only_payloads(tmp_path: Path) -> None
                 },
                 "neuropil_manifest": [
                     {
-                        "neuropil": "MB",
-                        "short_label": "MB",
-                        "display_name": "Mushroom Body",
-                        "display_name_zh": "蘑菇体",
-                        "group": "core-processing",
-                        "description_zh": "V1 中作为核心处理中间脑区展示。",
-                        "default_color": "#f7b267",
+                        "neuropil": "AL",
+                        "short_label": "AL",
+                        "display_name": "Antennal Lobe",
+                        "display_name_zh": "触角叶",
+                        "group": "input-associated",
+                        "description_zh": "V1 中作为气味输入相关神经纤维区的代表。",
+                        "default_color": "#4ea8de",
                         "priority": 1,
+                        "render_asset_path": "AL.glb",
+                        "render_format": "glb",
                     }
                 ],
             }
@@ -150,12 +153,18 @@ def test_console_api_serves_realistic_read_only_payloads(tmp_path: Path) -> None
     brain_assets_payload = brain_assets_response.json()
     assert brain_assets_payload["asset_id"] == "flywire_brain_v141"
     assert brain_assets_payload["shell"]["asset_url"] == "/api/console/brain-shell"
-    assert brain_assets_payload["neuropil_manifest"][0]["neuropil"] == "MB"
+    assert brain_assets_payload["neuropil_manifest"][0]["neuropil"] == "AL"
+    assert brain_assets_payload["neuropil_manifest"][0]["asset_url"] == "/api/console/brain-mesh/AL"
 
     brain_shell_response = client.get("/api/console/brain-shell")
     assert brain_shell_response.status_code == 200
     assert brain_shell_response.headers["content-type"] == "model/gltf-binary"
     assert brain_shell_response.content == b"glb"
+
+    brain_mesh_response = client.get("/api/console/brain-mesh/AL")
+    assert brain_mesh_response.status_code == 200
+    assert brain_mesh_response.headers["content-type"] == "model/gltf-binary"
+    assert brain_mesh_response.content == b"al-glb"
 
     timeline_response = client.get("/api/console/timeline")
     assert timeline_response.status_code == 200
