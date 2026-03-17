@@ -179,6 +179,103 @@ def test_console_api_serves_realistic_read_only_payloads(tmp_path: Path) -> None
     assert video_response.content == b"fake-video"
 
 
+def test_console_api_brain_mesh_route_supports_relative_paths_and_fail_closed(tmp_path: Path) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    brain_asset_dir = tmp_path / "brain_assets"
+    roi_mesh_dir = tmp_path / "roi_meshes"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    brain_asset_dir.mkdir()
+    roi_mesh_dir.mkdir()
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 1, "edge_count": 0, "afferent_count": 0, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps({"status": "ok", "task": "straight_walking", "steps_requested": 1, "steps_completed": 1}),
+        encoding="utf-8",
+    )
+    (brain_asset_dir / "brain_shell.glb").write_bytes(b"shell-glb")
+    (roi_mesh_dir / "AL.glb").write_bytes(b"al-relative-glb")
+    (brain_asset_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "asset_id": "flywire_brain_v141",
+                "asset_version": "v141",
+                "source": {
+                    "provider": "flywire",
+                    "cloudpath": "precomputed://gs://flywire_neuropil_meshes/whole_neuropil/brain_mesh_v141.surf",
+                    "info_url": "https://storage.googleapis.com/flywire_neuropil_meshes/whole_neuropil/brain_mesh_v141.surf/info",
+                    "mesh_segment_id": 1,
+                },
+                "shell": {
+                    "render_asset_path": "brain_shell.glb",
+                    "render_format": "glb",
+                    "vertex_count": 2,
+                    "face_count": 1,
+                    "bbox_min": [0.0, 0.0, 0.0],
+                    "bbox_max": [1.0, 1.0, 1.0],
+                    "base_color": "#89a5ff",
+                    "opacity": 0.18,
+                },
+                "neuropil_manifest": [
+                    {
+                        "neuropil": "AL",
+                        "short_label": "AL",
+                        "display_name": "Antennal Lobe",
+                        "display_name_zh": "触角叶",
+                        "group": "input-associated",
+                        "description_zh": "V1 中作为气味输入相关神经纤维区的代表。",
+                        "default_color": "#4ea8de",
+                        "priority": 1,
+                        "render_asset_path": "../roi_meshes/AL.glb",
+                        "render_format": "glb",
+                    },
+                    {
+                        "neuropil": "FB",
+                        "short_label": "FB",
+                        "display_name": "Fan-shaped Body",
+                        "display_name_zh": "扇形体",
+                        "group": "core-processing",
+                        "description_zh": "V1 中作为中央复合体处理层展示。",
+                        "default_color": "#f6bd60",
+                        "priority": 2,
+                        "render_asset_path": "../roi_meshes/FB.glb",
+                        "render_format": "glb",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+            brain_asset_dir=brain_asset_dir,
+        )
+    )
+    client = TestClient(app)
+
+    relative_response = client.get("/api/console/brain-mesh/AL")
+    assert relative_response.status_code == 200
+    assert relative_response.content == b"al-relative-glb"
+
+    missing_file_response = client.get("/api/console/brain-mesh/FB")
+    assert missing_file_response.status_code == 404
+    assert missing_file_response.json()["detail"] == "FB.glb not found"
+
+    missing_entry_response = client.get("/api/console/brain-mesh/PB")
+    assert missing_entry_response.status_code == 404
+    assert missing_entry_response.json()["detail"] == "PB mesh not found"
+
+
 def test_console_api_prefers_recorded_brain_and_timeline_payloads(tmp_path: Path) -> None:
     from fruitfly.ui import ConsoleApiConfig, create_console_api
 

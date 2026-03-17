@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 from urllib.request import urlopen
@@ -11,8 +12,12 @@ from fruitfly.evaluation.brain_asset_manifest import (
     build_brain_asset_manifest,
     write_brain_asset_manifest,
 )
+from fruitfly.evaluation.neuropil_manifest import build_v1_neuropil_manifest
 
 DEFAULT_OUTPUT_DIR = Path("outputs/ui-assets/flywire_brain_v141")
+DEFAULT_V1_GROUPED_NEUROPIL_MESH_DIR = (
+    Path(__file__).resolve().parents[1] / "outputs/ui-assets/flywire_roi_meshes_v1"
+)
 
 
 def import_flywire_brain_mesh_asset(
@@ -30,6 +35,7 @@ def import_flywire_brain_mesh_asset(
     mesh = fetch_shell_mesh(cloudpath=cloudpath, mesh_segment_id=mesh_segment_id)
     shell_path = output_dir / "brain_shell.glb"
     export_shell_glb(mesh=mesh, output_path=shell_path)
+    grouped_prefix = _build_grouped_mesh_relative_prefix(output_dir)
 
     manifest = build_brain_asset_manifest(
         asset_id="flywire_brain_v141",
@@ -50,6 +56,9 @@ def import_flywire_brain_mesh_asset(
             "base_color": "#89a5ff",
             "opacity": 0.18,
         },
+        neuropil_manifest=build_v1_neuropil_manifest(
+            render_asset_path_prefix=grouped_prefix,
+        ),
     )
     write_brain_asset_manifest(output_dir / "manifest.json", manifest)
     return manifest
@@ -91,6 +100,15 @@ def export_shell_glb(*, mesh, output_path: Path) -> None:
 
     render_mesh = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces, process=False)
     render_mesh.export(output_path)
+
+
+def _build_grouped_mesh_relative_prefix(output_dir: Path) -> str:
+    return Path(
+        os.path.relpath(
+            DEFAULT_V1_GROUPED_NEUROPIL_MESH_DIR.resolve(),
+            output_dir.resolve(),
+        )
+    ).as_posix()
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -1,5 +1,8 @@
 import json
+import os
 from pathlib import Path
+
+import numpy as np
 
 
 def test_import_flywire_brain_mesh_cli_writes_manifest_and_assets(
@@ -43,3 +46,47 @@ def test_import_flywire_brain_mesh_cli_writes_manifest_and_assets(
     assert (output_dir / "manifest.json").exists()
     assert (output_dir / "brain_shell.glb").exists()
     assert json.loads(capsys.readouterr().out)["asset_id"] == "flywire_brain_v141"
+
+
+def test_import_flywire_brain_mesh_asset_uses_custom_output_dir_relative_neuropil_paths(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import import_flywire_brain_mesh
+
+    class FakeMesh:
+        vertices = np.asarray(
+            [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]],
+            dtype=np.float64,
+        )
+        faces = np.asarray([[0, 0, 0]], dtype=np.int64)
+
+    monkeypatch.setattr(
+        import_flywire_brain_mesh,
+        "fetch_source_info",
+        lambda _url: {"mesh": "mesh"},
+    )
+    monkeypatch.setattr(
+        import_flywire_brain_mesh,
+        "fetch_shell_mesh",
+        lambda **_kwargs: FakeMesh(),
+    )
+    monkeypatch.setattr(
+        import_flywire_brain_mesh,
+        "export_shell_glb",
+        lambda *, mesh, output_path: output_path.write_bytes(b"glb"),
+    )
+
+    output_dir = tmp_path / "custom" / "deep" / "brain_bundle"
+    manifest = import_flywire_brain_mesh.import_flywire_brain_mesh_asset(
+        output_dir=output_dir,
+        mesh_segment_id=1,
+    )
+
+    bundle_dir = (
+        Path(import_flywire_brain_mesh.__file__).resolve().parents[1]
+        / "outputs/ui-assets/flywire_roi_meshes_v1"
+    )
+    expected_prefix = Path(os.path.relpath(bundle_dir, output_dir)).as_posix().rstrip("/")
+
+    assert manifest["neuropil_manifest"]
+    assert manifest["neuropil_manifest"][0]["render_asset_path"].startswith(f"{expected_prefix}/")
