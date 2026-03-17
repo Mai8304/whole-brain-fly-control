@@ -18,6 +18,7 @@ __pycache__/
 apps/**/node_modules/
 apps/**/dist/
 apps/**/.vite/
+.worktrees/
 
 # Local tool downloads
 .tools/
