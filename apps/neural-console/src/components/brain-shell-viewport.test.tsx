@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { ConsolePreferencesProvider } from '@/providers/console-preferences-provider'
 import type { BrainAssetManifestPayload, BrainShellPayload } from '@/types/console'
 
-import { BrainShellViewport } from './brain-shell-viewport'
+import { BrainShellViewport, ViewportRenderBoundary } from './brain-shell-viewport'
 
 describe('BrainShellViewport', () => {
   it('describes grouped neuropil glow availability from grouped display payload', () => {
@@ -77,5 +77,23 @@ describe('BrainShellViewport', () => {
     )
 
     expect(screen.getByText(/grouped neuropil glow/i)).toBeInTheDocument()
+  })
+
+  it('falls back instead of crashing when the viewport subtree throws', () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    function ThrowingViewport() {
+      throw new Error('mesh 404')
+      return null
+    }
+
+    render(
+      <ViewportRenderBoundary fallback={<div>shell-only fallback</div>} resetKey="brain-shell">
+        <ThrowingViewport />
+      </ViewportRenderBoundary>,
+    )
+
+    expect(screen.getByText('shell-only fallback')).toBeInTheDocument()
+    consoleErrorSpy.mockRestore()
   })
 })

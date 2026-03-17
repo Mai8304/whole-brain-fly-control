@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react'
+import { Component, Suspense, useMemo } from 'react'
 
 import { Canvas } from '@react-three/fiber'
 import { Html, OrbitControls, useGLTF } from '@react-three/drei'
@@ -83,26 +83,101 @@ export function BrainShellViewport({
 
   return (
     <ViewportFrame>
+      <ViewportRenderBoundary
+        fallback={
+          <ViewportCanvasScene
+            shell={shell}
+            theme={resolvedTheme}
+            glowMeshes={[]}
+            footerLabel={t('experiment.viewport.footer.glowUnavailable')}
+            orbitLabel={t('experiment.viewport.overlay.orbit')}
+            loadingLabel={t('experiment.brain.loading')}
+          />
+        }
+        resetKey={`${shell.asset_url}:${glowMeshes.map((entry) => entry.assetUrl).join('|')}`}
+      >
+        <ViewportCanvasScene
+          shell={shell}
+          theme={resolvedTheme}
+          glowMeshes={glowMeshes}
+          footerLabel={glowFooter}
+          orbitLabel={t('experiment.viewport.overlay.orbit')}
+          loadingLabel={t('experiment.brain.loading')}
+        />
+      </ViewportRenderBoundary>
+    </ViewportFrame>
+  )
+}
+
+export class ViewportRenderBoundary extends Component<
+  {
+    fallback: React.ReactNode
+    resetKey: string
+    children: React.ReactNode
+  },
+  { hasError: boolean }
+> {
+  state = { hasError: false }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch() {
+    // Fail closed in the viewport: render shell-only fallback instead of crashing the page.
+  }
+
+  componentDidUpdate(prevProps: Readonly<{ resetKey: string }>) {
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false })
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback
+    }
+    return this.props.children
+  }
+}
+
+function ViewportCanvasScene({
+  shell,
+  theme,
+  glowMeshes,
+  footerLabel,
+  orbitLabel,
+  loadingLabel,
+}: {
+  shell: BrainShellPayload
+  theme: 'light' | 'dark'
+  glowMeshes: GlowMeshEntry[]
+  footerLabel: string
+  orbitLabel: string
+  loadingLabel: string
+}) {
+  return (
+    <>
       <Canvas camera={{ position: [0, 0, 3.2], fov: 34 }}>
-        <color attach="background" args={[resolvedTheme === 'dark' ? '#07111e' : '#eef4fb']} />
+        <color attach="background" args={[theme === 'dark' ? '#07111e' : '#eef4fb']} />
         <ambientLight intensity={0.85} />
         <hemisphereLight
           intensity={0.65}
-          groundColor={resolvedTheme === 'dark' ? '#06101a' : '#d8e2ec'}
-          color={resolvedTheme === 'dark' ? '#d7ebff' : '#1e3a5f'}
+          groundColor={theme === 'dark' ? '#06101a' : '#d8e2ec'}
+          color={theme === 'dark' ? '#d7ebff' : '#1e3a5f'}
         />
         <directionalLight
           position={[3, 3, 4]}
           intensity={1.4}
-          color={resolvedTheme === 'dark' ? '#d4e6ff' : '#dbeafe'}
+          color={theme === 'dark' ? '#d4e6ff' : '#dbeafe'}
         />
         <directionalLight
           position={[-2.5, -1.5, 2]}
           intensity={0.5}
-          color={resolvedTheme === 'dark' ? '#7aa7ff' : '#2563eb'}
+          color={theme === 'dark' ? '#7aa7ff' : '#2563eb'}
         />
-        <Suspense fallback={<Html center className="text-xs text-muted-foreground">{t('experiment.brain.loading')}</Html>}>
-          <BrainShellModel shell={shell} theme={resolvedTheme} glowMeshes={glowMeshes} />
+        <Suspense fallback={<Html center className="text-xs text-muted-foreground">{loadingLabel}</Html>}>
+          <BrainShellModel shell={shell} theme={theme} glowMeshes={glowMeshes} />
         </Suspense>
         <OrbitControls
           autoRotate
@@ -115,13 +190,13 @@ export function BrainShellViewport({
       <div className="console-overlay-chip pointer-events-none absolute left-4 top-4 px-3 py-2 text-[11px] uppercase tracking-[0.18em]">
         <div>{shell.asset_id}</div>
         <div className="mt-1 text-[10px] tracking-[0.12em] text-muted-foreground">
-          {t('experiment.viewport.overlay.orbit')}
+          {orbitLabel}
         </div>
       </div>
       <div className="console-overlay-chip pointer-events-none absolute bottom-4 left-4 px-3 py-2 text-xs">
-        {glowFooter}
+        {footerLabel}
       </div>
-    </ViewportFrame>
+    </>
   )
 }
 
