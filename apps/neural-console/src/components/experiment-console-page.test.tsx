@@ -276,6 +276,72 @@ describe('ExperimentConsolePage layout', () => {
     expect(screen.queryByText('LO_L')).not.toBeInTheDocument()
   })
 
+  it('falls back to fine-grained top regions when grouped summary data is missing', () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={{
+            ...mockBrainViewPayload,
+            display_region_activity: undefined,
+            top_regions: [
+              {
+                neuropil_id: 'ME_R',
+                display_name: 'ME',
+                raw_activity_mass: 4.7,
+                signed_activity: 0.5,
+                covered_weight_sum: 1,
+                node_count: 8,
+                is_display_grouped: false,
+              },
+              {
+                neuropil_id: 'LO_L',
+                display_name: 'LO',
+                raw_activity_mass: 4.2,
+                signed_activity: -0.3,
+                covered_weight_sum: 1,
+                node_count: 6,
+                is_display_grouped: false,
+              },
+            ],
+          }}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    const brainCard = screen.getByTestId('experiment-brain-card')
+    const summaryRows = within(brainCard)
+      .getAllByText(/activity mass/i)
+      .map((node) => node.closest('div')?.textContent ?? '')
+    expect(summaryRows).toHaveLength(2)
+    expect(summaryRows[0]).toContain('ME_R')
+    expect(summaryRows[1]).toContain('LO_L')
+    expect(screen.queryByText('AL')).not.toBeInTheDocument()
+    expect(screen.queryByText('FB')).not.toBeInTheDocument()
+  })
+
   it('renders a replay inspector surface when replay artifacts are available', () => {
     render(
       <ConsolePreferencesProvider>

@@ -111,6 +111,7 @@ export function ExperimentConsolePage({
     brainView.graph_scope_validation_passed === true &&
     (brainView.display_region_activity?.length ?? 0) > 0
   const groupedSummary = getSortedDisplayRegionActivity(brainView.display_region_activity)
+  const hasGroupedSummary = groupedSummary.length > 0
   const brainViewProvenance = formatBrainViewProvenance(brainView, t)
   const environmentFields = getTranslatedStatusFields(leftPanels, 'environment', t)
   const sensoryFields = getTranslatedStatusFields(leftPanels, 'sensory', t)
@@ -199,13 +200,21 @@ export function ExperimentConsolePage({
                             value={formatNumber(brainView.efferent_activity, unavailableLabel)}
                           />
                           <Separator />
-                          {groupedSummary.map((region) => (
-                            <MetricRow
-                              key={region.group_neuropil_id}
-                              label={region.group_neuropil_id}
-                              value={formatGroupedRegionSummary(region, t, unavailableLabel)}
-                            />
-                          ))}
+                          {hasGroupedSummary
+                            ? groupedSummary.map((region) => (
+                                <MetricRow
+                                  key={region.group_neuropil_id}
+                                  label={region.group_neuropil_id}
+                                  value={formatGroupedRegionSummary(region, t, unavailableLabel)}
+                                />
+                              ))
+                            : brainView.top_regions.map((region) => (
+                                <MetricRow
+                                  key={region.neuropil_id}
+                                  label={region.neuropil_id}
+                                  value={formatRegionSummary(region, t, unavailableLabel)}
+                                />
+                              ))}
                           <Separator />
                           <MetricRow
                             label={t('experiment.brain.metric.coverage')}
