@@ -277,6 +277,49 @@ describe('ExperimentConsolePage layout', () => {
     expect(screen.queryByText('LO_L')).not.toBeInTheDocument()
   })
 
+  it('renders grouped-summary semantics copy and grouped manifest label', () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={mockBrainViewPayload}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    expect(
+      screen.getByRole('heading', { name: /neuropil activity summary|神经纤维区活动摘要/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /aligned with the 8 grouped neuropils in the 3d glow layer|与 3d 发光层一致的 8 区分组活动摘要/i,
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/3d grouped manifest|3d 分组清单/i)).toBeInTheDocument()
+  })
+
   it('falls back to fine-grained top regions when grouped summary data is missing', async () => {
     const user = userEvent.setup()
 
@@ -351,6 +394,67 @@ describe('ExperimentConsolePage layout', () => {
     expect(
       screen.getByText(/fine-grained formal data|细粒度正式数据/i),
     ).toBeInTheDocument()
+  })
+
+  it('falls back to fine-grained top regions when grouped summary data is an empty array', () => {
+    render(
+      <ConsolePreferencesProvider>
+        <ExperimentConsolePage
+          brainAssets={mockBrainAssetManifest}
+          brainView={{
+            ...mockBrainViewPayload,
+            display_region_activity: [],
+            top_regions: [
+              {
+                neuropil_id: 'ME_R',
+                display_name: 'ME',
+                raw_activity_mass: 4.7,
+                signed_activity: 0.5,
+                covered_weight_sum: 1,
+                node_count: 8,
+                is_display_grouped: false,
+              },
+              {
+                neuropil_id: 'LO_L',
+                display_name: 'LO',
+                raw_activity_mass: 4.2,
+                signed_activity: -0.3,
+                covered_weight_sum: 1,
+                node_count: 6,
+                is_display_grouped: false,
+              },
+            ],
+          }}
+          errorMessage={null}
+          executionLog={mockExecutionLog}
+          leftPanels={mockLeftPanels}
+          pipeline={mockPipelineStages}
+          sourceStatus="LIVE API"
+          summary={mockClosedLoopSummary}
+          timeline={mockTimelinePayload}
+          videoSrc={mockVideoSrc}
+          replay={{
+            available: false,
+            session: null,
+            frameSrc: '',
+            loading: false,
+            errorMessage: null,
+            onPlayPause: () => undefined,
+            onPrevStep: () => undefined,
+            onNextStep: () => undefined,
+            onSeek: () => undefined,
+            onSetCamera: () => undefined,
+            onSetSpeed: () => undefined,
+            onResetView: () => undefined,
+          }}
+        />
+      </ConsolePreferencesProvider>,
+    )
+
+    expect(screen.getByText('ME_R')).toBeInTheDocument()
+    expect(screen.getByText('LO_L')).toBeInTheDocument()
+    expect(screen.queryByText('AL')).not.toBeInTheDocument()
+    expect(screen.queryByText('FB')).not.toBeInTheDocument()
   })
 
   it('keeps formal neuropil detail collapsed until expanded', async () => {

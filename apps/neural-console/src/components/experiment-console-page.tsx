@@ -264,7 +264,7 @@ export function ExperimentConsolePage({
                                 setShowFormalNeuropilDetail((current) => !current)
                               }
                             >
-                              <span>Formal Neuropil Detail（正式神经纤维区明细）</span>
+                              <span>{t('experiment.brain.formalDetail.title')}</span>
                               <span className="text-xs text-muted-foreground">
                                 {showFormalNeuropilDetail ? '−' : '+'}
                               </span>
@@ -272,8 +272,7 @@ export function ExperimentConsolePage({
                             {showFormalNeuropilDetail ? (
                               <div className="grid gap-3 rounded-lg border border-border/60 bg-background/50 p-3">
                                 <p className="text-xs text-muted-foreground">
-                                  Fine-grained formal data（细粒度正式数据）; not the grouped 3D glow
-                                  layer.
+                                  {t('experiment.brain.formalDetail.description')}
                                 </p>
                                 {brainView.top_regions.length ? (
                                   brainView.top_regions.map((region) => (

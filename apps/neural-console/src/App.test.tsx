@@ -48,6 +48,9 @@ describe('Neural console shell', () => {
     expect(screen.getAllByText(/^Fly Body Live$/).length).toBeGreaterThan(0)
     expect(screen.getByTestId('experiment-brain-card')).toBeInTheDocument()
     expect(screen.getByTestId('experiment-body-card')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /neuropil activity summary|神经纤维区活动摘要/i }),
+    ).toBeInTheDocument()
     expect(container.querySelectorAll('.console-metric')).toHaveLength(0)
     expect(screen.queryByText(/^LIVE API$/i)).not.toBeInTheDocument()
   })
