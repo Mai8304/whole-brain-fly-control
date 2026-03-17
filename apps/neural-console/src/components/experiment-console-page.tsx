@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 
 import { BodyReplayInspector } from '@/components/body-replay-inspector'
 import { ConsolePageHeader } from '@/components/console-page-header'
+import { ReplayTimeline } from '@/components/replay-timeline'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -102,25 +103,12 @@ export function ExperimentConsolePage({
   replay,
 }: ExperimentConsolePageProps) {
   const { t } = useConsolePreferences()
-  const timelineProgress =
-    timeline.steps_requested > 0 ? (timeline.current_step / timeline.steps_requested) * 100 : 0
+  const unavailableLabel = t('shared.unavailable')
   const hasRecordedBrainActivity =
     sourceStatus === 'LIVE API' && brainView.data_status !== 'unavailable'
-  const hasRecordedTimeline = sourceStatus === 'LIVE API' && timeline.data_status !== 'unavailable'
   const hasRecordedSummary = sourceStatus === 'LIVE API' && summary.data_status !== 'unavailable'
-  const environmentFields =
-    leftPanels.find((panel) => panel.title === 'Environment Physics')?.fields?.map((field) => ({
-      label: translateFieldLabel(field),
-      value: field.value,
-    })) ?? []
-  const sensoryFields =
-    leftPanels.find((panel) => panel.title === 'Sensory Inputs')?.fields?.map((field) => ({
-      label:
-        translateFieldLabel(field) === t('field.temperature')
-          ? 'Temp'
-          : translateFieldLabel(field),
-      value: field.value,
-    })) ?? []
+  const environmentFields = getTranslatedStatusFields(leftPanels, 'environment', t)
+  const sensoryFields = getTranslatedStatusFields(leftPanels, 'sensory', t)
 
   return (
     <div className="grid gap-4">
@@ -183,7 +171,7 @@ export function ExperimentConsolePage({
             </div>
           ) : (
             <div className="console-empty-state px-4 py-6 text-sm text-muted-foreground">
-              Awaiting live pipeline data…
+              {t('experiment.pipeline.awaiting')}
             </div>
           )}
         </CardContent>
@@ -238,22 +226,22 @@ export function ExperimentConsolePage({
                         <>
                           <MetricRow
                             label={t('experiment.brain.metric.afferent')}
-                            value={formatNumber(brainView.afferent_activity)}
+                            value={formatNumber(brainView.afferent_activity, unavailableLabel)}
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.intrinsic')}
-                            value={formatNumber(brainView.intrinsic_activity)}
+                            value={formatNumber(brainView.intrinsic_activity, unavailableLabel)}
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.efferent')}
-                            value={formatNumber(brainView.efferent_activity)}
+                            value={formatNumber(brainView.efferent_activity, unavailableLabel)}
                           />
                           <Separator />
                           {brainView.top_regions.map((region) => (
                             <MetricRow
                               key={region.roi_id}
                               label={region.roi_id}
-                              value={`${formatNumber(region.activity_value)} (${signed(region.activity_delta)})`}
+                              value={`${formatNumber(region.activity_value, unavailableLabel)} (${signed(region.activity_delta)})`}
                             />
                           ))}
                           <Separator />
@@ -265,19 +253,23 @@ export function ExperimentConsolePage({
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.shellAsset')}
-                            value={brainView.shell?.asset_id ?? 'not configured'}
+                            value={brainView.shell?.asset_id ?? unavailableLabel}
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.shellFormat')}
-                            value={brainAssets?.shell.render_format.toUpperCase() ?? 'n/a'}
+                            value={brainAssets?.shell.render_format.toUpperCase() ?? unavailableLabel}
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.neuropilManifest')}
-                            value={brainAssets ? String(brainAssets.roi_manifest.length) : 'n/a'}
+                            value={brainAssets ? String(brainAssets.roi_manifest.length) : unavailableLabel}
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.meshPack')}
-                            value={roiAssets ? `${roiAssets.roi_meshes.length} meshes` : 'n/a'}
+                            value={
+                              roiAssets
+                                ? `${roiAssets.roi_meshes.length} ${t('shared.meshes')}`
+                                : unavailableLabel
+                            }
                           />
                           <MetricRow
                             label={t('experiment.brain.metric.topNeuropils')}
@@ -293,60 +285,21 @@ export function ExperimentConsolePage({
                       )}
                     </div>
                   </section>
-
-                  <section className="console-detail-section">
-                    <div className="console-detail-header">
-                      <h3 className="text-sm font-semibold text-foreground">
-                        {t('experiment.timeline.title')}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t('experiment.timeline.description')}
-                      </p>
-                    </div>
-                    <Separator className="my-3" />
-                    <div className="space-y-3 text-sm">
-                      {hasRecordedTimeline ? (
-                        <>
-                          <div className="h-2 rounded-full bg-muted/70">
-                            <div
-                              className="h-2 rounded-full bg-[var(--console-accent-strong)]"
-                              style={{ width: `${timelineProgress}%` }}
-                            />
-                          </div>
-                          <div className="flex justify-between text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                            <span>
-                              {t('experiment.timeline.step')} 0
-                            </span>
-                            <span>
-                              {t('experiment.timeline.step')} {timeline.steps_requested}
-                            </span>
-                          </div>
-                          <div className="grid gap-2">
-                            {timeline.events.map((event) => (
-                              <div
-                                key={`${event.event_type}-${event.step_id}`}
-                                className="rounded-xl border border-border/80 bg-background/65 px-3 py-2"
-                              >
-                                <div className="flex items-center justify-between gap-4">
-                                  <span className="text-foreground">{event.label}</span>
-                                  <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                                    {t('experiment.timeline.step')} {event.step_id}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="console-empty-state px-3 py-4 text-sm text-muted-foreground">
-                          {t('experiment.timeline.unavailable')}
-                        </div>
-                      )}
-                    </div>
-                  </section>
                 </div>
               </CardContent>
             </Card>
+
+            <ReplayTimeline
+              available={replay.available}
+              session={replay.session}
+              timeline={timeline}
+              loading={replay.loading}
+              onPlayPause={replay.onPlayPause}
+              onPrevStep={replay.onPrevStep}
+              onNextStep={replay.onNextStep}
+              onSeek={replay.onSeek}
+              onSetSpeed={replay.onSetSpeed}
+            />
 
             <Card
               data-testid="experiment-body-card"
@@ -363,15 +316,9 @@ export function ExperimentConsolePage({
                   frameSrc={replay.frameSrc}
                   loading={replay.loading}
                   errorMessage={replay.errorMessage}
-                  summary={summary}
                   statusFields={[...environmentFields, ...sensoryFields]}
                   videoSrc={videoSrc}
-                  onPlayPause={replay.onPlayPause}
-                  onPrevStep={replay.onPrevStep}
-                  onNextStep={replay.onNextStep}
-                  onSeek={replay.onSeek}
                   onSetCamera={replay.onSetCamera}
-                  onSetSpeed={replay.onSetSpeed}
                   onResetView={replay.onResetView}
                 />
 
@@ -408,12 +355,12 @@ export function ExperimentConsolePage({
                         {summary.reward != null ? (
                           <MetricRow
                             label={t('experiment.body.metric.rewardMean')}
-                            value={formatNumber(summary.reward)}
+                            value={formatNumber(summary.reward, unavailableLabel)}
                           />
                         ) : null}
                         <MetricRow
                           label={t('experiment.body.metric.rewardMean')}
-                          value={formatNumber(summary.reward_mean)}
+                          value={formatNumber(summary.reward_mean, unavailableLabel)}
                         />
                         <MetricRow
                           label={t('experiment.body.metric.terminated')}
@@ -421,15 +368,21 @@ export function ExperimentConsolePage({
                         />
                         <MetricRow
                           label={t('experiment.body.metric.forwardVelocity')}
-                          value={formatNumber(summary.forward_velocity ?? summary.forward_velocity_mean)}
+                          value={formatNumber(
+                            summary.forward_velocity ?? summary.forward_velocity_mean,
+                            unavailableLabel,
+                          )}
                         />
                         <MetricRow
                           label={t('experiment.body.metric.velocityStd')}
-                          value={formatNumber(summary.forward_velocity_std)}
+                          value={formatNumber(summary.forward_velocity_std, unavailableLabel)}
                         />
                         <MetricRow
                           label={t('experiment.body.metric.uprightness')}
-                          value={formatNumber(summary.body_upright ?? summary.body_upright_mean)}
+                          value={formatNumber(
+                            summary.body_upright ?? summary.body_upright_mean,
+                            unavailableLabel,
+                          )}
                         />
                         <MetricRow
                           label={t('experiment.body.metric.headingDrift')}
@@ -470,9 +423,19 @@ export function ExperimentConsolePage({
     </div>
   )
 
-  function translateFieldLabel(field: ConsoleField) {
-    return field.labelKey ? t(field.labelKey) : field.label
-  }
+}
+
+function getTranslatedStatusFields(
+  panels: ConsolePanel[],
+  panelId: string,
+  t: (key: string) => string,
+) {
+  return (
+    panels.find((panel) => panel.id === panelId)?.fields?.map((field) => ({
+      label: field.labelKey ? t(field.labelKey) : field.label,
+      value: field.value,
+    })) ?? []
+  )
 }
 
 function ConsolePanelCard({ panel }: { panel: ConsolePanel }) {
@@ -491,7 +454,7 @@ function ConsolePanelCard({ panel }: { panel: ConsolePanel }) {
         {panel.fields ? (
           <div className="grid gap-3">
             {panel.fields.map((field) => (
-              <LabeledField key={`${title}-${field.label}`} field={field} />
+              <LabeledField key={`${panel.id ?? title}-${field.labelKey ?? field.label}`} field={field} />
             ))}
           </div>
         ) : null}
@@ -598,8 +561,8 @@ function translateSourceStatus(
   }
 }
 
-function formatNumber(value: number | null) {
-  return value === null ? 'n/a' : value.toFixed(2)
+function formatNumber(value: number | null, unavailableLabel: string) {
+  return value === null ? unavailableLabel : value.toFixed(2)
 }
 
 function formatInteger(value: number) {

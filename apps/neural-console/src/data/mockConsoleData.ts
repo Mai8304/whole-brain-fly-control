@@ -182,6 +182,7 @@ export const mockVideoSrc = '/mock/rollout.mp4'
 
 export const mockLeftPanels: ConsolePanel[] = [
   {
+    id: 'session',
     title: 'Session',
     description: '管理会话模式、运行名与随机种子。',
     fields: [
@@ -191,6 +192,7 @@ export const mockLeftPanels: ConsolePanel[] = [
     ],
   },
   {
+    id: 'model',
     title: 'Model',
     description: '选择当前使用的全脑检查点和任务。',
     fields: [
@@ -200,17 +202,20 @@ export const mockLeftPanels: ConsolePanel[] = [
     ],
   },
   {
+    id: 'environment',
     title: 'Environment Physics',
     description: '真实物理环境变量，作用于桌面与身体动力学。',
     fields: Object.entries(mockSession.applied_state.environment_physics).map(([label, value]) => ({ label, value })),
   },
   {
+    id: 'sensory',
     title: 'Sensory Inputs',
     description: '抽象感觉输入标量，注入 afferent neurons（输入神经元）。',
     fields: Object.entries(mockSession.applied_state.sensory_inputs).map(([label, value]) => ({ label, value })),
     note: 'Temperature / Odor are injected as sensory inputs to afferent neurons.',
   },
   {
+    id: 'run',
     title: 'Run',
     description: '控制回合长度、运行方式和输出工件。',
     fields: [
@@ -227,6 +232,7 @@ export const mockLeftPanels: ConsolePanel[] = [
     ],
   },
   {
+    id: 'log',
     title: 'Intervention Log',
     description: '只读日志，证明没有直接动作或关节覆盖。',
     lines: mockSession.intervention_log,

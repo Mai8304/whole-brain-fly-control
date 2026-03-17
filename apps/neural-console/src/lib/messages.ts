@@ -35,6 +35,7 @@ const messages = {
     'experiment.pipeline.title': 'Pipeline Status',
     'experiment.pipeline.description':
       'Environment / input -> afferent neurons -> whole-brain model -> efferent neurons -> decoder -> body.',
+    'experiment.pipeline.awaiting': 'Awaiting live pipeline data…',
     'experiment.brain.title': 'Brain View',
     'experiment.brain.description':
       'Whole-brain shell + neuropil activity + top active neurons.',
@@ -64,6 +65,9 @@ const messages = {
       'Kitchen tabletop style body viewport. The video never overlays neuropil glow onto the fly body.',
     'experiment.body.videoUnavailable':
       'Live rollout video is unavailable. Research strict mode does not substitute mock video.',
+    'experiment.body.videoTitle': 'Recorded rollout video',
+    'experiment.body.videoPlaybackUnsupported':
+      'The browser cannot play the current rollout.mp4 artifact.',
     'experiment.replay.badge': 'Replay',
     'experiment.replay.play': 'Play',
     'experiment.replay.pause': 'Pause',
@@ -279,6 +283,7 @@ const messages = {
     'training.definition.evalRef':
       'Registry reference to the latest evaluation artifact.',
     'shared.unavailable': 'Unavailable',
+    'shared.meshes': 'meshes',
   },
   'zh-CN': {
     'app.phase': '第一阶段',
@@ -314,6 +319,7 @@ const messages = {
     'experiment.pipeline.title': '流程状态',
     'experiment.pipeline.description':
       '环境 / 输入 -> 输入神经元 -> 全脑模型 -> 输出神经元 -> 解码器 -> 身体。',
+    'experiment.pipeline.awaiting': '等待实时流程数据…',
     'experiment.brain.title': '脑图视图',
     'experiment.brain.description': '整脑外壳 + 神经纤维区活动 + 最活跃神经元。',
     'experiment.brain.loading': '正在加载脑图视口…',
@@ -337,6 +343,8 @@ const messages = {
     'experiment.body.title': '果蝇身体实时区',
     'experiment.body.description': '厨房桌面风格身体视口；视频中不会把神经纤维区发光叠到果蝇身体上。',
     'experiment.body.videoUnavailable': '实时 rollout 视频不可用。科研严格模式不会替换成模拟视频。',
+    'experiment.body.videoTitle': '录制的 rollout 视频',
+    'experiment.body.videoPlaybackUnsupported': '浏览器无法播放当前 rollout.mp4（视频文件）。',
     'experiment.replay.badge': '回放',
     'experiment.replay.play': '播放',
     'experiment.replay.pause': '暂停',
@@ -477,6 +485,7 @@ const messages = {
     'training.field.checkpointRef': '检查点引用',
     'training.field.evalRef': '评估引用',
     'shared.unavailable': '不可用',
+    'shared.meshes': '个网格',
   },
   'zh-TW': {
     'app.phase': '第一階段',

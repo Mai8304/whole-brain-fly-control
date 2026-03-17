@@ -452,18 +452,18 @@ Expected: FAIL because the replay inspector UI does not exist yet.
 Implement:
 
 - one shared replay store at the experiment page level
-- body replay toolbar:
-  - play/pause
-  - prev/next step
-  - step slider
-  - step counter
-  - speed select
+- one shared `replay-timeline.tsx` strip placed between the right-side brain panel and body panel
+- three-part timeline strip:
+  - left: `play/pause + prev/next`
+  - center: `step slider + event markers`
+  - right: `step counter + speed + replay state`
+- body replay toolbar reduced to viewport-local controls:
   - camera preset select
   - reset view
 - dual-focus layout:
   - brain top-right
+  - timeline middle-right bridge strip
   - body bottom-right
-  - timeline promoted as shared component
 
 Use `shadcn/ui` and existing design tokens only.
 
@@ -497,6 +497,7 @@ git commit -m "feat: add replay-first body inspector ui"
 Create a short manual verification checklist in the docs that requires:
 
 - replay session starts from a real eval directory
+- shared timeline sits between brain and body panels as the global replay controller
 - body frame changes when camera preset changes at the same step
 - brain and body stay on the same shared step
 - missing replay artifacts surface `unavailable`, not fake fallback

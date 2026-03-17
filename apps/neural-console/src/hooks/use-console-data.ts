@@ -390,6 +390,7 @@ export function useConsoleData(): ConsoleDataState {
 function buildUnavailablePanels(message: string): ConsolePanel[] {
   return [
     {
+      id: 'session',
       title: 'Session',
       titleKey: 'experiment.panel.session.title',
       description: 'Only real console session data is shown in research strict mode.',
@@ -397,6 +398,7 @@ function buildUnavailablePanels(message: string): ConsolePanel[] {
       lines: [message],
     },
     {
+      id: 'model',
       title: 'Model',
       titleKey: 'experiment.panel.model.title',
       description: 'Live model configuration has not been loaded yet.',
@@ -404,6 +406,7 @@ function buildUnavailablePanels(message: string): ConsolePanel[] {
       lines: ['Awaiting /api/console/session'],
     },
     {
+      id: 'environment',
       title: 'Environment Physics',
       titleKey: 'experiment.panel.environment.title',
       description: 'Real environment physics parameters have not been loaded yet.',
@@ -411,6 +414,7 @@ function buildUnavailablePanels(message: string): ConsolePanel[] {
       lines: ['Awaiting live environment state'],
     },
     {
+      id: 'sensory',
       title: 'Sensory Inputs',
       titleKey: 'experiment.panel.sensory.title',
       description: 'Real sensory inputs have not been loaded yet.',
@@ -418,6 +422,7 @@ function buildUnavailablePanels(message: string): ConsolePanel[] {
       lines: ['Awaiting live sensory state'],
     },
     {
+      id: 'run',
       title: 'Run',
       titleKey: 'experiment.panel.run.title',
       description: 'Research strict mode does not show fabricated run control state.',
@@ -425,6 +430,7 @@ function buildUnavailablePanels(message: string): ConsolePanel[] {
       lines: ['Connect API to enable run controls'],
     },
     {
+      id: 'log',
       title: 'Intervention Log',
       titleKey: 'experiment.panel.log.title',
       description: 'Read-only logs are shown only when a real session exists.',
@@ -437,6 +443,7 @@ function buildUnavailablePanels(message: string): ConsolePanel[] {
 function buildPanelsFromLiveSnapshot(session: typeof mockSession): ConsolePanel[] {
   return [
     {
+      id: 'session',
       title: 'Session',
       titleKey: 'experiment.panel.session.title',
       description: 'Manage session mode, run name, and random seed.',
@@ -448,6 +455,7 @@ function buildPanelsFromLiveSnapshot(session: typeof mockSession): ConsolePanel[
       ],
     },
     {
+      id: 'model',
       title: 'Model',
       titleKey: 'experiment.panel.model.title',
       description: 'Select the active whole-brain checkpoint and task.',
@@ -463,6 +471,7 @@ function buildPanelsFromLiveSnapshot(session: typeof mockSession): ConsolePanel[
       ],
     },
     {
+      id: 'environment',
       title: 'Environment Physics',
       titleKey: 'experiment.panel.environment.title',
       description: 'Physical environment variables applied to the tabletop and body dynamics.',
@@ -474,6 +483,7 @@ function buildPanelsFromLiveSnapshot(session: typeof mockSession): ConsolePanel[
       })),
     },
     {
+      id: 'sensory',
       title: 'Sensory Inputs',
       titleKey: 'experiment.panel.sensory.title',
       description: 'Abstract sensory input scalars injected into afferent neurons.',
@@ -487,6 +497,7 @@ function buildPanelsFromLiveSnapshot(session: typeof mockSession): ConsolePanel[
       noteKey: 'experiment.panel.sensory.note',
     },
     {
+      id: 'run',
       title: 'Run',
       titleKey: 'experiment.panel.run.title',
       description: 'Control rollout length, run mode, and output artifacts.',
@@ -505,6 +516,7 @@ function buildPanelsFromLiveSnapshot(session: typeof mockSession): ConsolePanel[
       ],
     },
     {
+      id: 'log',
       title: 'Intervention Log',
       titleKey: 'experiment.panel.log.title',
       description: 'Read-only log proving there is no direct action or joint override.',

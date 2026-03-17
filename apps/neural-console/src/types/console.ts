@@ -13,6 +13,7 @@ export interface ConsoleAction {
 }
 
 export interface ConsolePanel {
+  id?: string
   title: string
   description: string
   titleKey?: string
