@@ -379,10 +379,12 @@ def test_materialize_runtime_activity_artifacts_emits_grouped_display_region_act
     assert set(grouped) == {"AL", "FB"}
     assert grouped["AL"]["raw_activity_mass"] == pytest.approx(2.0)
     assert grouped["AL"]["signed_activity"] == pytest.approx(-2.0)
+    assert grouped["AL"]["node_count"] == 1
     assert grouped["AL"]["member_neuropils"] == ["AL_L", "AL_R"]
     assert grouped["AL"]["view_mode"] == "grouped-neuropil-v1"
     assert grouped["AL"]["is_display_transform"] is True
 
     assert grouped["FB"]["raw_activity_mass"] == pytest.approx(0.5)
     assert grouped["FB"]["signed_activity"] == pytest.approx(0.5)
+    assert grouped["FB"]["node_count"] == 1
     assert grouped["FB"]["member_neuropils"] == ["FB"]

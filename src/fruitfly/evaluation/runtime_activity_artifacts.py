@@ -252,7 +252,10 @@ def _build_brain_view_payload_for_step(
         }
         for neuropil_id in sorted(raw_activity_mass_by_neuropil)
     ]
-    display_region_activity = _build_grouped_display_region_activity(region_activity)
+    display_region_activity = _build_grouped_display_region_activity(
+        region_activity,
+        node_membership_by_neuropil=node_membership,
+    )
 
     source_id_by_node_idx = {int(row["node_idx"]): str(row["source_id"]) for row in node_index_rows}
     top_nodes = []
@@ -306,6 +309,8 @@ def _build_brain_view_payload_for_step(
 
 def _build_grouped_display_region_activity(
     region_activity: list[dict[str, Any]],
+    *,
+    node_membership_by_neuropil: dict[str, set[int]],
 ) -> list[dict[str, Any]]:
     group_order = {
         group_id: index
@@ -323,7 +328,7 @@ def _build_grouped_display_region_activity(
                 "raw_activity_mass": 0.0,
                 "signed_activity": 0.0,
                 "covered_weight_sum": 0.0,
-                "node_count": 0,
+                "node_idxs": set(),
                 "member_neuropils": set(),
                 "view_mode": "grouped-neuropil-v1",
                 "is_display_transform": True,
@@ -332,8 +337,9 @@ def _build_grouped_display_region_activity(
         entry["raw_activity_mass"] += float(region["raw_activity_mass"])
         entry["signed_activity"] += float(region["signed_activity"])
         entry["covered_weight_sum"] += float(region["covered_weight_sum"])
-        entry["node_count"] += int(region["node_count"])
-        entry["member_neuropils"].add(str(region["neuropil_id"]))
+        neuropil_id = str(region["neuropil_id"])
+        entry["member_neuropils"].add(neuropil_id)
+        entry["node_idxs"].update(node_membership_by_neuropil.get(neuropil_id, set()))
 
     return [
         {
@@ -341,7 +347,7 @@ def _build_grouped_display_region_activity(
             "raw_activity_mass": float(entry["raw_activity_mass"]),
             "signed_activity": float(entry["signed_activity"]),
             "covered_weight_sum": float(entry["covered_weight_sum"]),
-            "node_count": int(entry["node_count"]),
+            "node_count": len(entry["node_idxs"]),
             "member_neuropils": sorted(entry["member_neuropils"]),
             "view_mode": str(entry["view_mode"]),
             "is_display_transform": bool(entry["is_display_transform"]),
