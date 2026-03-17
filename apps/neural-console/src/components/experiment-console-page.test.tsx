@@ -277,7 +277,7 @@ describe('ExperimentConsolePage layout', () => {
     expect(screen.queryByText('LO_L')).not.toBeInTheDocument()
   })
 
-  it('keeps formal top regions hidden by default when grouped summary data is missing', async () => {
+  it('falls back to fine-grained top regions when grouped summary data is missing', async () => {
     const user = userEvent.setup()
 
     render(
@@ -339,15 +339,18 @@ describe('ExperimentConsolePage layout', () => {
     })
 
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
-    expect(screen.queryByText('ME_R')).not.toBeInTheDocument()
-    expect(screen.queryByText('LO_L')).not.toBeInTheDocument()
+    expect(screen.getByText('ME_R')).toBeInTheDocument()
+    expect(screen.getByText('LO_L')).toBeInTheDocument()
     expect(screen.queryByText('AL')).not.toBeInTheDocument()
     expect(screen.queryByText('FB')).not.toBeInTheDocument()
 
     await user.click(toggle)
     expect(toggle).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByText('ME_R')).toBeInTheDocument()
-    expect(screen.getByText('LO_L')).toBeInTheDocument()
+    expect(screen.getAllByText('ME_R').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('LO_L').length).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getByText(/fine-grained formal data|细粒度正式数据/i),
+    ).toBeInTheDocument()
   })
 
   it('keeps formal neuropil detail collapsed until expanded', async () => {
