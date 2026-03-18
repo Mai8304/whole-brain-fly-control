@@ -806,6 +806,144 @@ def test_console_api_fails_closed_on_missing_official_render_checkpoint(tmp_path
         assert response.status_code == 503
         assert "checkpoint" in response.json()["detail"].lower()
 
+
+def test_console_api_fails_closed_when_official_render_backend_factory_raises(tmp_path: Path, monkeypatch) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+    import fruitfly.ui.console_api as console_api_module
+
+    def raising_backend_factory(_config):
+        raise ValueError("backend init failed")
+
+    monkeypatch.setattr(
+        console_api_module,
+        "_create_mujoco_fly_official_render_backend_factory",
+        lambda: raising_backend_factory,
+    )
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    scene_dir = tmp_path / "flybody-official-walk"
+    checkpoint_path = tmp_path / "policy.ckpt"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    scene_dir.mkdir()
+    checkpoint_path.write_bytes(b"checkpoint")
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 1, "edge_count": 0, "afferent_count": 0, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps({"status": "ok", "task": "straight_walking", "steps_requested": 1, "steps_completed": 1}),
+        encoding="utf-8",
+    )
+    (scene_dir / "manifest.json").write_text(
+        json.dumps({"entry_xml": "walk_imitation.xml", "scene_version": "flybody-walk-imitation-v1"}),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+            mujoco_fly_scene_dir=scene_dir,
+            mujoco_fly_policy_checkpoint_path=checkpoint_path,
+        )
+    )
+    client = TestClient(app)
+
+    session_response = client.get("/api/mujoco-fly-official-render/session")
+    assert session_response.status_code == 200
+    session_payload = session_response.json()
+    assert session_payload["available"] is False
+    assert session_payload["running_state"] == "unavailable"
+    assert session_payload["checkpoint_loaded"] is True
+    assert "backend" in session_payload["reason"].lower()
+
+
+def test_console_api_maps_official_render_backend_value_errors_to_503(tmp_path: Path, monkeypatch) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+    import fruitfly.ui.console_api as console_api_module
+
+    class FakeOfficialRenderBackend:
+        def start(self) -> None:
+            raise ValueError("start failed")
+
+        def pause(self) -> None:
+            raise ValueError("pause failed")
+
+        def reset(self) -> None:
+            raise ValueError("reset failed")
+
+        def set_camera_preset(self, camera_id: str) -> None:
+            raise ValueError(f"camera failed: {camera_id}")
+
+        def render_frame(self, *, width: int, height: int, camera_id: str) -> bytes:
+            raise ValueError(f"frame failed: {width}x{height}:{camera_id}")
+
+    fake_backend = FakeOfficialRenderBackend()
+
+    def fake_backend_factory(_config):
+        return fake_backend
+
+    monkeypatch.setattr(
+        console_api_module,
+        "_create_mujoco_fly_official_render_backend_factory",
+        lambda: fake_backend_factory,
+    )
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    scene_dir = tmp_path / "flybody-official-walk"
+    checkpoint_path = tmp_path / "policy.ckpt"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    scene_dir.mkdir()
+    checkpoint_path.write_bytes(b"checkpoint")
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 1, "edge_count": 0, "afferent_count": 0, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps({"status": "ok", "task": "straight_walking", "steps_requested": 1, "steps_completed": 1}),
+        encoding="utf-8",
+    )
+    (scene_dir / "manifest.json").write_text(
+        json.dumps({"entry_xml": "walk_imitation.xml", "scene_version": "flybody-walk-imitation-v1"}),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+            mujoco_fly_scene_dir=scene_dir,
+            mujoco_fly_policy_checkpoint_path=checkpoint_path,
+        )
+    )
+    client = TestClient(app)
+
+    frame_response = client.get("/api/mujoco-fly-official-render/frame?width=960&height=540")
+    assert frame_response.status_code == 503
+    assert "frame failed" in frame_response.json()["detail"].lower()
+
+    invalid_frame_response = client.get("/api/mujoco-fly-official-render/frame?width=0&height=540")
+    assert invalid_frame_response.status_code == 400
+    assert "width" in invalid_frame_response.json()["detail"].lower()
+
+    for path, method, payload in (
+        ("/api/mujoco-fly-official-render/start", "post", None),
+        ("/api/mujoco-fly-official-render/pause", "post", None),
+        ("/api/mujoco-fly-official-render/reset", "post", None),
+        ("/api/mujoco-fly-official-render/camera", "post", {"camera": "back"}),
+    ):
+        response = client.request(method.upper(), path, json=payload)
+        assert response.status_code == 503
+        assert "failed" in response.json()["detail"].lower()
+
 def test_console_api_rematerializes_stale_brain_view_contract(tmp_path: Path) -> None:
     from fruitfly.evaluation.runtime_activity_artifacts import (
         RUNTIME_ACTIVITY_ARTIFACT_VERSION,

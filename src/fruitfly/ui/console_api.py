@@ -104,13 +104,29 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     def get_or_create_mujoco_fly_official_render_runtime() -> MujocoFlyOfficialRenderRuntime:
         nonlocal mujoco_fly_official_render_runtime
         if mujoco_fly_official_render_runtime is None:
-            mujoco_fly_official_render_runtime = create_mujoco_fly_official_render_runtime(
-                MujocoFlyOfficialRenderRuntimeConfig(
-                    scene_dir=config.mujoco_fly_scene_dir,
-                    policy_checkpoint_path=config.mujoco_fly_policy_checkpoint_path,
-                ),
-                backend_factory=_create_mujoco_fly_official_render_backend_factory(),
+            runtime_config = MujocoFlyOfficialRenderRuntimeConfig(
+                scene_dir=config.mujoco_fly_scene_dir,
+                policy_checkpoint_path=config.mujoco_fly_policy_checkpoint_path,
             )
+            try:
+                mujoco_fly_official_render_runtime = create_mujoco_fly_official_render_runtime(
+                    runtime_config,
+                    backend_factory=_create_mujoco_fly_official_render_backend_factory(),
+                )
+            except Exception:
+                checkpoint_loaded = bool(
+                    config.mujoco_fly_policy_checkpoint_path is not None
+                    and config.mujoco_fly_policy_checkpoint_path.exists()
+                )
+                mujoco_fly_official_render_runtime = MujocoFlyOfficialRenderRuntime(
+                    config=runtime_config,
+                    scene_version="unavailable",
+                    available=False,
+                    running_state="unavailable",
+                    checkpoint_loaded=checkpoint_loaded,
+                    current_camera=runtime_config.default_camera,
+                    reason="Official MuJoCo render backend is unavailable",
+                )
         return mujoco_fly_official_render_runtime
 
     def close_replay_frame_client() -> None:
@@ -264,15 +280,17 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
                     "camera": requested_camera,
                 }
             )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        try:
             frame = runtime.render_frame(
                 width=request["width"],
                 height=request["height"],
                 camera=request["camera"],
             )
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-        except RuntimeError as exc:
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except Exception as exc:
+            message = str(exc).strip() or "official render frame rendering failed"
+            raise HTTPException(status_code=503, detail=message) from exc
         return Response(content=frame.bytes, media_type=frame.content_type)
 
     @app.post("/api/mujoco-fly-official-render/start")
@@ -305,8 +323,9 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
         runtime = get_or_create_mujoco_fly_official_render_runtime()
         try:
             runtime.set_camera_preset(camera)
-        except RuntimeError as exc:
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except Exception as exc:
+            message = str(exc).strip() or "official render camera update failed"
+            raise HTTPException(status_code=503, detail=message) from exc
         return runtime.session_payload()
 
     @app.websocket("/api/mujoco-fly/stream")
@@ -481,8 +500,9 @@ def _validated_mujoco_fly_viewer_state(runtime: MujocoFlyRuntime) -> dict[str, A
 def _run_mujoco_fly_official_render_control(control: Any) -> None:
     try:
         control()
-    except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        message = str(exc).strip() or "official render control failed"
+        raise HTTPException(status_code=503, detail=message) from exc
 
 
 def _run_mujoco_fly_control(control: Any) -> None:
