@@ -2,7 +2,7 @@ import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera'
 import { Engine } from '@babylonjs/core/Engines/engine'
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color'
-import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector'
+import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
@@ -61,6 +61,7 @@ interface ViewerCameraConfig {
   position: [number, number, number]
   target: [number, number, number]
   radius: number
+  upVector: [number, number, number] | null
 }
 
 interface ParsedObjAsset {
@@ -204,6 +205,9 @@ export async function createMujocoFlyBrowserViewerScene(
 
     camera.setTarget(Vector3.FromArray(resolvedCamera.target))
     camera.setPosition(Vector3.FromArray(resolvedCamera.position))
+    camera.upVector = resolvedCamera.upVector
+      ? Vector3.FromArray(resolvedCamera.upVector)
+      : Vector3.Up()
   }
 
   function setViewPreset(preset: MujocoFlyBrowserViewerCameraPreset) {
@@ -302,25 +306,20 @@ export function materialColorFromRgba(
 export function resolveCameraPresetConfig(
   cameraManifest: MujocoFlyBrowserViewerCameraManifestEntry,
   target: [number, number, number],
-  minimumRadius = 0.52,
+  fitRadius = 0.52,
 ): ViewerCameraConfig {
   const targetVector = Vector3.FromArray(target)
-  const rawOffset = transformMujocoVectorToBabylon(cameraManifest.position)
-  let offset = rawOffset.clone()
-  if (cameraManifest.mode === null) {
-    if (offset.lengthSquared() === 0) {
-      offset = new Vector3(0, 1, 0)
-    }
-    offset = offset.normalize().scale(minimumRadius)
-  } else if (offset.length() < minimumRadius) {
-    offset = offset.normalizeToNew().scale(minimumRadius)
-  }
+  const axes = resolveCameraAxes(cameraManifest)
+  const forward = axes?.forward ?? fallbackCameraDirection(cameraManifest)
+  const up = axes?.up ?? null
+  const radius = fitRadius * cameraDistanceMultiplier(cameraManifest.preset)
+  const position = targetVector.subtract(forward.scale(radius))
 
-  const position = targetVector.add(offset)
   return {
     position: [position.x, position.y, position.z],
     target,
-    radius: position.subtract(targetVector).length(),
+    radius,
+    upVector: up ? [up.x, up.y, up.z] : null,
   }
 }
 
@@ -339,7 +338,69 @@ function fallbackCameraPresetConfig(
     position: [position.x, position.y, position.z],
     target,
     radius: position.subtract(targetVector).length(),
+    upVector: null,
   }
+}
+
+function resolveCameraAxes(cameraManifest: MujocoFlyBrowserViewerCameraManifestEntry) {
+  if (cameraManifest.xyaxes) {
+    const xAxis = Vector3.FromArray(cameraManifest.xyaxes.slice(0, 3))
+    const yAxis = Vector3.FromArray(cameraManifest.xyaxes.slice(3, 6))
+    const zAxis = Vector3.Cross(xAxis, yAxis)
+    return {
+      forward: normalizeOrNull(transformMujocoVectorToBabylon(zAxis.scale(-1))),
+      up: normalizeOrNull(transformMujocoVectorToBabylon(yAxis)),
+    }
+  }
+
+  if (cameraManifest.quaternion) {
+    const rotation = new Quaternion(
+      cameraManifest.quaternion[1],
+      cameraManifest.quaternion[2],
+      cameraManifest.quaternion[3],
+      cameraManifest.quaternion[0],
+    )
+    const forward = rotateVectorByQuaternion(new Vector3(0, 0, -1), rotation)
+    const up = rotateVectorByQuaternion(Vector3.Up(), rotation)
+    return {
+      forward: normalizeOrNull(transformMujocoVectorToBabylon(forward)),
+      up: normalizeOrNull(transformMujocoVectorToBabylon(up)),
+    }
+  }
+
+  return null
+}
+
+function fallbackCameraDirection(cameraManifest: MujocoFlyBrowserViewerCameraManifestEntry) {
+  const offset = transformMujocoVectorToBabylon(cameraManifest.position)
+  const normalizedOffset = normalizeOrNull(offset)
+  if (normalizedOffset) {
+    return normalizedOffset.scale(-1)
+  }
+  return new Vector3(0, -1, 0)
+}
+
+function cameraDistanceMultiplier(preset: MujocoFlyBrowserViewerCameraPreset) {
+  if (preset === 'top') {
+    return 1.9
+  }
+  if (preset === 'track') {
+    return 1.7
+  }
+  return 1.55
+}
+
+function normalizeOrNull(vector: Vector3) {
+  if (vector.lengthSquared() === 0) {
+    return null
+  }
+  return vector.normalizeToNew()
+}
+
+function rotateVectorByQuaternion(vector: Vector3, quaternion: Quaternion) {
+  const matrix = Matrix.Identity()
+  quaternion.toRotationMatrix(matrix)
+  return Vector3.TransformCoordinates(vector, matrix)
 }
 
 function toBabylonQuaternion(quaternion: [number, number, number, number] | number[]) {
