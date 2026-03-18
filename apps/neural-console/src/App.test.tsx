@@ -96,6 +96,50 @@ describe('Neural console shell', () => {
     expect(screen.queryByRole('heading', { name: /whole-brain fly console/i })).not.toBeInTheDocument()
   })
 
+  it('opens the mujoco-fly page from the pathname without hydrating experiment console data', async () => {
+    const requests: string[] = []
+    const jsonResponse = (payload: unknown) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => payload,
+      } as Response)
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input)
+      requests.push(url)
+      if (url.endsWith('/api/mujoco-fly/session')) {
+        return jsonResponse({
+          available: false,
+          status: 'unavailable',
+          reason: 'Official walking policy checkpoint is unavailable',
+          scene_version: 'flybody-walk-imitation-v1',
+        })
+      }
+      if (url.endsWith('/api/mujoco-fly/state')) {
+        return jsonResponse({
+          frame_id: 0,
+          sim_time: 0,
+          running_state: 'unavailable',
+          scene_version: 'flybody-walk-imitation-v1',
+          body_poses: [],
+          reason: 'Official walking policy checkpoint is unavailable',
+        })
+      }
+      return Promise.reject(new Error(`unexpected request: ${url}`))
+    })
+    window.history.replaceState(null, '', '/mujoco-fly')
+
+    render(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /mujoco fly|mujoco 果蝇/i })).toBeInTheDocument()
+    })
+
+    expect(screen.queryByRole('heading', { name: /whole-brain fly console/i })).not.toBeInTheDocument()
+    expect(requests.some((url) => url.includes('/api/console/session'))).toBe(false)
+    expect(requests.some((url) => url.includes('/api/mujoco-fly/session'))).toBe(true)
+  })
+
   it('hydrates from the read-only UI backend when API responses are available', async () => {
     const requests: string[] = []
     const jsonResponse = (payload: unknown) =>
