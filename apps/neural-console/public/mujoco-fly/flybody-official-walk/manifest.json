@@ -1,5 +1,1115 @@
 {
   "asset_count": 86,
+  "body_manifest": [
+    {
+      "body_name": "walker/",
+      "geom_names": [],
+      "parent_body_name": null,
+      "renderable": false
+    },
+    {
+      "body_name": "walker/thorax",
+      "geom_names": [
+        "walker/thorax",
+        "walker/thorax_black"
+      ],
+      "parent_body_name": "walker/",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/head",
+      "geom_names": [
+        "walker/head",
+        "walker/head_red",
+        "walker/head_ocelli",
+        "walker/head_black"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/rostrum",
+      "geom_names": [
+        "walker/rostrum",
+        "walker/rostrum_bristle-brown"
+      ],
+      "parent_body_name": "walker/head",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/haustellum",
+      "geom_names": [
+        "walker/haustellum",
+        "walker/haustellum_black"
+      ],
+      "parent_body_name": "walker/rostrum",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/labrum_left",
+      "geom_names": [
+        "walker/labrum_left_lower"
+      ],
+      "parent_body_name": "walker/haustellum",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/labrum_right",
+      "geom_names": [
+        "walker/labrum_right_lower"
+      ],
+      "parent_body_name": "walker/haustellum",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/antenna_left",
+      "geom_names": [
+        "walker/antenna_left",
+        "walker/antenna_left_black"
+      ],
+      "parent_body_name": "walker/head",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/antenna_right",
+      "geom_names": [
+        "walker/antenna_right",
+        "walker/antenna_right_black"
+      ],
+      "parent_body_name": "walker/head",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/wing_left",
+      "geom_names": [
+        "walker/wing_left_brown",
+        "walker/wing_left_membrane"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/wing_right",
+      "geom_names": [
+        "walker/wing_right_brown",
+        "walker/wing_right_membrane"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/abdomen",
+      "geom_names": [
+        "walker/abdomen",
+        "walker/abdomen_lower"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/abdomen_2",
+      "geom_names": [
+        "walker/abdomen_2",
+        "walker/abdomen_2_lower"
+      ],
+      "parent_body_name": "walker/abdomen",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/abdomen_3",
+      "geom_names": [
+        "walker/abdomen_3",
+        "walker/abdomen_3_lower"
+      ],
+      "parent_body_name": "walker/abdomen_2",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/abdomen_4",
+      "geom_names": [
+        "walker/abdomen_4",
+        "walker/abdomen_4_lower"
+      ],
+      "parent_body_name": "walker/abdomen_3",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/abdomen_5",
+      "geom_names": [
+        "walker/abdomen_5",
+        "walker/abdomen_5_lower"
+      ],
+      "parent_body_name": "walker/abdomen_4",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/abdomen_6",
+      "geom_names": [
+        "walker/abdomen_6",
+        "walker/abdomen_6_lower"
+      ],
+      "parent_body_name": "walker/abdomen_5",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/abdomen_7",
+      "geom_names": [
+        "walker/abdomen_8",
+        "walker/abdomen_7",
+        "walker/abdomen_7_lower"
+      ],
+      "parent_body_name": "walker/abdomen_6",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/haltere_left",
+      "geom_names": [
+        "walker/haltere_left"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/haltere_right",
+      "geom_names": [
+        "walker/haltere_right"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/coxa_T1_left",
+      "geom_names": [
+        "walker/coxa_T1_left"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/femur_T1_left",
+      "geom_names": [
+        "walker/femur_T1_left"
+      ],
+      "parent_body_name": "walker/coxa_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tibia_T1_left",
+      "geom_names": [
+        "walker/tibia_T1_left"
+      ],
+      "parent_body_name": "walker/femur_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus_T1_left",
+      "geom_names": [
+        "walker/tarsus_T1_left"
+      ],
+      "parent_body_name": "walker/tibia_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus2_T1_left",
+      "geom_names": [
+        "walker/tarsus2_T1_left"
+      ],
+      "parent_body_name": "walker/tarsus_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus3_T1_left",
+      "geom_names": [
+        "walker/tarsus3_T1_left"
+      ],
+      "parent_body_name": "walker/tarsus2_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus4_T1_left",
+      "geom_names": [
+        "walker/tarsus4_T1_left"
+      ],
+      "parent_body_name": "walker/tarsus3_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/claw_T1_left",
+      "geom_names": [
+        "walker/tarsal_claw_T1_left"
+      ],
+      "parent_body_name": "walker/tarsus4_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/coxa_T1_right",
+      "geom_names": [
+        "walker/coxa_T1_right"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/femur_T1_right",
+      "geom_names": [
+        "walker/femur_T1_right"
+      ],
+      "parent_body_name": "walker/coxa_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tibia_T1_right",
+      "geom_names": [
+        "walker/tibia_T1_right"
+      ],
+      "parent_body_name": "walker/femur_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus_T1_right",
+      "geom_names": [
+        "walker/tarsus_T1_right"
+      ],
+      "parent_body_name": "walker/tibia_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus2_T1_right",
+      "geom_names": [
+        "walker/tarsus2_T1_right"
+      ],
+      "parent_body_name": "walker/tarsus_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus3_T1_right",
+      "geom_names": [
+        "walker/tarsus3_T1_right"
+      ],
+      "parent_body_name": "walker/tarsus2_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus4_T1_right",
+      "geom_names": [
+        "walker/tarsus4_T1_right"
+      ],
+      "parent_body_name": "walker/tarsus3_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/claw_T1_right",
+      "geom_names": [
+        "walker/tarsal_claw_T1_right"
+      ],
+      "parent_body_name": "walker/tarsus4_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/coxa_T2_left",
+      "geom_names": [
+        "walker/coxa_T2_left"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/femur_T2_left",
+      "geom_names": [
+        "walker/femur_T2_left"
+      ],
+      "parent_body_name": "walker/coxa_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tibia_T2_left",
+      "geom_names": [
+        "walker/tibia_T2_left"
+      ],
+      "parent_body_name": "walker/femur_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus_T2_left",
+      "geom_names": [
+        "walker/tarsus_T2_left"
+      ],
+      "parent_body_name": "walker/tibia_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus2_T2_left",
+      "geom_names": [
+        "walker/tarsus2_T2_left"
+      ],
+      "parent_body_name": "walker/tarsus_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus3_T2_left",
+      "geom_names": [
+        "walker/tarsus3_T2_left"
+      ],
+      "parent_body_name": "walker/tarsus2_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus4_T2_left",
+      "geom_names": [
+        "walker/tarsus4_T2_left"
+      ],
+      "parent_body_name": "walker/tarsus3_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/claw_T2_left",
+      "geom_names": [
+        "walker/tarsal_claw_T2_left"
+      ],
+      "parent_body_name": "walker/tarsus4_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/coxa_T2_right",
+      "geom_names": [
+        "walker/coxa_T2_right"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/femur_T2_right",
+      "geom_names": [
+        "walker/femur_T2_right"
+      ],
+      "parent_body_name": "walker/coxa_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tibia_T2_right",
+      "geom_names": [
+        "walker/tibia_T2_right"
+      ],
+      "parent_body_name": "walker/femur_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus_T2_right",
+      "geom_names": [
+        "walker/tarsus_T2_right"
+      ],
+      "parent_body_name": "walker/tibia_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus2_T2_right",
+      "geom_names": [
+        "walker/tarsus2_T2_right"
+      ],
+      "parent_body_name": "walker/tarsus_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus3_T2_right",
+      "geom_names": [
+        "walker/tarsus3_T2_right"
+      ],
+      "parent_body_name": "walker/tarsus2_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus4_T2_right",
+      "geom_names": [
+        "walker/tarsus4_T2_right"
+      ],
+      "parent_body_name": "walker/tarsus3_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/claw_T2_right",
+      "geom_names": [
+        "walker/tarsal_claw_T2_right"
+      ],
+      "parent_body_name": "walker/tarsus4_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/coxa_T3_left",
+      "geom_names": [
+        "walker/coxa_T3_left"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/femur_T3_left",
+      "geom_names": [
+        "walker/femur_T3_left"
+      ],
+      "parent_body_name": "walker/coxa_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tibia_T3_left",
+      "geom_names": [
+        "walker/tibia_T3_left"
+      ],
+      "parent_body_name": "walker/femur_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus_T3_left",
+      "geom_names": [
+        "walker/tarsus_T3_left"
+      ],
+      "parent_body_name": "walker/tibia_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus2_T3_left",
+      "geom_names": [
+        "walker/tarsus2_T3_left"
+      ],
+      "parent_body_name": "walker/tarsus_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus3_T3_left",
+      "geom_names": [
+        "walker/tarsus3_T3_left"
+      ],
+      "parent_body_name": "walker/tarsus2_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus4_T3_left",
+      "geom_names": [
+        "walker/tarsus4_T3_left"
+      ],
+      "parent_body_name": "walker/tarsus3_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/claw_T3_left",
+      "geom_names": [
+        "walker/tarsal_claw_T3_left"
+      ],
+      "parent_body_name": "walker/tarsus4_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/coxa_T3_right",
+      "geom_names": [
+        "walker/coxa_T3_right"
+      ],
+      "parent_body_name": "walker/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/femur_T3_right",
+      "geom_names": [
+        "walker/femur_T3_right"
+      ],
+      "parent_body_name": "walker/coxa_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tibia_T3_right",
+      "geom_names": [
+        "walker/tibia_T3_right"
+      ],
+      "parent_body_name": "walker/femur_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus_T3_right",
+      "geom_names": [
+        "walker/tarsus_T3_right"
+      ],
+      "parent_body_name": "walker/tibia_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus2_T3_right",
+      "geom_names": [
+        "walker/tarsus2_T3_right"
+      ],
+      "parent_body_name": "walker/tarsus_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus3_T3_right",
+      "geom_names": [
+        "walker/tarsus3_T3_right"
+      ],
+      "parent_body_name": "walker/tarsus2_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/tarsus4_T3_right",
+      "geom_names": [
+        "walker/tarsus4_T3_right"
+      ],
+      "parent_body_name": "walker/tarsus3_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "walker/claw_T3_right",
+      "geom_names": [
+        "walker/tarsal_claw_T3_right"
+      ],
+      "parent_body_name": "walker/tarsus4_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/",
+      "geom_names": [],
+      "parent_body_name": null,
+      "renderable": false
+    },
+    {
+      "body_name": "ghost/thorax",
+      "geom_names": [
+        "ghost/thorax",
+        "ghost/thorax_black"
+      ],
+      "parent_body_name": "ghost/",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/head",
+      "geom_names": [
+        "ghost/head",
+        "ghost/head_red",
+        "ghost/head_ocelli",
+        "ghost/head_black"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/rostrum",
+      "geom_names": [
+        "ghost/rostrum",
+        "ghost/rostrum_bristle-brown"
+      ],
+      "parent_body_name": "ghost/head",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/haustellum",
+      "geom_names": [
+        "ghost/haustellum",
+        "ghost/haustellum_black"
+      ],
+      "parent_body_name": "ghost/rostrum",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/labrum_left",
+      "geom_names": [
+        "ghost/labrum_left_lower"
+      ],
+      "parent_body_name": "ghost/haustellum",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/labrum_right",
+      "geom_names": [
+        "ghost/labrum_right_lower"
+      ],
+      "parent_body_name": "ghost/haustellum",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/antenna_left",
+      "geom_names": [
+        "ghost/antenna_left",
+        "ghost/antenna_left_black"
+      ],
+      "parent_body_name": "ghost/head",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/antenna_right",
+      "geom_names": [
+        "ghost/antenna_right",
+        "ghost/antenna_right_black"
+      ],
+      "parent_body_name": "ghost/head",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/abdomen",
+      "geom_names": [
+        "ghost/abdomen",
+        "ghost/abdomen_lower"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/abdomen_2",
+      "geom_names": [
+        "ghost/abdomen_2",
+        "ghost/abdomen_2_lower"
+      ],
+      "parent_body_name": "ghost/abdomen",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/abdomen_3",
+      "geom_names": [
+        "ghost/abdomen_3",
+        "ghost/abdomen_3_lower"
+      ],
+      "parent_body_name": "ghost/abdomen_2",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/abdomen_4",
+      "geom_names": [
+        "ghost/abdomen_4",
+        "ghost/abdomen_4_lower"
+      ],
+      "parent_body_name": "ghost/abdomen_3",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/abdomen_5",
+      "geom_names": [
+        "ghost/abdomen_5",
+        "ghost/abdomen_5_lower"
+      ],
+      "parent_body_name": "ghost/abdomen_4",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/abdomen_6",
+      "geom_names": [
+        "ghost/abdomen_6",
+        "ghost/abdomen_6_lower"
+      ],
+      "parent_body_name": "ghost/abdomen_5",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/abdomen_7",
+      "geom_names": [
+        "ghost/abdomen_8",
+        "ghost/abdomen_7",
+        "ghost/abdomen_7_lower"
+      ],
+      "parent_body_name": "ghost/abdomen_6",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/haltere_left",
+      "geom_names": [
+        "ghost/haltere_left"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/haltere_right",
+      "geom_names": [
+        "ghost/haltere_right"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/coxa_T1_left",
+      "geom_names": [
+        "ghost/coxa_T1_left"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/femur_T1_left",
+      "geom_names": [
+        "ghost/femur_T1_left"
+      ],
+      "parent_body_name": "ghost/coxa_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tibia_T1_left",
+      "geom_names": [
+        "ghost/tibia_T1_left"
+      ],
+      "parent_body_name": "ghost/femur_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus_T1_left",
+      "geom_names": [
+        "ghost/tarsus_T1_left"
+      ],
+      "parent_body_name": "ghost/tibia_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus2_T1_left",
+      "geom_names": [
+        "ghost/tarsus2_T1_left"
+      ],
+      "parent_body_name": "ghost/tarsus_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus3_T1_left",
+      "geom_names": [
+        "ghost/tarsus3_T1_left"
+      ],
+      "parent_body_name": "ghost/tarsus2_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus4_T1_left",
+      "geom_names": [
+        "ghost/tarsus4_T1_left"
+      ],
+      "parent_body_name": "ghost/tarsus3_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/claw_T1_left",
+      "geom_names": [
+        "ghost/tarsal_claw_T1_left"
+      ],
+      "parent_body_name": "ghost/tarsus4_T1_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/coxa_T1_right",
+      "geom_names": [
+        "ghost/coxa_T1_right"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/femur_T1_right",
+      "geom_names": [
+        "ghost/femur_T1_right"
+      ],
+      "parent_body_name": "ghost/coxa_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tibia_T1_right",
+      "geom_names": [
+        "ghost/tibia_T1_right"
+      ],
+      "parent_body_name": "ghost/femur_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus_T1_right",
+      "geom_names": [
+        "ghost/tarsus_T1_right"
+      ],
+      "parent_body_name": "ghost/tibia_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus2_T1_right",
+      "geom_names": [
+        "ghost/tarsus2_T1_right"
+      ],
+      "parent_body_name": "ghost/tarsus_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus3_T1_right",
+      "geom_names": [
+        "ghost/tarsus3_T1_right"
+      ],
+      "parent_body_name": "ghost/tarsus2_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus4_T1_right",
+      "geom_names": [
+        "ghost/tarsus4_T1_right"
+      ],
+      "parent_body_name": "ghost/tarsus3_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/claw_T1_right",
+      "geom_names": [
+        "ghost/tarsal_claw_T1_right"
+      ],
+      "parent_body_name": "ghost/tarsus4_T1_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/coxa_T2_left",
+      "geom_names": [
+        "ghost/coxa_T2_left"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/femur_T2_left",
+      "geom_names": [
+        "ghost/femur_T2_left"
+      ],
+      "parent_body_name": "ghost/coxa_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tibia_T2_left",
+      "geom_names": [
+        "ghost/tibia_T2_left"
+      ],
+      "parent_body_name": "ghost/femur_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus_T2_left",
+      "geom_names": [
+        "ghost/tarsus_T2_left"
+      ],
+      "parent_body_name": "ghost/tibia_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus2_T2_left",
+      "geom_names": [
+        "ghost/tarsus2_T2_left"
+      ],
+      "parent_body_name": "ghost/tarsus_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus3_T2_left",
+      "geom_names": [
+        "ghost/tarsus3_T2_left"
+      ],
+      "parent_body_name": "ghost/tarsus2_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus4_T2_left",
+      "geom_names": [
+        "ghost/tarsus4_T2_left"
+      ],
+      "parent_body_name": "ghost/tarsus3_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/claw_T2_left",
+      "geom_names": [
+        "ghost/tarsal_claw_T2_left"
+      ],
+      "parent_body_name": "ghost/tarsus4_T2_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/coxa_T2_right",
+      "geom_names": [
+        "ghost/coxa_T2_right"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/femur_T2_right",
+      "geom_names": [
+        "ghost/femur_T2_right"
+      ],
+      "parent_body_name": "ghost/coxa_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tibia_T2_right",
+      "geom_names": [
+        "ghost/tibia_T2_right"
+      ],
+      "parent_body_name": "ghost/femur_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus_T2_right",
+      "geom_names": [
+        "ghost/tarsus_T2_right"
+      ],
+      "parent_body_name": "ghost/tibia_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus2_T2_right",
+      "geom_names": [
+        "ghost/tarsus2_T2_right"
+      ],
+      "parent_body_name": "ghost/tarsus_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus3_T2_right",
+      "geom_names": [
+        "ghost/tarsus3_T2_right"
+      ],
+      "parent_body_name": "ghost/tarsus2_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus4_T2_right",
+      "geom_names": [
+        "ghost/tarsus4_T2_right"
+      ],
+      "parent_body_name": "ghost/tarsus3_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/claw_T2_right",
+      "geom_names": [
+        "ghost/tarsal_claw_T2_right"
+      ],
+      "parent_body_name": "ghost/tarsus4_T2_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/coxa_T3_left",
+      "geom_names": [
+        "ghost/coxa_T3_left"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/femur_T3_left",
+      "geom_names": [
+        "ghost/femur_T3_left"
+      ],
+      "parent_body_name": "ghost/coxa_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tibia_T3_left",
+      "geom_names": [
+        "ghost/tibia_T3_left"
+      ],
+      "parent_body_name": "ghost/femur_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus_T3_left",
+      "geom_names": [
+        "ghost/tarsus_T3_left"
+      ],
+      "parent_body_name": "ghost/tibia_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus2_T3_left",
+      "geom_names": [
+        "ghost/tarsus2_T3_left"
+      ],
+      "parent_body_name": "ghost/tarsus_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus3_T3_left",
+      "geom_names": [
+        "ghost/tarsus3_T3_left"
+      ],
+      "parent_body_name": "ghost/tarsus2_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus4_T3_left",
+      "geom_names": [
+        "ghost/tarsus4_T3_left"
+      ],
+      "parent_body_name": "ghost/tarsus3_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/claw_T3_left",
+      "geom_names": [
+        "ghost/tarsal_claw_T3_left"
+      ],
+      "parent_body_name": "ghost/tarsus4_T3_left",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/coxa_T3_right",
+      "geom_names": [
+        "ghost/coxa_T3_right"
+      ],
+      "parent_body_name": "ghost/thorax",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/femur_T3_right",
+      "geom_names": [
+        "ghost/femur_T3_right"
+      ],
+      "parent_body_name": "ghost/coxa_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tibia_T3_right",
+      "geom_names": [
+        "ghost/tibia_T3_right"
+      ],
+      "parent_body_name": "ghost/femur_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus_T3_right",
+      "geom_names": [
+        "ghost/tarsus_T3_right"
+      ],
+      "parent_body_name": "ghost/tibia_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus2_T3_right",
+      "geom_names": [
+        "ghost/tarsus2_T3_right"
+      ],
+      "parent_body_name": "ghost/tarsus_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus3_T3_right",
+      "geom_names": [
+        "ghost/tarsus3_T3_right"
+      ],
+      "parent_body_name": "ghost/tarsus2_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/tarsus4_T3_right",
+      "geom_names": [
+        "ghost/tarsus4_T3_right"
+      ],
+      "parent_body_name": "ghost/tarsus3_T3_right",
+      "renderable": true
+    },
+    {
+      "body_name": "ghost/claw_T3_right",
+      "geom_names": [
+        "ghost/tarsal_claw_T3_right"
+      ],
+      "parent_body_name": "ghost/tarsus4_T3_right",
+      "renderable": true
+    }
+  ],
+  "camera_presets": [
+    "track",
+    "side",
+    "back",
+    "top"
+  ],
   "entry_xml": "walk_imitation.xml",
   "files": [
     "abdomen_1_body-a230d78b11e203acdf0c52530efc562a75a9f117.obj",
@@ -88,6 +1198,3494 @@
     "wing_left_membrane-640fa7684986dd7b3fd22cf59453b5ffb89b5c56.obj",
     "wing_right_brown-8db881a1e719be1276e7684ac6c8dccf379e21c5.obj",
     "wing_right_membrane-c29f1c240d9aa14687dcd92b153226ddc4077151.obj"
+  ],
+  "geom_manifest": [
+    {
+      "body_name": "walker/thorax",
+      "geom_name": "walker/thorax",
+      "local_position": [
+        -0.00791,
+        0.0,
+        -0.123
+      ],
+      "local_quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "mesh_asset_path": "thorax_body-3bfa5cf2add6c736dcd41345af6dc290ed65ddd2.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/thorax",
+      "geom_name": "walker/thorax_black",
+      "local_position": [
+        -0.00791,
+        0.0,
+        -0.123
+      ],
+      "local_quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "mesh_asset_path": "thorax_black-a1c2e0261d45e42f5c9be576a748d6cb3fc923bd.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/head",
+      "geom_name": "walker/head",
+      "local_position": [
+        4.11e-07,
+        -0.0334,
+        -0.132
+      ],
+      "local_quaternion": [
+        0.702,
+        0.087,
+        0.087,
+        -0.702
+      ],
+      "mesh_asset_path": "head_body-c41faf4956e4e7fb65b97c3614b3b9a25a30806f.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/head",
+      "geom_name": "walker/head_red",
+      "local_position": [
+        4.11e-07,
+        -0.0334,
+        -0.132
+      ],
+      "local_quaternion": [
+        0.702,
+        0.087,
+        0.087,
+        -0.702
+      ],
+      "mesh_asset_path": "head_red-c66c58eed5a2f6cbbc748e6d670733286dc1b1af.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/head",
+      "geom_name": "walker/head_ocelli",
+      "local_position": [
+        4.11e-07,
+        -0.0334,
+        -0.132
+      ],
+      "local_quaternion": [
+        0.702,
+        0.087,
+        0.087,
+        -0.702
+      ],
+      "mesh_asset_path": "head_ocelli-d752a4b17ff5d4fa146b256aca4d2458b5046b78.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/head",
+      "geom_name": "walker/head_black",
+      "local_position": [
+        4.11e-07,
+        -0.0334,
+        -0.132
+      ],
+      "local_quaternion": [
+        0.702,
+        0.087,
+        0.087,
+        -0.702
+      ],
+      "mesh_asset_path": "head_black-5823ef1385642f535c4660e8442016c3dc5b1583.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/rostrum",
+      "geom_name": "walker/rostrum",
+      "local_position": [
+        -4e-07,
+        0.106,
+        -0.0742
+      ],
+      "local_quaternion": [
+        0.705,
+        0.0494,
+        -0.0494,
+        0.705
+      ],
+      "mesh_asset_path": "rostrum_body-44713a84b19b06cbd0624642c758999a312fa7c9.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/rostrum",
+      "geom_name": "walker/rostrum_bristle-brown",
+      "local_position": [
+        -4e-07,
+        0.106,
+        -0.0742
+      ],
+      "local_quaternion": [
+        0.705,
+        0.0494,
+        -0.0494,
+        0.705
+      ],
+      "mesh_asset_path": "rostrum_bristle-brown-ec0ca2b1e5afb44b00eb5854ff88f2f4e56b9e25.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/haustellum",
+      "geom_name": "walker/haustellum",
+      "local_position": [
+        4.24e-07,
+        -0.00352,
+        -0.101
+      ],
+      "local_quaternion": [
+        0.679,
+        0.198,
+        0.198,
+        -0.679
+      ],
+      "mesh_asset_path": "haustellum_body-beb9241481a4d896f4e37b1c3b6b81628948cd7b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/haustellum",
+      "geom_name": "walker/haustellum_black",
+      "local_position": [
+        4.24e-07,
+        -0.00352,
+        -0.101
+      ],
+      "local_quaternion": [
+        0.679,
+        0.198,
+        0.198,
+        -0.679
+      ],
+      "mesh_asset_path": "haustellum_black-9f5c64daef8dcb8440a45aa53813806c7967fbe2.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/labrum_left",
+      "geom_name": "walker/labrum_left_lower",
+      "local_position": [
+        -0.0977,
+        0.0216,
+        -0.0249
+      ],
+      "local_quaternion": [
+        -0.166,
+        0.181,
+        -0.494,
+        0.834
+      ],
+      "mesh_asset_path": "labrum_left_lower-8d37b6eda0f57e939d1156c583bd26dd61c67998.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/labrum_right",
+      "geom_name": "walker/labrum_right_lower",
+      "local_position": [
+        0.1,
+        0.022,
+        -0.0113
+      ],
+      "local_quaternion": [
+        -0.817,
+        -0.509,
+        0.236,
+        0.133
+      ],
+      "mesh_asset_path": "labrum_right_lower-93c6aa74f3b8b1e4a543b364dc864aad6803bd7d.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/antenna_left",
+      "geom_name": "walker/antenna_left",
+      "local_position": [
+        0.0148,
+        0.116,
+        -0.112
+      ],
+      "local_quaternion": [
+        0.364,
+        0.49,
+        0.474,
+        -0.635
+      ],
+      "mesh_asset_path": "antenna_left_body-e3cc8681784674a4b17dd964cc074147ff789663.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/antenna_left",
+      "geom_name": "walker/antenna_left_black",
+      "local_position": [
+        0.0148,
+        0.116,
+        -0.112
+      ],
+      "local_quaternion": [
+        0.364,
+        0.49,
+        0.474,
+        -0.635
+      ],
+      "mesh_asset_path": "antenna_left_black-29e1cff29ba798c9f05463acd4212161ca930cc7.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/antenna_right",
+      "geom_name": "walker/antenna_right",
+      "local_position": [
+        -0.0153,
+        -0.116,
+        0.112
+      ],
+      "local_quaternion": [
+        -0.474,
+        0.635,
+        0.364,
+        0.49
+      ],
+      "mesh_asset_path": "antenna_right_body-c6e0fb379ce24bcea6b3811cd969c4a2544c0a29.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/antenna_right",
+      "geom_name": "walker/antenna_right_black",
+      "local_position": [
+        -0.0153,
+        -0.116,
+        0.112
+      ],
+      "local_quaternion": [
+        -0.474,
+        0.635,
+        0.364,
+        0.49
+      ],
+      "mesh_asset_path": "antenna_right_black-ba3b98d2ad8d839d6ec560bf5b11c5cc3495c23d.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/wing_left",
+      "geom_name": "walker/wing_left_brown",
+      "local_position": [
+        -0.0968,
+        0.0432,
+        -0.09
+      ],
+      "local_quaternion": [
+        -0.915,
+        0.0,
+        -0.403,
+        0.0
+      ],
+      "mesh_asset_path": "wing_left_brown-f799f8ff2b74e5a364244be2b1bb2e2720e42f9a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/wing_left",
+      "geom_name": "walker/wing_left_membrane",
+      "local_position": [
+        -0.0968,
+        0.0432,
+        -0.09
+      ],
+      "local_quaternion": [
+        -0.915,
+        0.0,
+        -0.403,
+        0.0
+      ],
+      "mesh_asset_path": "wing_left_membrane-640fa7684986dd7b3fd22cf59453b5ffb89b5c56.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/wing_right",
+      "geom_name": "walker/wing_right_brown",
+      "local_position": [
+        0.0968,
+        -0.0432,
+        0.09
+      ],
+      "local_quaternion": [
+        -0.403,
+        0.0,
+        0.915,
+        0.0
+      ],
+      "mesh_asset_path": "wing_right_brown-8db881a1e719be1276e7684ac6c8dccf379e21c5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/wing_right",
+      "geom_name": "walker/wing_right_membrane",
+      "local_position": [
+        0.0968,
+        -0.0432,
+        0.09
+      ],
+      "local_quaternion": [
+        -0.403,
+        0.0,
+        0.915,
+        0.0
+      ],
+      "mesh_asset_path": "wing_right_membrane-c29f1c240d9aa14687dcd92b153226ddc4077151.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen",
+      "geom_name": "walker/abdomen",
+      "local_position": [
+        0.000758,
+        -0.0663,
+        -0.115
+      ],
+      "local_quaternion": [
+        0.7,
+        -0.0853,
+        0.0859,
+        0.704
+      ],
+      "mesh_asset_path": "abdomen_1_body-a230d78b11e203acdf0c52530efc562a75a9f117.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen",
+      "geom_name": "walker/abdomen_lower",
+      "local_position": [
+        0.000758,
+        -0.0663,
+        -0.115
+      ],
+      "local_quaternion": [
+        0.7,
+        -0.0853,
+        0.0859,
+        0.704
+      ],
+      "mesh_asset_path": "abdomen_1_lower-19f05f05d29d432e5d0607e45235c7595a309eb9.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_2",
+      "geom_name": "walker/abdomen_2",
+      "local_position": [
+        0.000532,
+        -0.0293,
+        -0.136
+      ],
+      "local_quaternion": [
+        0.704,
+        0.0507,
+        -0.0503,
+        0.706
+      ],
+      "mesh_asset_path": "abdomen_2_body-470c048e83d9a52cf1839f4320ad62a2ea4c713b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_2",
+      "geom_name": "walker/abdomen_2_lower",
+      "local_position": [
+        0.000532,
+        -0.0293,
+        -0.136
+      ],
+      "local_quaternion": [
+        0.704,
+        0.0507,
+        -0.0503,
+        0.706
+      ],
+      "mesh_asset_path": "abdomen_2_lower-dfca1089c1264e3d02f758e3fb6ad6b1ffd993e9.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_3",
+      "geom_name": "walker/abdomen_3",
+      "local_position": [
+        0.000511,
+        -0.0251,
+        -0.143
+      ],
+      "local_quaternion": [
+        0.697,
+        0.114,
+        -0.114,
+        0.699
+      ],
+      "mesh_asset_path": "abdomen_3_body-1aa59ba5465df1e7e8fb27463c48dcdaf43f413b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_3",
+      "geom_name": "walker/abdomen_3_lower",
+      "local_position": [
+        0.000511,
+        -0.0251,
+        -0.143
+      ],
+      "local_quaternion": [
+        0.697,
+        0.114,
+        -0.114,
+        0.699
+      ],
+      "mesh_asset_path": "abdomen_3_lower-c1c9fef0cc7de7debdd11b71e79751996d2a7448.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_4",
+      "geom_name": "walker/abdomen_4",
+      "local_position": [
+        0.000577,
+        -0.0468,
+        -0.146
+      ],
+      "local_quaternion": [
+        0.693,
+        0.137,
+        -0.138,
+        0.695
+      ],
+      "mesh_asset_path": "abdomen_4_body-67c54d053a1d03b46ecee5b7d126665ecc65dd21.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_4",
+      "geom_name": "walker/abdomen_4_lower",
+      "local_position": [
+        0.000577,
+        -0.0468,
+        -0.146
+      ],
+      "local_quaternion": [
+        0.693,
+        0.137,
+        -0.138,
+        0.695
+      ],
+      "mesh_asset_path": "abdomen_4_lower-55ed3ad0614f06d7b4f34cc97cd2d631831ea1b5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_5",
+      "geom_name": "walker/abdomen_5",
+      "local_position": [
+        0.000607,
+        -0.062,
+        -0.151
+      ],
+      "local_quaternion": [
+        0.687,
+        0.163,
+        -0.163,
+        0.689
+      ],
+      "mesh_asset_path": "abdomen_5_body-79ce6748e524b0c5aab5da3c683415b8662ea0d4.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_5",
+      "geom_name": "walker/abdomen_5_lower",
+      "local_position": [
+        0.000607,
+        -0.062,
+        -0.151
+      ],
+      "local_quaternion": [
+        0.687,
+        0.163,
+        -0.163,
+        0.689
+      ],
+      "mesh_asset_path": "abdomen_5_lower-e157ea4d6e9494df051b370bdba93e4a94f41af6.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_6",
+      "geom_name": "walker/abdomen_6",
+      "local_position": [
+        0.000707,
+        -0.0626,
+        -0.161
+      ],
+      "local_quaternion": [
+        0.674,
+        0.208,
+        -0.208,
+        0.677
+      ],
+      "mesh_asset_path": "abdomen_6_body-a3be2fa90c63f0558e0703ae2dc763bcb4167112.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_6",
+      "geom_name": "walker/abdomen_6_lower",
+      "local_position": [
+        0.000707,
+        -0.0626,
+        -0.161
+      ],
+      "local_quaternion": [
+        0.674,
+        0.208,
+        -0.208,
+        0.677
+      ],
+      "mesh_asset_path": "abdomen_6_lower-112593e652b1229da6a9748930785d1b9e19e938.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_7",
+      "geom_name": "walker/abdomen_8",
+      "local_position": [
+        0.000731,
+        -0.0464,
+        -0.174
+      ],
+      "local_quaternion": [
+        0.649,
+        0.276,
+        -0.276,
+        0.653
+      ],
+      "mesh_asset_path": "abdomen_8_body-8e66e731cae2e6d1d9de5a7e2b1448545f0cea15.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_7",
+      "geom_name": "walker/abdomen_7",
+      "local_position": [
+        0.000731,
+        -0.0464,
+        -0.174
+      ],
+      "local_quaternion": [
+        0.649,
+        0.276,
+        -0.276,
+        0.653
+      ],
+      "mesh_asset_path": "abdomen_7_body-8cc7af9b60cd8a3b2ce30aedd4db46210999cc48.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/abdomen_7",
+      "geom_name": "walker/abdomen_7_lower",
+      "local_position": [
+        0.000731,
+        -0.0464,
+        -0.174
+      ],
+      "local_quaternion": [
+        0.649,
+        0.276,
+        -0.276,
+        0.653
+      ],
+      "mesh_asset_path": "abdomen_7_lower-9020c0e39ee0265dabbea1b908d81e0601a628c6.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/haltere_left",
+      "geom_name": "walker/haltere_left",
+      "local_position": [
+        0.0545,
+        -0.101,
+        0.0395
+      ],
+      "local_quaternion": [
+        -0.439,
+        0.826,
+        0.204,
+        -0.291
+      ],
+      "mesh_asset_path": "haltere_left_body-fc0ad5af3b6cfce56211482b5495b86a5dbd8505.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/haltere_right",
+      "geom_name": "walker/haltere_right",
+      "local_position": [
+        -0.0528,
+        -0.101,
+        0.0405
+      ],
+      "local_quaternion": [
+        0.28,
+        0.206,
+        0.829,
+        0.438
+      ],
+      "mesh_asset_path": "haltere_right_body-69d1c947c5291edbc38e64b61b804152e7cae4ee.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/coxa_T1_left",
+      "geom_name": "walker/coxa_T1_left",
+      "local_position": [
+        0.0131,
+        0.104,
+        0.0119
+      ],
+      "local_quaternion": [
+        0.0229,
+        -0.311,
+        -0.787,
+        0.532
+      ],
+      "mesh_asset_path": "coxa_T1_left_body-8eafdddebc73977e0f2332c6e75cecca1ab43bb0.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/femur_T1_left",
+      "geom_name": "walker/femur_T1_left",
+      "local_position": [
+        -0.0131,
+        -0.0472,
+        0.04
+      ],
+      "local_quaternion": [
+        0.316,
+        -0.896,
+        0.295,
+        -0.101
+      ],
+      "mesh_asset_path": "femur_T1_left_body-361d9325e6bada1bd5b8454f8b39015a60e45a15.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tibia_T1_left",
+      "geom_name": "walker/tibia_T1_left",
+      "local_position": [
+        -0.00315,
+        -0.0396,
+        0.118
+      ],
+      "local_quaternion": [
+        -0.183,
+        0.354,
+        0.797,
+        0.453
+      ],
+      "mesh_asset_path": "tibia_T1_left_body-07df283a7bccd5c4a2d5cb4d04cb7c12f82a4f73.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus_T1_left",
+      "geom_name": "walker/tarsus_T1_left",
+      "local_position": [
+        0.00797,
+        -0.00233,
+        -0.116
+      ],
+      "local_quaternion": [
+        -0.373,
+        -0.231,
+        -0.468,
+        0.767
+      ],
+      "mesh_asset_path": "tarsus_T1_1_left_body-a1afcc1a5547fa14053737ae44c60358fd39c848.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus2_T1_left",
+      "geom_name": "walker/tarsus2_T1_left",
+      "local_position": [
+        0.00813,
+        -0.0258,
+        -0.118
+      ],
+      "local_quaternion": [
+        0.373,
+        0.231,
+        0.468,
+        -0.767
+      ],
+      "mesh_asset_path": "tarsus_T1_2_left_body-f304e60577d324626d1c34b117e9668518cfb2f9.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus3_T1_left",
+      "geom_name": "walker/tarsus3_T1_left",
+      "local_position": [
+        0.00802,
+        -0.0394,
+        -0.119
+      ],
+      "local_quaternion": [
+        -0.373,
+        -0.231,
+        -0.468,
+        0.767
+      ],
+      "mesh_asset_path": "tarsus_T1_3_left_body-f7cc55f78c5cfc3e43044ebe9da061522521f376.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus4_T1_left",
+      "geom_name": "walker/tarsus4_T1_left",
+      "local_position": [
+        0.00827,
+        -0.0485,
+        -0.119
+      ],
+      "local_quaternion": [
+        0.373,
+        0.231,
+        0.468,
+        -0.767
+      ],
+      "mesh_asset_path": "tarsus_T1_4_left_body-6390880decd81d752bc6fd56856165609680aadd.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/claw_T1_left",
+      "geom_name": "walker/tarsal_claw_T1_left",
+      "local_position": [
+        0.00835,
+        -0.0575,
+        -0.118
+      ],
+      "local_quaternion": [
+        -0.373,
+        -0.231,
+        -0.468,
+        0.767
+      ],
+      "mesh_asset_path": "tarsal_claw_T1_left_brown-1c2821e95938846b293cb541a3a56e6682b78598.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/coxa_T1_right",
+      "geom_name": "walker/coxa_T1_right",
+      "local_position": [
+        -0.0104,
+        -0.105,
+        -0.00761
+      ],
+      "local_quaternion": [
+        -0.777,
+        0.543,
+        0.011,
+        0.319
+      ],
+      "mesh_asset_path": "coxa_T1_right_body-ff4e3f6422d2c2477748fc878e128f8f6798bfdc.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/femur_T1_right",
+      "geom_name": "walker/femur_T1_right",
+      "local_position": [
+        0.0104,
+        0.0492,
+        -0.0376
+      ],
+      "local_quaternion": [
+        -0.31,
+        0.0726,
+        0.321,
+        -0.892
+      ],
+      "mesh_asset_path": "femur_T1_right_body-66f845f17a538c978eb0dd1007a65453ee7944d4.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tibia_T1_right",
+      "geom_name": "walker/tibia_T1_right",
+      "local_position": [
+        0.00407,
+        0.0384,
+        -0.119
+      ],
+      "local_quaternion": [
+        -0.798,
+        -0.45,
+        -0.184,
+        0.357
+      ],
+      "mesh_asset_path": "tibia_T1_right_body-83c915adbae8047fef638857b41bf9622d759f33.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus_T1_right",
+      "geom_name": "walker/tarsus_T1_right",
+      "local_position": [
+        0.0207,
+        -0.00479,
+        0.116
+      ],
+      "local_quaternion": [
+        -0.529,
+        0.778,
+        0.299,
+        0.16
+      ],
+      "mesh_asset_path": "tarsus_T1_1_right_body-04543b032acaaa5290b486607d4c5764a8b1752a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus2_T1_right",
+      "geom_name": "walker/tarsus2_T1_right",
+      "local_position": [
+        0.0217,
+        0.0179,
+        0.118
+      ],
+      "local_quaternion": [
+        0.529,
+        -0.778,
+        -0.299,
+        -0.16
+      ],
+      "mesh_asset_path": "tarsus_T1_2_right_body-2ba46716378e21a42079ea9d04f0a1e8762e3bbd.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus3_T1_right",
+      "geom_name": "walker/tarsus3_T1_right",
+      "local_position": [
+        0.0215,
+        0.0316,
+        0.12
+      ],
+      "local_quaternion": [
+        -0.529,
+        0.778,
+        0.299,
+        0.16
+      ],
+      "mesh_asset_path": "tarsus_T1_3_right_body-e640575f3475dbe9c33482184cea219e7f00a0dc.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus4_T1_right",
+      "geom_name": "walker/tarsus4_T1_right",
+      "local_position": [
+        0.0211,
+        0.0405,
+        0.12
+      ],
+      "local_quaternion": [
+        0.529,
+        -0.778,
+        -0.299,
+        -0.16
+      ],
+      "mesh_asset_path": "tarsus_T1_4_right_body-016bd85d6de1936a746182a70ad9a8bdc5d60c45.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/claw_T1_right",
+      "geom_name": "walker/tarsal_claw_T1_right",
+      "local_position": [
+        0.0203,
+        0.0495,
+        0.12
+      ],
+      "local_quaternion": [
+        -0.529,
+        0.778,
+        0.299,
+        0.16
+      ],
+      "mesh_asset_path": "tarsal_claw_T1_right_brown-4b0c8e84cae2e13addb2bae46b4ea7cdc5e8ad1e.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/coxa_T2_left",
+      "geom_name": "walker/coxa_T2_left",
+      "local_position": [
+        0.0287,
+        0.0682,
+        0.0404
+      ],
+      "local_quaternion": [
+        0.0722,
+        -0.126,
+        -0.917,
+        0.371
+      ],
+      "mesh_asset_path": "coxa_T2_left_body-e64518a9c5f3cf726ee62f0fb4809652cc094060.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/femur_T2_left",
+      "geom_name": "walker/femur_T2_left",
+      "local_position": [
+        -0.0287,
+        -0.0285,
+        0.0493
+      ],
+      "local_quaternion": [
+        0.251,
+        -0.957,
+        0.116,
+        -0.0879
+      ],
+      "mesh_asset_path": "femur_T2_left_body-491294cc7e85a715b2cba7ecf4ab596659f5c153.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tibia_T2_left",
+      "geom_name": "walker/tibia_T2_left",
+      "local_position": [
+        0.0202,
+        -0.0418,
+        0.116
+      ],
+      "local_quaternion": [
+        -0.0884,
+        0.152,
+        0.87,
+        0.461
+      ],
+      "mesh_asset_path": "tibia_T2_left_body-35d778c873f17eef8bb4ec87cf380e4a1f6386b5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus_T2_left",
+      "geom_name": "walker/tarsus_T2_left",
+      "local_position": [
+        -0.0134,
+        -0.0581,
+        -0.103
+      ],
+      "local_quaternion": [
+        -0.0774,
+        0.0502,
+        -0.342,
+        0.935
+      ],
+      "mesh_asset_path": "tarsus_T2_1_left_body-0b1b5af8236c0395ca37ddbd21e1462aa6a0c4b0.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus2_T2_left",
+      "geom_name": "walker/tarsus2_T2_left",
+      "local_position": [
+        -0.0138,
+        -0.0923,
+        -0.104
+      ],
+      "local_quaternion": [
+        0.0774,
+        -0.0502,
+        0.342,
+        -0.935
+      ],
+      "mesh_asset_path": "tarsus_T2_2_left_body-2323cb78f6d232ba3198ed840f424936fbac675a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus3_T2_left",
+      "geom_name": "walker/tarsus3_T2_left",
+      "local_position": [
+        -0.0139,
+        -0.11,
+        -0.105
+      ],
+      "local_quaternion": [
+        -0.0774,
+        0.0502,
+        -0.342,
+        0.935
+      ],
+      "mesh_asset_path": "tarsus_T2_3_left_body-d5676bc4b19254e786ce6a236b02e4cf97f38ca3.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus4_T2_left",
+      "geom_name": "walker/tarsus4_T2_left",
+      "local_position": [
+        -0.0138,
+        -0.12,
+        -0.105
+      ],
+      "local_quaternion": [
+        0.0774,
+        -0.0502,
+        0.342,
+        -0.935
+      ],
+      "mesh_asset_path": "tarsus_T2_4_left_body-6d200dfa14b2b3016cb696b69df2112f1c786cf5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/claw_T2_left",
+      "geom_name": "walker/tarsal_claw_T2_left",
+      "local_position": [
+        -0.0139,
+        -0.13,
+        -0.105
+      ],
+      "local_quaternion": [
+        -0.0774,
+        0.0502,
+        -0.342,
+        0.935
+      ],
+      "mesh_asset_path": "tarsal_claw_T2_left_brown-1840e3a7d619a1ad7ce109ae68c6bef6fee72faf.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/coxa_T2_right",
+      "geom_name": "walker/coxa_T2_right",
+      "local_position": [
+        -0.0285,
+        -0.0685,
+        -0.0403
+      ],
+      "local_quaternion": [
+        -0.916,
+        0.374,
+        -0.0709,
+        0.126
+      ],
+      "mesh_asset_path": "coxa_T2_right_body-0c00f50734b1c68f36e31be47d4f2f420d16221e.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/femur_T2_right",
+      "geom_name": "walker/femur_T2_right",
+      "local_position": [
+        0.0285,
+        0.0282,
+        -0.0496
+      ],
+      "local_quaternion": [
+        -0.115,
+        0.0871,
+        0.247,
+        -0.958
+      ],
+      "mesh_asset_path": "femur_T2_right_body-bb82f471efbe96e2b0067262f21d97068c385c87.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tibia_T2_right",
+      "geom_name": "walker/tibia_T2_right",
+      "local_position": [
+        -0.0138,
+        0.0423,
+        -0.118
+      ],
+      "local_quaternion": [
+        -0.87,
+        -0.469,
+        -0.064,
+        0.139
+      ],
+      "mesh_asset_path": "tibia_T2_right_body-cf688ca25f1ecd8f0e77da9b1e780a6c9d0b330f.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus_T2_right",
+      "geom_name": "walker/tarsus_T2_right",
+      "local_position": [
+        0.0128,
+        0.0578,
+        0.104
+      ],
+      "local_quaternion": [
+        -0.344,
+        0.934,
+        0.0789,
+        -0.0479
+      ],
+      "mesh_asset_path": "tarsus_T2_1_right_body-efcd6236546df37e6c4ff2ef39b4a177428418ba.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus2_T2_right",
+      "geom_name": "walker/tarsus2_T2_right",
+      "local_position": [
+        0.0132,
+        0.0917,
+        0.105
+      ],
+      "local_quaternion": [
+        0.344,
+        -0.934,
+        -0.0788,
+        0.0479
+      ],
+      "mesh_asset_path": "tarsus_T2_2_right_body-a7491f943f4205f879b0d9adb2303c3133eaaabe.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus3_T2_right",
+      "geom_name": "walker/tarsus3_T2_right",
+      "local_position": [
+        0.0132,
+        0.109,
+        0.105
+      ],
+      "local_quaternion": [
+        -0.344,
+        0.934,
+        0.0788,
+        -0.0479
+      ],
+      "mesh_asset_path": "tarsus_T2_3_right_body-a3091e20230e7e8f33efb81aecd425ded12ff9cb.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus4_T2_right",
+      "geom_name": "walker/tarsus4_T2_right",
+      "local_position": [
+        0.0132,
+        0.119,
+        0.106
+      ],
+      "local_quaternion": [
+        0.344,
+        -0.934,
+        -0.0788,
+        0.0479
+      ],
+      "mesh_asset_path": "tarsus_T2_4_right_body-1e75ea7b6c61fb24310f73249a59a27c76959aef.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/claw_T2_right",
+      "geom_name": "walker/tarsal_claw_T2_right",
+      "local_position": [
+        0.0133,
+        0.129,
+        0.105
+      ],
+      "local_quaternion": [
+        -0.344,
+        0.934,
+        0.0788,
+        -0.0479
+      ],
+      "mesh_asset_path": "tarsal_claw_T2_right_brown-7d0c9bb8cf10e520a7a681d3adcf260481366963.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/coxa_T3_left",
+      "geom_name": "walker/coxa_T3_left",
+      "local_position": [
+        0.0335,
+        0.0507,
+        -0.0666
+      ],
+      "local_quaternion": [
+        -0.498,
+        -0.0882,
+        0.529,
+        -0.681
+      ],
+      "mesh_asset_path": "coxa_T3_left_body-d617bfc55f7a217d8c3fae58cbb197dfd6528723.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/femur_T3_left",
+      "geom_name": "walker/femur_T3_left",
+      "local_position": [
+        -0.0375,
+        -0.0625,
+        0.0209
+      ],
+      "local_quaternion": [
+        0.153,
+        -0.849,
+        -0.398,
+        -0.312
+      ],
+      "mesh_asset_path": "femur_T3_left_body-ccfc564fed9562fbfbdb92e609a9301726f0fb23.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tibia_T3_left",
+      "geom_name": "walker/tibia_T3_left",
+      "local_position": [
+        0.0309,
+        -0.0369,
+        0.139
+      ],
+      "local_quaternion": [
+        -0.14,
+        0.379,
+        -0.77,
+        -0.494
+      ],
+      "mesh_asset_path": "tibia_T3_left_body-4476b9ff8475e9043af87eafad4aaa5ac53a3bc1.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus_T3_left",
+      "geom_name": "walker/tarsus_T3_left",
+      "local_position": [
+        -0.00888,
+        -0.0941,
+        -0.109
+      ],
+      "local_quaternion": [
+        -0.49,
+        -0.138,
+        0.251,
+        -0.823
+      ],
+      "mesh_asset_path": "tarsus_T3_1_left_body-0480467ff5801b0775749ad79ca92e9262938365.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus2_T3_left",
+      "geom_name": "walker/tarsus2_T3_left",
+      "local_position": [
+        -0.00915,
+        -0.128,
+        -0.11
+      ],
+      "local_quaternion": [
+        0.49,
+        0.138,
+        -0.251,
+        0.823
+      ],
+      "mesh_asset_path": "tarsus_T3_2_left_body-84064b53f5671ef7c1ed9ce0279204128ccf49ac.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus3_T3_left",
+      "geom_name": "walker/tarsus3_T3_left",
+      "local_position": [
+        -0.00907,
+        -0.148,
+        -0.112
+      ],
+      "local_quaternion": [
+        -0.49,
+        -0.138,
+        0.251,
+        -0.823
+      ],
+      "mesh_asset_path": "tarsus_T3_3_left_body-9ebcf60966685f7a864029d4259114662306659b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus4_T3_left",
+      "geom_name": "walker/tarsus4_T3_left",
+      "local_position": [
+        -0.00915,
+        -0.159,
+        -0.112
+      ],
+      "local_quaternion": [
+        0.49,
+        0.138,
+        -0.251,
+        0.823
+      ],
+      "mesh_asset_path": "tarsus_T3_4_left_body-2356d05fff491ecb0f5ab0cb41f4f20a96c0c2e8.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/claw_T3_left",
+      "geom_name": "walker/tarsal_claw_T3_left",
+      "local_position": [
+        -0.00937,
+        -0.17,
+        -0.111
+      ],
+      "local_quaternion": [
+        -0.49,
+        -0.138,
+        0.251,
+        -0.823
+      ],
+      "mesh_asset_path": "tarsal_claw_T3_left_brown-b2fea9d0f3eee36e0b7a0cdb77fa843d5ac44fdc.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/coxa_T3_right",
+      "geom_name": "walker/coxa_T3_right",
+      "local_position": [
+        -0.0344,
+        -0.0507,
+        0.0661
+      ],
+      "local_quaternion": [
+        0.534,
+        -0.673,
+        0.505,
+        0.0854
+      ],
+      "mesh_asset_path": "coxa_T3_right_body-e2f63e9a0c6671d1182ef451c04efeb7da84fd44.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/femur_T3_right",
+      "geom_name": "walker/femur_T3_right",
+      "local_position": [
+        0.0382,
+        0.0625,
+        -0.0196
+      ],
+      "local_quaternion": [
+        -0.398,
+        -0.322,
+        -0.152,
+        0.846
+      ],
+      "mesh_asset_path": "femur_T3_right_body-32d5d66de9a8a101efc3ce8726f11e3c2c33693a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tibia_T3_right",
+      "geom_name": "walker/tibia_T3_right",
+      "local_position": [
+        -0.0309,
+        0.0355,
+        -0.138
+      ],
+      "local_quaternion": [
+        -0.772,
+        -0.489,
+        0.136,
+        -0.382
+      ],
+      "mesh_asset_path": "tibia_T3_right_body-b850753b74b1a929274ad730eae81cf91d59be94.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus_T3_right",
+      "geom_name": "walker/tarsus_T3_right",
+      "local_position": [
+        0.00797,
+        0.0941,
+        0.109
+      ],
+      "local_quaternion": [
+        -0.252,
+        0.823,
+        -0.49,
+        -0.136
+      ],
+      "mesh_asset_path": "tarsus_T3_1_right_body-570e9fbb9dc7c50670407dad565f456ca7f92506.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus2_T3_right",
+      "geom_name": "walker/tarsus2_T3_right",
+      "local_position": [
+        0.0087,
+        0.128,
+        0.111
+      ],
+      "local_quaternion": [
+        0.252,
+        -0.823,
+        0.49,
+        0.136
+      ],
+      "mesh_asset_path": "tarsus_T3_2_right_body-81933cf05005e767874cdc748cf761263b83e873.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus3_T3_right",
+      "geom_name": "walker/tarsus3_T3_right",
+      "local_position": [
+        0.00851,
+        0.148,
+        0.112
+      ],
+      "local_quaternion": [
+        -0.252,
+        0.823,
+        -0.49,
+        -0.136
+      ],
+      "mesh_asset_path": "tarsus_T3_3_right_body-ebbc4fbc0ec068d207ce47fec2d504e2fcc0390b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/tarsus4_T3_right",
+      "geom_name": "walker/tarsus4_T3_right",
+      "local_position": [
+        0.00849,
+        0.159,
+        0.112
+      ],
+      "local_quaternion": [
+        0.252,
+        -0.823,
+        0.49,
+        0.136
+      ],
+      "mesh_asset_path": "tarsus_T3_4_right_body-57978f2c52407803453ba6980e5ac1ac5d4ca59a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "walker/claw_T3_right",
+      "geom_name": "walker/tarsal_claw_T3_right",
+      "local_position": [
+        0.00845,
+        0.17,
+        0.111
+      ],
+      "local_quaternion": [
+        -0.252,
+        0.823,
+        -0.49,
+        -0.136
+      ],
+      "mesh_asset_path": "tarsal_claw_T3_right_brown-fccda3b260eaee74900e2e7909ee05421674c8d5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/thorax",
+      "geom_name": "ghost/thorax",
+      "local_position": [
+        -0.00791,
+        0.0,
+        -0.123
+      ],
+      "local_quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "mesh_asset_path": "thorax_body-3bfa5cf2add6c736dcd41345af6dc290ed65ddd2.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/thorax",
+      "geom_name": "ghost/thorax_black",
+      "local_position": [
+        -0.00791,
+        0.0,
+        -0.123
+      ],
+      "local_quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "mesh_asset_path": "thorax_black-a1c2e0261d45e42f5c9be576a748d6cb3fc923bd.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/head",
+      "geom_name": "ghost/head",
+      "local_position": [
+        4.11e-07,
+        -0.0334,
+        -0.132
+      ],
+      "local_quaternion": [
+        0.702,
+        0.087,
+        0.087,
+        -0.702
+      ],
+      "mesh_asset_path": "head_body-c41faf4956e4e7fb65b97c3614b3b9a25a30806f.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/head",
+      "geom_name": "ghost/head_red",
+      "local_position": [
+        4.11e-07,
+        -0.0334,
+        -0.132
+      ],
+      "local_quaternion": [
+        0.702,
+        0.087,
+        0.087,
+        -0.702
+      ],
+      "mesh_asset_path": "head_red-c66c58eed5a2f6cbbc748e6d670733286dc1b1af.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/head",
+      "geom_name": "ghost/head_ocelli",
+      "local_position": [
+        4.11e-07,
+        -0.0334,
+        -0.132
+      ],
+      "local_quaternion": [
+        0.702,
+        0.087,
+        0.087,
+        -0.702
+      ],
+      "mesh_asset_path": "head_ocelli-d752a4b17ff5d4fa146b256aca4d2458b5046b78.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/head",
+      "geom_name": "ghost/head_black",
+      "local_position": [
+        4.11e-07,
+        -0.0334,
+        -0.132
+      ],
+      "local_quaternion": [
+        0.702,
+        0.087,
+        0.087,
+        -0.702
+      ],
+      "mesh_asset_path": "head_black-5823ef1385642f535c4660e8442016c3dc5b1583.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/rostrum",
+      "geom_name": "ghost/rostrum",
+      "local_position": [
+        -4e-07,
+        0.106,
+        -0.0742
+      ],
+      "local_quaternion": [
+        0.705,
+        0.0494,
+        -0.0494,
+        0.705
+      ],
+      "mesh_asset_path": "rostrum_body-44713a84b19b06cbd0624642c758999a312fa7c9.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/rostrum",
+      "geom_name": "ghost/rostrum_bristle-brown",
+      "local_position": [
+        -4e-07,
+        0.106,
+        -0.0742
+      ],
+      "local_quaternion": [
+        0.705,
+        0.0494,
+        -0.0494,
+        0.705
+      ],
+      "mesh_asset_path": "rostrum_bristle-brown-ec0ca2b1e5afb44b00eb5854ff88f2f4e56b9e25.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/haustellum",
+      "geom_name": "ghost/haustellum",
+      "local_position": [
+        4.24e-07,
+        -0.00352,
+        -0.101
+      ],
+      "local_quaternion": [
+        0.679,
+        0.198,
+        0.198,
+        -0.679
+      ],
+      "mesh_asset_path": "haustellum_body-beb9241481a4d896f4e37b1c3b6b81628948cd7b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/haustellum",
+      "geom_name": "ghost/haustellum_black",
+      "local_position": [
+        4.24e-07,
+        -0.00352,
+        -0.101
+      ],
+      "local_quaternion": [
+        0.679,
+        0.198,
+        0.198,
+        -0.679
+      ],
+      "mesh_asset_path": "haustellum_black-9f5c64daef8dcb8440a45aa53813806c7967fbe2.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/labrum_left",
+      "geom_name": "ghost/labrum_left_lower",
+      "local_position": [
+        -0.0977,
+        0.0216,
+        -0.0249
+      ],
+      "local_quaternion": [
+        -0.166,
+        0.181,
+        -0.494,
+        0.834
+      ],
+      "mesh_asset_path": "labrum_left_lower-8d37b6eda0f57e939d1156c583bd26dd61c67998.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/labrum_right",
+      "geom_name": "ghost/labrum_right_lower",
+      "local_position": [
+        0.1,
+        0.022,
+        -0.0113
+      ],
+      "local_quaternion": [
+        -0.817,
+        -0.509,
+        0.236,
+        0.133
+      ],
+      "mesh_asset_path": "labrum_right_lower-93c6aa74f3b8b1e4a543b364dc864aad6803bd7d.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/antenna_left",
+      "geom_name": "ghost/antenna_left",
+      "local_position": [
+        0.0148,
+        0.116,
+        -0.112
+      ],
+      "local_quaternion": [
+        0.364,
+        0.49,
+        0.474,
+        -0.635
+      ],
+      "mesh_asset_path": "antenna_left_body-e3cc8681784674a4b17dd964cc074147ff789663.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/antenna_left",
+      "geom_name": "ghost/antenna_left_black",
+      "local_position": [
+        0.0148,
+        0.116,
+        -0.112
+      ],
+      "local_quaternion": [
+        0.364,
+        0.49,
+        0.474,
+        -0.635
+      ],
+      "mesh_asset_path": "antenna_left_black-29e1cff29ba798c9f05463acd4212161ca930cc7.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/antenna_right",
+      "geom_name": "ghost/antenna_right",
+      "local_position": [
+        -0.0153,
+        -0.116,
+        0.112
+      ],
+      "local_quaternion": [
+        -0.474,
+        0.635,
+        0.364,
+        0.49
+      ],
+      "mesh_asset_path": "antenna_right_body-c6e0fb379ce24bcea6b3811cd969c4a2544c0a29.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/antenna_right",
+      "geom_name": "ghost/antenna_right_black",
+      "local_position": [
+        -0.0153,
+        -0.116,
+        0.112
+      ],
+      "local_quaternion": [
+        -0.474,
+        0.635,
+        0.364,
+        0.49
+      ],
+      "mesh_asset_path": "antenna_right_black-ba3b98d2ad8d839d6ec560bf5b11c5cc3495c23d.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen",
+      "geom_name": "ghost/abdomen",
+      "local_position": [
+        0.000758,
+        -0.0663,
+        -0.115
+      ],
+      "local_quaternion": [
+        0.7,
+        -0.0853,
+        0.0859,
+        0.704
+      ],
+      "mesh_asset_path": "abdomen_1_body-a230d78b11e203acdf0c52530efc562a75a9f117.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen",
+      "geom_name": "ghost/abdomen_lower",
+      "local_position": [
+        0.000758,
+        -0.0663,
+        -0.115
+      ],
+      "local_quaternion": [
+        0.7,
+        -0.0853,
+        0.0859,
+        0.704
+      ],
+      "mesh_asset_path": "abdomen_1_lower-19f05f05d29d432e5d0607e45235c7595a309eb9.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_2",
+      "geom_name": "ghost/abdomen_2",
+      "local_position": [
+        0.000532,
+        -0.0293,
+        -0.136
+      ],
+      "local_quaternion": [
+        0.704,
+        0.0507,
+        -0.0503,
+        0.706
+      ],
+      "mesh_asset_path": "abdomen_2_body-470c048e83d9a52cf1839f4320ad62a2ea4c713b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_2",
+      "geom_name": "ghost/abdomen_2_lower",
+      "local_position": [
+        0.000532,
+        -0.0293,
+        -0.136
+      ],
+      "local_quaternion": [
+        0.704,
+        0.0507,
+        -0.0503,
+        0.706
+      ],
+      "mesh_asset_path": "abdomen_2_lower-dfca1089c1264e3d02f758e3fb6ad6b1ffd993e9.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_3",
+      "geom_name": "ghost/abdomen_3",
+      "local_position": [
+        0.000511,
+        -0.0251,
+        -0.143
+      ],
+      "local_quaternion": [
+        0.697,
+        0.114,
+        -0.114,
+        0.699
+      ],
+      "mesh_asset_path": "abdomen_3_body-1aa59ba5465df1e7e8fb27463c48dcdaf43f413b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_3",
+      "geom_name": "ghost/abdomen_3_lower",
+      "local_position": [
+        0.000511,
+        -0.0251,
+        -0.143
+      ],
+      "local_quaternion": [
+        0.697,
+        0.114,
+        -0.114,
+        0.699
+      ],
+      "mesh_asset_path": "abdomen_3_lower-c1c9fef0cc7de7debdd11b71e79751996d2a7448.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_4",
+      "geom_name": "ghost/abdomen_4",
+      "local_position": [
+        0.000577,
+        -0.0468,
+        -0.146
+      ],
+      "local_quaternion": [
+        0.693,
+        0.137,
+        -0.138,
+        0.695
+      ],
+      "mesh_asset_path": "abdomen_4_body-67c54d053a1d03b46ecee5b7d126665ecc65dd21.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_4",
+      "geom_name": "ghost/abdomen_4_lower",
+      "local_position": [
+        0.000577,
+        -0.0468,
+        -0.146
+      ],
+      "local_quaternion": [
+        0.693,
+        0.137,
+        -0.138,
+        0.695
+      ],
+      "mesh_asset_path": "abdomen_4_lower-55ed3ad0614f06d7b4f34cc97cd2d631831ea1b5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_5",
+      "geom_name": "ghost/abdomen_5",
+      "local_position": [
+        0.000607,
+        -0.062,
+        -0.151
+      ],
+      "local_quaternion": [
+        0.687,
+        0.163,
+        -0.163,
+        0.689
+      ],
+      "mesh_asset_path": "abdomen_5_body-79ce6748e524b0c5aab5da3c683415b8662ea0d4.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_5",
+      "geom_name": "ghost/abdomen_5_lower",
+      "local_position": [
+        0.000607,
+        -0.062,
+        -0.151
+      ],
+      "local_quaternion": [
+        0.687,
+        0.163,
+        -0.163,
+        0.689
+      ],
+      "mesh_asset_path": "abdomen_5_lower-e157ea4d6e9494df051b370bdba93e4a94f41af6.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_6",
+      "geom_name": "ghost/abdomen_6",
+      "local_position": [
+        0.000707,
+        -0.0626,
+        -0.161
+      ],
+      "local_quaternion": [
+        0.674,
+        0.208,
+        -0.208,
+        0.677
+      ],
+      "mesh_asset_path": "abdomen_6_body-a3be2fa90c63f0558e0703ae2dc763bcb4167112.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_6",
+      "geom_name": "ghost/abdomen_6_lower",
+      "local_position": [
+        0.000707,
+        -0.0626,
+        -0.161
+      ],
+      "local_quaternion": [
+        0.674,
+        0.208,
+        -0.208,
+        0.677
+      ],
+      "mesh_asset_path": "abdomen_6_lower-112593e652b1229da6a9748930785d1b9e19e938.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_7",
+      "geom_name": "ghost/abdomen_8",
+      "local_position": [
+        0.000731,
+        -0.0464,
+        -0.174
+      ],
+      "local_quaternion": [
+        0.649,
+        0.276,
+        -0.276,
+        0.653
+      ],
+      "mesh_asset_path": "abdomen_8_body-8e66e731cae2e6d1d9de5a7e2b1448545f0cea15.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_7",
+      "geom_name": "ghost/abdomen_7",
+      "local_position": [
+        0.000731,
+        -0.0464,
+        -0.174
+      ],
+      "local_quaternion": [
+        0.649,
+        0.276,
+        -0.276,
+        0.653
+      ],
+      "mesh_asset_path": "abdomen_7_body-8cc7af9b60cd8a3b2ce30aedd4db46210999cc48.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/abdomen_7",
+      "geom_name": "ghost/abdomen_7_lower",
+      "local_position": [
+        0.000731,
+        -0.0464,
+        -0.174
+      ],
+      "local_quaternion": [
+        0.649,
+        0.276,
+        -0.276,
+        0.653
+      ],
+      "mesh_asset_path": "abdomen_7_lower-9020c0e39ee0265dabbea1b908d81e0601a628c6.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/haltere_left",
+      "geom_name": "ghost/haltere_left",
+      "local_position": [
+        0.0545,
+        -0.101,
+        0.0395
+      ],
+      "local_quaternion": [
+        -0.439,
+        0.826,
+        0.204,
+        -0.291
+      ],
+      "mesh_asset_path": "haltere_left_body-fc0ad5af3b6cfce56211482b5495b86a5dbd8505.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/haltere_right",
+      "geom_name": "ghost/haltere_right",
+      "local_position": [
+        -0.0528,
+        -0.101,
+        0.0405
+      ],
+      "local_quaternion": [
+        0.28,
+        0.206,
+        0.829,
+        0.438
+      ],
+      "mesh_asset_path": "haltere_right_body-69d1c947c5291edbc38e64b61b804152e7cae4ee.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/coxa_T1_left",
+      "geom_name": "ghost/coxa_T1_left",
+      "local_position": [
+        0.0131,
+        0.104,
+        0.0119
+      ],
+      "local_quaternion": [
+        0.0229,
+        -0.311,
+        -0.787,
+        0.532
+      ],
+      "mesh_asset_path": "coxa_T1_left_body-8eafdddebc73977e0f2332c6e75cecca1ab43bb0.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/femur_T1_left",
+      "geom_name": "ghost/femur_T1_left",
+      "local_position": [
+        -0.0131,
+        -0.0472,
+        0.04
+      ],
+      "local_quaternion": [
+        0.316,
+        -0.896,
+        0.295,
+        -0.101
+      ],
+      "mesh_asset_path": "femur_T1_left_body-361d9325e6bada1bd5b8454f8b39015a60e45a15.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tibia_T1_left",
+      "geom_name": "ghost/tibia_T1_left",
+      "local_position": [
+        -0.00315,
+        -0.0396,
+        0.118
+      ],
+      "local_quaternion": [
+        -0.183,
+        0.354,
+        0.797,
+        0.453
+      ],
+      "mesh_asset_path": "tibia_T1_left_body-07df283a7bccd5c4a2d5cb4d04cb7c12f82a4f73.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus_T1_left",
+      "geom_name": "ghost/tarsus_T1_left",
+      "local_position": [
+        0.00797,
+        -0.00233,
+        -0.116
+      ],
+      "local_quaternion": [
+        -0.373,
+        -0.231,
+        -0.468,
+        0.767
+      ],
+      "mesh_asset_path": "tarsus_T1_1_left_body-a1afcc1a5547fa14053737ae44c60358fd39c848.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus2_T1_left",
+      "geom_name": "ghost/tarsus2_T1_left",
+      "local_position": [
+        0.00813,
+        -0.0258,
+        -0.118
+      ],
+      "local_quaternion": [
+        0.373,
+        0.231,
+        0.468,
+        -0.767
+      ],
+      "mesh_asset_path": "tarsus_T1_2_left_body-f304e60577d324626d1c34b117e9668518cfb2f9.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus3_T1_left",
+      "geom_name": "ghost/tarsus3_T1_left",
+      "local_position": [
+        0.00802,
+        -0.0394,
+        -0.119
+      ],
+      "local_quaternion": [
+        -0.373,
+        -0.231,
+        -0.468,
+        0.767
+      ],
+      "mesh_asset_path": "tarsus_T1_3_left_body-f7cc55f78c5cfc3e43044ebe9da061522521f376.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus4_T1_left",
+      "geom_name": "ghost/tarsus4_T1_left",
+      "local_position": [
+        0.00827,
+        -0.0485,
+        -0.119
+      ],
+      "local_quaternion": [
+        0.373,
+        0.231,
+        0.468,
+        -0.767
+      ],
+      "mesh_asset_path": "tarsus_T1_4_left_body-6390880decd81d752bc6fd56856165609680aadd.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/claw_T1_left",
+      "geom_name": "ghost/tarsal_claw_T1_left",
+      "local_position": [
+        0.00835,
+        -0.0575,
+        -0.118
+      ],
+      "local_quaternion": [
+        -0.373,
+        -0.231,
+        -0.468,
+        0.767
+      ],
+      "mesh_asset_path": "tarsal_claw_T1_left_brown-1c2821e95938846b293cb541a3a56e6682b78598.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/coxa_T1_right",
+      "geom_name": "ghost/coxa_T1_right",
+      "local_position": [
+        -0.0104,
+        -0.105,
+        -0.00761
+      ],
+      "local_quaternion": [
+        -0.777,
+        0.543,
+        0.011,
+        0.319
+      ],
+      "mesh_asset_path": "coxa_T1_right_body-ff4e3f6422d2c2477748fc878e128f8f6798bfdc.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/femur_T1_right",
+      "geom_name": "ghost/femur_T1_right",
+      "local_position": [
+        0.0104,
+        0.0492,
+        -0.0376
+      ],
+      "local_quaternion": [
+        -0.31,
+        0.0726,
+        0.321,
+        -0.892
+      ],
+      "mesh_asset_path": "femur_T1_right_body-66f845f17a538c978eb0dd1007a65453ee7944d4.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tibia_T1_right",
+      "geom_name": "ghost/tibia_T1_right",
+      "local_position": [
+        0.00407,
+        0.0384,
+        -0.119
+      ],
+      "local_quaternion": [
+        -0.798,
+        -0.45,
+        -0.184,
+        0.357
+      ],
+      "mesh_asset_path": "tibia_T1_right_body-83c915adbae8047fef638857b41bf9622d759f33.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus_T1_right",
+      "geom_name": "ghost/tarsus_T1_right",
+      "local_position": [
+        0.0207,
+        -0.00479,
+        0.116
+      ],
+      "local_quaternion": [
+        -0.529,
+        0.778,
+        0.299,
+        0.16
+      ],
+      "mesh_asset_path": "tarsus_T1_1_right_body-04543b032acaaa5290b486607d4c5764a8b1752a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus2_T1_right",
+      "geom_name": "ghost/tarsus2_T1_right",
+      "local_position": [
+        0.0217,
+        0.0179,
+        0.118
+      ],
+      "local_quaternion": [
+        0.529,
+        -0.778,
+        -0.299,
+        -0.16
+      ],
+      "mesh_asset_path": "tarsus_T1_2_right_body-2ba46716378e21a42079ea9d04f0a1e8762e3bbd.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus3_T1_right",
+      "geom_name": "ghost/tarsus3_T1_right",
+      "local_position": [
+        0.0215,
+        0.0316,
+        0.12
+      ],
+      "local_quaternion": [
+        -0.529,
+        0.778,
+        0.299,
+        0.16
+      ],
+      "mesh_asset_path": "tarsus_T1_3_right_body-e640575f3475dbe9c33482184cea219e7f00a0dc.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus4_T1_right",
+      "geom_name": "ghost/tarsus4_T1_right",
+      "local_position": [
+        0.0211,
+        0.0405,
+        0.12
+      ],
+      "local_quaternion": [
+        0.529,
+        -0.778,
+        -0.299,
+        -0.16
+      ],
+      "mesh_asset_path": "tarsus_T1_4_right_body-016bd85d6de1936a746182a70ad9a8bdc5d60c45.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/claw_T1_right",
+      "geom_name": "ghost/tarsal_claw_T1_right",
+      "local_position": [
+        0.0203,
+        0.0495,
+        0.12
+      ],
+      "local_quaternion": [
+        -0.529,
+        0.778,
+        0.299,
+        0.16
+      ],
+      "mesh_asset_path": "tarsal_claw_T1_right_brown-4b0c8e84cae2e13addb2bae46b4ea7cdc5e8ad1e.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/coxa_T2_left",
+      "geom_name": "ghost/coxa_T2_left",
+      "local_position": [
+        0.0287,
+        0.0682,
+        0.0404
+      ],
+      "local_quaternion": [
+        0.0722,
+        -0.126,
+        -0.917,
+        0.371
+      ],
+      "mesh_asset_path": "coxa_T2_left_body-e64518a9c5f3cf726ee62f0fb4809652cc094060.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/femur_T2_left",
+      "geom_name": "ghost/femur_T2_left",
+      "local_position": [
+        -0.0287,
+        -0.0285,
+        0.0493
+      ],
+      "local_quaternion": [
+        0.251,
+        -0.957,
+        0.116,
+        -0.0879
+      ],
+      "mesh_asset_path": "femur_T2_left_body-491294cc7e85a715b2cba7ecf4ab596659f5c153.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tibia_T2_left",
+      "geom_name": "ghost/tibia_T2_left",
+      "local_position": [
+        0.0202,
+        -0.0418,
+        0.116
+      ],
+      "local_quaternion": [
+        -0.0884,
+        0.152,
+        0.87,
+        0.461
+      ],
+      "mesh_asset_path": "tibia_T2_left_body-35d778c873f17eef8bb4ec87cf380e4a1f6386b5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus_T2_left",
+      "geom_name": "ghost/tarsus_T2_left",
+      "local_position": [
+        -0.0134,
+        -0.0581,
+        -0.103
+      ],
+      "local_quaternion": [
+        -0.0774,
+        0.0502,
+        -0.342,
+        0.935
+      ],
+      "mesh_asset_path": "tarsus_T2_1_left_body-0b1b5af8236c0395ca37ddbd21e1462aa6a0c4b0.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus2_T2_left",
+      "geom_name": "ghost/tarsus2_T2_left",
+      "local_position": [
+        -0.0138,
+        -0.0923,
+        -0.104
+      ],
+      "local_quaternion": [
+        0.0774,
+        -0.0502,
+        0.342,
+        -0.935
+      ],
+      "mesh_asset_path": "tarsus_T2_2_left_body-2323cb78f6d232ba3198ed840f424936fbac675a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus3_T2_left",
+      "geom_name": "ghost/tarsus3_T2_left",
+      "local_position": [
+        -0.0139,
+        -0.11,
+        -0.105
+      ],
+      "local_quaternion": [
+        -0.0774,
+        0.0502,
+        -0.342,
+        0.935
+      ],
+      "mesh_asset_path": "tarsus_T2_3_left_body-d5676bc4b19254e786ce6a236b02e4cf97f38ca3.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus4_T2_left",
+      "geom_name": "ghost/tarsus4_T2_left",
+      "local_position": [
+        -0.0138,
+        -0.12,
+        -0.105
+      ],
+      "local_quaternion": [
+        0.0774,
+        -0.0502,
+        0.342,
+        -0.935
+      ],
+      "mesh_asset_path": "tarsus_T2_4_left_body-6d200dfa14b2b3016cb696b69df2112f1c786cf5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/claw_T2_left",
+      "geom_name": "ghost/tarsal_claw_T2_left",
+      "local_position": [
+        -0.0139,
+        -0.13,
+        -0.105
+      ],
+      "local_quaternion": [
+        -0.0774,
+        0.0502,
+        -0.342,
+        0.935
+      ],
+      "mesh_asset_path": "tarsal_claw_T2_left_brown-1840e3a7d619a1ad7ce109ae68c6bef6fee72faf.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/coxa_T2_right",
+      "geom_name": "ghost/coxa_T2_right",
+      "local_position": [
+        -0.0285,
+        -0.0685,
+        -0.0403
+      ],
+      "local_quaternion": [
+        -0.916,
+        0.374,
+        -0.0709,
+        0.126
+      ],
+      "mesh_asset_path": "coxa_T2_right_body-0c00f50734b1c68f36e31be47d4f2f420d16221e.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/femur_T2_right",
+      "geom_name": "ghost/femur_T2_right",
+      "local_position": [
+        0.0285,
+        0.0282,
+        -0.0496
+      ],
+      "local_quaternion": [
+        -0.115,
+        0.0871,
+        0.247,
+        -0.958
+      ],
+      "mesh_asset_path": "femur_T2_right_body-bb82f471efbe96e2b0067262f21d97068c385c87.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tibia_T2_right",
+      "geom_name": "ghost/tibia_T2_right",
+      "local_position": [
+        -0.0138,
+        0.0423,
+        -0.118
+      ],
+      "local_quaternion": [
+        -0.87,
+        -0.469,
+        -0.064,
+        0.139
+      ],
+      "mesh_asset_path": "tibia_T2_right_body-cf688ca25f1ecd8f0e77da9b1e780a6c9d0b330f.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus_T2_right",
+      "geom_name": "ghost/tarsus_T2_right",
+      "local_position": [
+        0.0128,
+        0.0578,
+        0.104
+      ],
+      "local_quaternion": [
+        -0.344,
+        0.934,
+        0.0789,
+        -0.0479
+      ],
+      "mesh_asset_path": "tarsus_T2_1_right_body-efcd6236546df37e6c4ff2ef39b4a177428418ba.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus2_T2_right",
+      "geom_name": "ghost/tarsus2_T2_right",
+      "local_position": [
+        0.0132,
+        0.0917,
+        0.105
+      ],
+      "local_quaternion": [
+        0.344,
+        -0.934,
+        -0.0788,
+        0.0479
+      ],
+      "mesh_asset_path": "tarsus_T2_2_right_body-a7491f943f4205f879b0d9adb2303c3133eaaabe.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus3_T2_right",
+      "geom_name": "ghost/tarsus3_T2_right",
+      "local_position": [
+        0.0132,
+        0.109,
+        0.105
+      ],
+      "local_quaternion": [
+        -0.344,
+        0.934,
+        0.0788,
+        -0.0479
+      ],
+      "mesh_asset_path": "tarsus_T2_3_right_body-a3091e20230e7e8f33efb81aecd425ded12ff9cb.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus4_T2_right",
+      "geom_name": "ghost/tarsus4_T2_right",
+      "local_position": [
+        0.0132,
+        0.119,
+        0.106
+      ],
+      "local_quaternion": [
+        0.344,
+        -0.934,
+        -0.0788,
+        0.0479
+      ],
+      "mesh_asset_path": "tarsus_T2_4_right_body-1e75ea7b6c61fb24310f73249a59a27c76959aef.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/claw_T2_right",
+      "geom_name": "ghost/tarsal_claw_T2_right",
+      "local_position": [
+        0.0133,
+        0.129,
+        0.105
+      ],
+      "local_quaternion": [
+        -0.344,
+        0.934,
+        0.0788,
+        -0.0479
+      ],
+      "mesh_asset_path": "tarsal_claw_T2_right_brown-7d0c9bb8cf10e520a7a681d3adcf260481366963.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/coxa_T3_left",
+      "geom_name": "ghost/coxa_T3_left",
+      "local_position": [
+        0.0335,
+        0.0507,
+        -0.0666
+      ],
+      "local_quaternion": [
+        -0.498,
+        -0.0882,
+        0.529,
+        -0.681
+      ],
+      "mesh_asset_path": "coxa_T3_left_body-d617bfc55f7a217d8c3fae58cbb197dfd6528723.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/femur_T3_left",
+      "geom_name": "ghost/femur_T3_left",
+      "local_position": [
+        -0.0375,
+        -0.0625,
+        0.0209
+      ],
+      "local_quaternion": [
+        0.153,
+        -0.849,
+        -0.398,
+        -0.312
+      ],
+      "mesh_asset_path": "femur_T3_left_body-ccfc564fed9562fbfbdb92e609a9301726f0fb23.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tibia_T3_left",
+      "geom_name": "ghost/tibia_T3_left",
+      "local_position": [
+        0.0309,
+        -0.0369,
+        0.139
+      ],
+      "local_quaternion": [
+        -0.14,
+        0.379,
+        -0.77,
+        -0.494
+      ],
+      "mesh_asset_path": "tibia_T3_left_body-4476b9ff8475e9043af87eafad4aaa5ac53a3bc1.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus_T3_left",
+      "geom_name": "ghost/tarsus_T3_left",
+      "local_position": [
+        -0.00888,
+        -0.0941,
+        -0.109
+      ],
+      "local_quaternion": [
+        -0.49,
+        -0.138,
+        0.251,
+        -0.823
+      ],
+      "mesh_asset_path": "tarsus_T3_1_left_body-0480467ff5801b0775749ad79ca92e9262938365.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus2_T3_left",
+      "geom_name": "ghost/tarsus2_T3_left",
+      "local_position": [
+        -0.00915,
+        -0.128,
+        -0.11
+      ],
+      "local_quaternion": [
+        0.49,
+        0.138,
+        -0.251,
+        0.823
+      ],
+      "mesh_asset_path": "tarsus_T3_2_left_body-84064b53f5671ef7c1ed9ce0279204128ccf49ac.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus3_T3_left",
+      "geom_name": "ghost/tarsus3_T3_left",
+      "local_position": [
+        -0.00907,
+        -0.148,
+        -0.112
+      ],
+      "local_quaternion": [
+        -0.49,
+        -0.138,
+        0.251,
+        -0.823
+      ],
+      "mesh_asset_path": "tarsus_T3_3_left_body-9ebcf60966685f7a864029d4259114662306659b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus4_T3_left",
+      "geom_name": "ghost/tarsus4_T3_left",
+      "local_position": [
+        -0.00915,
+        -0.159,
+        -0.112
+      ],
+      "local_quaternion": [
+        0.49,
+        0.138,
+        -0.251,
+        0.823
+      ],
+      "mesh_asset_path": "tarsus_T3_4_left_body-2356d05fff491ecb0f5ab0cb41f4f20a96c0c2e8.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/claw_T3_left",
+      "geom_name": "ghost/tarsal_claw_T3_left",
+      "local_position": [
+        -0.00937,
+        -0.17,
+        -0.111
+      ],
+      "local_quaternion": [
+        -0.49,
+        -0.138,
+        0.251,
+        -0.823
+      ],
+      "mesh_asset_path": "tarsal_claw_T3_left_brown-b2fea9d0f3eee36e0b7a0cdb77fa843d5ac44fdc.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/coxa_T3_right",
+      "geom_name": "ghost/coxa_T3_right",
+      "local_position": [
+        -0.0344,
+        -0.0507,
+        0.0661
+      ],
+      "local_quaternion": [
+        0.534,
+        -0.673,
+        0.505,
+        0.0854
+      ],
+      "mesh_asset_path": "coxa_T3_right_body-e2f63e9a0c6671d1182ef451c04efeb7da84fd44.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/femur_T3_right",
+      "geom_name": "ghost/femur_T3_right",
+      "local_position": [
+        0.0382,
+        0.0625,
+        -0.0196
+      ],
+      "local_quaternion": [
+        -0.398,
+        -0.322,
+        -0.152,
+        0.846
+      ],
+      "mesh_asset_path": "femur_T3_right_body-32d5d66de9a8a101efc3ce8726f11e3c2c33693a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tibia_T3_right",
+      "geom_name": "ghost/tibia_T3_right",
+      "local_position": [
+        -0.0309,
+        0.0355,
+        -0.138
+      ],
+      "local_quaternion": [
+        -0.772,
+        -0.489,
+        0.136,
+        -0.382
+      ],
+      "mesh_asset_path": "tibia_T3_right_body-b850753b74b1a929274ad730eae81cf91d59be94.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus_T3_right",
+      "geom_name": "ghost/tarsus_T3_right",
+      "local_position": [
+        0.00797,
+        0.0941,
+        0.109
+      ],
+      "local_quaternion": [
+        -0.252,
+        0.823,
+        -0.49,
+        -0.136
+      ],
+      "mesh_asset_path": "tarsus_T3_1_right_body-570e9fbb9dc7c50670407dad565f456ca7f92506.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus2_T3_right",
+      "geom_name": "ghost/tarsus2_T3_right",
+      "local_position": [
+        0.0087,
+        0.128,
+        0.111
+      ],
+      "local_quaternion": [
+        0.252,
+        -0.823,
+        0.49,
+        0.136
+      ],
+      "mesh_asset_path": "tarsus_T3_2_right_body-81933cf05005e767874cdc748cf761263b83e873.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus3_T3_right",
+      "geom_name": "ghost/tarsus3_T3_right",
+      "local_position": [
+        0.00851,
+        0.148,
+        0.112
+      ],
+      "local_quaternion": [
+        -0.252,
+        0.823,
+        -0.49,
+        -0.136
+      ],
+      "mesh_asset_path": "tarsus_T3_3_right_body-ebbc4fbc0ec068d207ce47fec2d504e2fcc0390b.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/tarsus4_T3_right",
+      "geom_name": "ghost/tarsus4_T3_right",
+      "local_position": [
+        0.00849,
+        0.159,
+        0.112
+      ],
+      "local_quaternion": [
+        0.252,
+        -0.823,
+        0.49,
+        0.136
+      ],
+      "mesh_asset_path": "tarsus_T3_4_right_body-57978f2c52407803453ba6980e5ac1ac5d4ca59a.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "body_name": "ghost/claw_T3_right",
+      "geom_name": "ghost/tarsal_claw_T3_right",
+      "local_position": [
+        0.00845,
+        0.17,
+        0.111
+      ],
+      "local_quaternion": [
+        -0.252,
+        0.823,
+        -0.49,
+        -0.136
+      ],
+      "mesh_asset_path": "tarsal_claw_T3_right_brown-fccda3b260eaee74900e2e7909ee05421674c8d5.obj",
+      "mesh_scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    }
   ],
   "output_dir": "apps/neural-console/public/mujoco-fly/flybody-official-walk",
   "scene_version": "flybody-walk-imitation-v1"

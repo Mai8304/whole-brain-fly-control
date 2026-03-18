@@ -185,6 +185,75 @@ describe('Neural console shell', () => {
     expect(requests.some((url) => url.includes('/api/mujoco-fly/'))).toBe(false)
   })
 
+  it('opens the mujoco-fly-browser-viewer page from the pathname without hydrating console data', async () => {
+    const requests: string[] = []
+    const websocketUrls: string[] = []
+    vi.stubGlobal(
+      'WebSocket',
+      class WebSocket {
+        constructor(url: string | URL) {
+          websocketUrls.push(String(url))
+        }
+        addEventListener() {}
+        close() {}
+      },
+    )
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input)
+      requests.push(url)
+      if (url.endsWith('/api/mujoco-fly-browser-viewer/bootstrap')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            scene_version: 'flybody-walk-imitation-v1',
+            runtime_mode: 'official-flybody-browser-viewer',
+            entry_xml: 'walk_imitation.xml',
+            checkpoint_loaded: false,
+            default_camera: 'track',
+            camera_presets: ['track', 'side', 'back', 'top'],
+            body_manifest: [],
+            geom_manifest: [],
+          }),
+        } as Response)
+      }
+      if (url.endsWith('/api/mujoco-fly-browser-viewer/session')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            available: true,
+            running_state: 'paused',
+            checkpoint_loaded: false,
+            current_camera: 'track',
+            scene_version: 'flybody-walk-imitation-v1',
+            reason: 'Official walking policy checkpoint is unavailable',
+          }),
+        } as Response)
+      }
+      throw new Error(`unexpected request: ${url}`)
+    })
+    window.history.replaceState(null, '', '/mujoco-fly-browser-viewer')
+
+    render(<App />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: /mujoco fly browser viewer|mujoco 果蝇浏览器观察器/i }),
+      ).toBeInTheDocument()
+    })
+
+    expect(
+      requests.some((url) => url.includes('/api/mujoco-fly-browser-viewer/bootstrap')),
+    ).toBe(true)
+    expect(
+      requests.some((url) => url.includes('/api/mujoco-fly-browser-viewer/session')),
+    ).toBe(true)
+    expect(requests.some((url) => url.includes('/api/console/'))).toBe(false)
+    expect(requests.some((url) => url.includes('/api/mujoco-fly-official-render/'))).toBe(false)
+    expect(websocketUrls.some((url) => url.includes('/api/mujoco-fly-browser-viewer/stream'))).toBe(
+      true,
+    )
+  })
+
   it('hydrates from the read-only UI backend when API responses are available', async () => {
     const requests: string[] = []
     const jsonResponse = (payload: unknown) =>

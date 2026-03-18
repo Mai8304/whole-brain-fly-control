@@ -47,7 +47,33 @@ def test_export_official_walk_scene_calls_official_export_and_writes_manifest(
         captured["out_dir"] = Path(out_dir)
         captured["out_file_name"] = out_file_name
         Path(out_dir).mkdir(parents=True, exist_ok=True)
-        (Path(out_dir) / out_file_name).write_text("<mujoco/>", encoding="utf-8")
+        (Path(out_dir) / out_file_name).write_text(
+            """
+<mujoco>
+  <default>
+    <default class="walker/">
+      <mesh scale="0.1 0.1 0.1" />
+    </default>
+  </default>
+  <asset>
+    <mesh name="walker/thorax" class="walker/" file="thorax_body.obj" />
+  </asset>
+  <worldbody>
+    <body name="walker/">
+      <body name="walker/thorax">
+        <geom
+          name="walker/thorax"
+          mesh="walker/thorax"
+          pos="0 0 0.25"
+          quat="1 0 0 0"
+        />
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
+            """.strip(),
+            encoding="utf-8",
+        )
         (Path(out_dir) / "thorax_body.obj").write_text("o thorax\n", encoding="utf-8")
 
     monkeypatch.setattr(
@@ -68,6 +94,11 @@ def test_export_official_walk_scene_calls_official_export_and_writes_manifest(
     assert manifest["entry_xml"] == "walk_imitation.xml"
     assert manifest["scene_version"] == "flybody-walk-imitation-v1"
     assert manifest["asset_count"] == 2
+    assert manifest["body_manifest"][1]["body_name"] == "walker/thorax"
+    assert manifest["body_manifest"][1]["parent_body_name"] == "walker/"
+    assert manifest["geom_manifest"][0]["geom_name"] == "walker/thorax"
+    assert manifest["geom_manifest"][0]["mesh_asset_path"] == "thorax_body.obj"
+    assert manifest["geom_manifest"][0]["mesh_scale"] == [0.1, 0.1, 0.1]
     assert (output_dir / "manifest.json").exists()
 
 
