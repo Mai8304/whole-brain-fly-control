@@ -21,6 +21,15 @@ from fruitfly.evaluation.runtime_activity_artifacts import (
 )
 from fruitfly.evaluation.timeline import build_shared_timeline_payload
 from fruitfly.ui.mujoco_fly_contract import validate_viewer_state_payload
+from fruitfly.ui.mujoco_fly_official_render_contract import (
+    official_render_camera_id_for_preset,
+    validate_official_render_frame_request,
+)
+from fruitfly.ui.mujoco_fly_official_render_runtime import (
+    MujocoFlyOfficialRenderRuntime,
+    MujocoFlyOfficialRenderRuntimeConfig,
+    create_mujoco_fly_official_render_runtime,
+)
 from fruitfly.ui.mujoco_fly_runtime import (
     MujocoFlyRuntime,
     MujocoFlyRuntimeConfig,
@@ -61,6 +70,7 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     replay_runtime: ReplayRuntime | None = None
     replay_frame_client: Any | None = None
     mujoco_fly_runtime: MujocoFlyRuntime | None = None
+    mujoco_fly_official_render_runtime: MujocoFlyOfficialRenderRuntime | None = None
 
     def get_or_create_replay_runtime() -> ReplayRuntime:
         nonlocal replay_runtime
@@ -90,6 +100,18 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
                 )
             )
         return mujoco_fly_runtime
+
+    def get_or_create_mujoco_fly_official_render_runtime() -> MujocoFlyOfficialRenderRuntime:
+        nonlocal mujoco_fly_official_render_runtime
+        if mujoco_fly_official_render_runtime is None:
+            mujoco_fly_official_render_runtime = create_mujoco_fly_official_render_runtime(
+                MujocoFlyOfficialRenderRuntimeConfig(
+                    scene_dir=config.mujoco_fly_scene_dir,
+                    policy_checkpoint_path=config.mujoco_fly_policy_checkpoint_path,
+                ),
+                backend_factory=_create_mujoco_fly_official_render_backend_factory(),
+            )
+        return mujoco_fly_official_render_runtime
 
     def close_replay_frame_client() -> None:
         nonlocal replay_frame_client
@@ -224,6 +246,67 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     def mujoco_fly_reset() -> dict[str, Any]:
         runtime = get_or_create_mujoco_fly_runtime()
         _run_mujoco_fly_control(runtime.reset)
+        return runtime.session_payload()
+
+    @app.get("/api/mujoco-fly-official-render/session")
+    def mujoco_fly_official_render_session() -> dict[str, Any]:
+        return get_or_create_mujoco_fly_official_render_runtime().session_payload()
+
+    @app.get("/api/mujoco-fly-official-render/frame")
+    def mujoco_fly_official_render_frame(width: int = 320, height: int = 240, camera: str | None = None) -> Response:
+        runtime = get_or_create_mujoco_fly_official_render_runtime()
+        requested_camera = camera if camera is not None else runtime.current_camera
+        try:
+            request = validate_official_render_frame_request(
+                {
+                    "width": width,
+                    "height": height,
+                    "camera": requested_camera,
+                }
+            )
+            frame = runtime.render_frame(
+                width=request["width"],
+                height=request["height"],
+                camera=request["camera"],
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return Response(content=frame.bytes, media_type=frame.content_type)
+
+    @app.post("/api/mujoco-fly-official-render/start")
+    def mujoco_fly_official_render_start() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_official_render_runtime()
+        _run_mujoco_fly_official_render_control(runtime.start)
+        return runtime.session_payload()
+
+    @app.post("/api/mujoco-fly-official-render/pause")
+    def mujoco_fly_official_render_pause() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_official_render_runtime()
+        _run_mujoco_fly_official_render_control(runtime.pause)
+        return runtime.session_payload()
+
+    @app.post("/api/mujoco-fly-official-render/reset")
+    def mujoco_fly_official_render_reset() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_official_render_runtime()
+        _run_mujoco_fly_official_render_control(runtime.reset)
+        return runtime.session_payload()
+
+    @app.post("/api/mujoco-fly-official-render/camera")
+    def mujoco_fly_official_render_camera(payload: dict[str, Any]) -> dict[str, Any]:
+        if "camera" not in payload:
+            raise HTTPException(status_code=400, detail="camera is required")
+        camera = str(payload["camera"])
+        try:
+            official_render_camera_id_for_preset(camera)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        runtime = get_or_create_mujoco_fly_official_render_runtime()
+        try:
+            runtime.set_camera_preset(camera)
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
         return runtime.session_payload()
 
     @app.websocket("/api/mujoco-fly/stream")
@@ -395,6 +478,13 @@ def _validated_mujoco_fly_viewer_state(runtime: MujocoFlyRuntime) -> dict[str, A
     return validate_viewer_state_payload(runtime.current_viewer_state())
 
 
+def _run_mujoco_fly_official_render_control(control: Any) -> None:
+    try:
+        control()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
 def _run_mujoco_fly_control(control: Any) -> None:
     try:
         control()
@@ -502,6 +592,10 @@ def _create_replay_frame_client(*, config: ConsoleApiConfig) -> ReplayFrameWorke
         worker_script=worker_script,
         eval_dir=config.eval_dir,
     )
+
+
+def _create_mujoco_fly_official_render_backend_factory() -> Any | None:
+    return None
 
 
 def _resolve_replay_renderer_python(config: ConsoleApiConfig) -> Path | None:
