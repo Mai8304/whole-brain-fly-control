@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -73,16 +72,16 @@ export function MujocoFlyOfficialRenderPage() {
                 <div className="console-kicker">{t('mujocoFlyOfficialRender.camera.title')}</div>
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="outline" disabled>
-                    {t('mujocoFlyOfficialRender.camera.follow')}
+                    {t('mujocoFlyOfficialRender.camera.track')}
                   </Button>
                   <Button type="button" variant="outline" disabled>
                     {t('mujocoFlyOfficialRender.camera.side')}
                   </Button>
                   <Button type="button" variant="outline" disabled>
-                    {t('mujocoFlyOfficialRender.camera.top')}
+                    {t('mujocoFlyOfficialRender.camera.back')}
                   </Button>
                   <Button type="button" variant="outline" disabled>
-                    {t('mujocoFlyOfficialRender.camera.frontQuarter')}
+                    {t('mujocoFlyOfficialRender.camera.top')}
                   </Button>
                 </div>
               </div>
@@ -91,15 +90,41 @@ export function MujocoFlyOfficialRenderPage() {
 
           <Card className="console-panel border-none shadow-none">
             <CardHeader className="pb-3">
-              <CardTitle>{t('mujocoFlyOfficialRender.status.title')}</CardTitle>
-              <CardDescription>{t('mujocoFlyOfficialRender.status.note')}</CardDescription>
+              <CardTitle>{t('mujocoFlyOfficialRender.session.title')}</CardTitle>
+              <CardDescription>{t('mujocoFlyOfficialRender.session.description')}</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge variant="outline">{t('mujocoFlyOfficialRender.status.loading')}</Badge>
-                <p className="text-sm text-muted-foreground">
-                  {t('mujocoFlyOfficialRender.status.note')}
-                </p>
+            <CardContent className="grid gap-3">
+              <div className="rounded-2xl border border-border/70 bg-background/50 px-4 py-3">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {t('mujocoFlyOfficialRender.session.field.available')}
+                </div>
+                <div className="mt-1 text-sm font-medium text-foreground">
+                  {t('mujocoFlyOfficialRender.session.value.notWired')}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/50 px-4 py-3">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {t('mujocoFlyOfficialRender.session.field.status')}
+                </div>
+                <div className="mt-1 text-sm font-medium text-foreground">
+                  {t('mujocoFlyOfficialRender.session.value.contractOnly')}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/50 px-4 py-3">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {t('mujocoFlyOfficialRender.session.field.sceneVersion')}
+                </div>
+                <div className="mt-1 text-sm font-medium text-foreground">
+                  {t('mujocoFlyOfficialRender.session.value.pending')}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/50 px-4 py-3">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {t('mujocoFlyOfficialRender.session.field.reason')}
+                </div>
+                <div className="mt-1 text-sm font-medium text-foreground">
+                  {t('mujocoFlyOfficialRender.session.value.pending')}
+                </div>
               </div>
             </CardContent>
           </Card>

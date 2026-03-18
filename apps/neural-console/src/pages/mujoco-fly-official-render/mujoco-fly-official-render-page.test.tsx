@@ -6,7 +6,7 @@ import { ConsolePreferencesProvider } from '@/providers/console-preferences-prov
 import { MujocoFlyOfficialRenderPage } from './mujoco-fly-official-render-page'
 
 describe('MujocoFlyOfficialRenderPage', () => {
-  it('renders the official render shell with viewport, controls, and runtime status', () => {
+  it('renders the official render shell with the contract camera presets and session placeholders', () => {
     render(
       <ConsolePreferencesProvider>
         <MujocoFlyOfficialRenderPage />
@@ -22,11 +22,18 @@ describe('MujocoFlyOfficialRenderPage', () => {
     expect(screen.getByRole('button', { name: /start/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^reset$/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /follow/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /track/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /side/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /top/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /front quarter/i })).toBeInTheDocument()
-    expect(screen.getByText(/runtime status/i)).toBeInTheDocument()
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByText(/^official session contract$/i)).toBeInTheDocument()
+    expect(screen.getByText(/session available/i)).toBeInTheDocument()
+    expect(screen.getByText(/session status/i)).toBeInTheDocument()
+    expect(screen.getByText(/scene version/i)).toBeInTheDocument()
+    expect(screen.getByText(/not wired/i)).toBeInTheDocument()
+    expect(screen.getByText(/contract only/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/^pending$/i)).toHaveLength(2)
+    expect(screen.queryByText(/^Loading$/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Paused$/i)).not.toBeInTheDocument()
   })
 })
