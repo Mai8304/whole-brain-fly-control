@@ -145,6 +145,18 @@ describe('Neural console shell', () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
       const url = String(input)
       requests.push(url)
+      if (url.endsWith('/api/mujoco-fly-official-render/session')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            available: false,
+            running_state: 'unavailable',
+            current_camera: 'track',
+            checkpoint_loaded: false,
+            reason: 'Official walking policy checkpoint is unavailable',
+          }),
+        } as Response)
+      }
       return Promise.reject(new Error(`unexpected request: ${url}`))
     })
     window.history.replaceState(null, '', '/mujoco-fly-official-render')
@@ -166,8 +178,9 @@ describe('Neural console shell', () => {
     expect(screen.getByRole('button', { name: /top/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /follow/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /front quarter/i })).not.toBeInTheDocument()
-    expect(screen.queryByText(/^Loading$/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/^Paused$/i)).not.toBeInTheDocument()
+    expect(
+      requests.some((url) => url.includes('/api/mujoco-fly-official-render/session')),
+    ).toBe(true)
     expect(requests.some((url) => url.includes('/api/console/'))).toBe(false)
     expect(requests.some((url) => url.includes('/api/mujoco-fly/'))).toBe(false)
   })
