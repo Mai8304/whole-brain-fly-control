@@ -140,6 +140,30 @@ describe('Neural console shell', () => {
     expect(requests.some((url) => url.includes('/api/mujoco-fly/session'))).toBe(true)
   })
 
+  it('opens the mujoco-fly-official-render page from the pathname without hydrating console data', async () => {
+    const requests: string[] = []
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input)
+      requests.push(url)
+      return Promise.reject(new Error(`unexpected request: ${url}`))
+    })
+    window.history.replaceState(null, '', '/mujoco-fly-official-render')
+
+    render(<App />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: /mujoco fly official render/i }),
+      ).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('button', { name: /start/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^reset$/i })).toBeInTheDocument()
+    expect(requests.some((url) => url.includes('/api/console/'))).toBe(false)
+    expect(requests.some((url) => url.includes('/api/mujoco-fly/'))).toBe(false)
+  })
+
   it('hydrates from the read-only UI backend when API responses are available', async () => {
     const requests: string[] = []
     const jsonResponse = (payload: unknown) =>

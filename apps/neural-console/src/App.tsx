@@ -4,10 +4,11 @@ import { ExperimentConsolePage } from '@/components/experiment-console-page'
 import { ConsoleSiteToolbar, type ConsolePageId } from '@/components/console-site-toolbar'
 import { TrainingConsolePage } from '@/components/training-console-page'
 import { useConsoleData } from '@/hooks/use-console-data'
+import { MujocoFlyOfficialRenderPage } from '@/pages/mujoco-fly-official-render/mujoco-fly-official-render-page'
 import { MujocoFlyPage } from '@/pages/mujoco-fly/mujoco-fly-page'
 import { ConsolePreferencesProvider } from '@/providers/console-preferences-provider'
 
-type ConsoleRouteId = ConsolePageId | 'mujoco-fly'
+type ConsoleRouteId = ConsolePageId | 'mujoco-fly' | 'mujoco-fly-official-render'
 
 function App() {
   return (
@@ -47,6 +48,14 @@ function ConsoleSite() {
     )
   }
 
+  if (currentPage === 'mujoco-fly-official-render') {
+    return (
+      <div className="console-app-shell min-h-screen">
+        <MujocoFlyOfficialRenderPage />
+      </div>
+    )
+  }
+
   return <ConsoleDataSite currentPage={currentPage} onPageChange={handlePageChange} />
 }
 
@@ -80,6 +89,9 @@ function readPageFromLocation(): ConsoleRouteId {
 
   if (window.location.pathname === '/training') {
     return 'training'
+  }
+  if (window.location.pathname === '/mujoco-fly-official-render') {
+    return 'mujoco-fly-official-render'
   }
   if (window.location.pathname === '/mujoco-fly') {
     return 'mujoco-fly'
