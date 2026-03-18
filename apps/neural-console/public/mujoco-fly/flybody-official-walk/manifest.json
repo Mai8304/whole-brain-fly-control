@@ -1104,6 +1104,84 @@
       "renderable": true
     }
   ],
+  "camera_manifest": [
+    {
+      "camera_name": "walker/track1",
+      "fovy": null,
+      "mode": "trackcom",
+      "position": [
+        0.6,
+        0.6,
+        0.22
+      ],
+      "preset": "track",
+      "quaternion": [
+        0.312,
+        0.221,
+        0.533,
+        0.754
+      ],
+      "xyaxes": null
+    },
+    {
+      "camera_name": "walker/side",
+      "fovy": null,
+      "mode": "track",
+      "position": [
+        -0.045,
+        0.424,
+        -0.035
+      ],
+      "preset": "side",
+      "quaternion": null,
+      "xyaxes": [
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "camera_name": "walker/back",
+      "fovy": null,
+      "mode": "track",
+      "position": [
+        -0.462,
+        0.0,
+        0.297
+      ],
+      "preset": "back",
+      "quaternion": null,
+      "xyaxes": [
+        0.0,
+        -1.0,
+        0.0,
+        0.707,
+        0.0,
+        0.707
+      ]
+    },
+    {
+      "camera_name": "top_camera",
+      "fovy": 10.058147163570894,
+      "mode": null,
+      "position": [
+        0.0,
+        0.0,
+        100.0
+      ],
+      "preset": "top",
+      "quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "xyaxes": null
+    }
+  ],
   "camera_presets": [
     "track",
     "side",
@@ -1214,6 +1292,15 @@
         0.0,
         -1.0
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "thorax_body-3bfa5cf2add6c736dcd41345af6dc290ed65ddd2.obj",
       "mesh_scale": [
         0.1,
@@ -1235,6 +1322,15 @@
         0.0,
         -1.0
       ],
+      "material_name": "walker/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "thorax_black-a1c2e0261d45e42f5c9be576a748d6cb3fc923bd.obj",
       "mesh_scale": [
         0.1,
@@ -1256,6 +1352,15 @@
         0.087,
         -0.702
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "head_body-c41faf4956e4e7fb65b97c3614b3b9a25a30806f.obj",
       "mesh_scale": [
         0.1,
@@ -1277,6 +1382,15 @@
         0.087,
         -0.702
       ],
+      "material_name": "walker/red",
+      "material_rgba": [
+        0.8,
+        0.0279,
+        0.00154,
+        1.0
+      ],
+      "material_shininess": 0.692,
+      "material_specular": 0.0,
       "mesh_asset_path": "head_red-c66c58eed5a2f6cbbc748e6d670733286dc1b1af.obj",
       "mesh_scale": [
         0.1,
@@ -1298,6 +1412,15 @@
         0.087,
         -0.702
       ],
+      "material_name": "walker/ocelli",
+      "material_rgba": [
+        0.128,
+        0.0488,
+        0.0154,
+        1.0
+      ],
+      "material_shininess": 1.0,
+      "material_specular": 0.0,
       "mesh_asset_path": "head_ocelli-d752a4b17ff5d4fa146b256aca4d2458b5046b78.obj",
       "mesh_scale": [
         0.1,
@@ -1319,6 +1442,15 @@
         0.087,
         -0.702
       ],
+      "material_name": "walker/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "head_black-5823ef1385642f535c4660e8442016c3dc5b1583.obj",
       "mesh_scale": [
         0.1,
@@ -1340,6 +1472,15 @@
         -0.0494,
         0.705
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "rostrum_body-44713a84b19b06cbd0624642c758999a312fa7c9.obj",
       "mesh_scale": [
         0.1,
@@ -1361,6 +1502,15 @@
         -0.0494,
         0.705
       ],
+      "material_name": "walker/bristle-brown",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.907,
+      "material_specular": 0.0,
       "mesh_asset_path": "rostrum_bristle-brown-ec0ca2b1e5afb44b00eb5854ff88f2f4e56b9e25.obj",
       "mesh_scale": [
         0.1,
@@ -1382,6 +1532,15 @@
         0.198,
         -0.679
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "haustellum_body-beb9241481a4d896f4e37b1c3b6b81628948cd7b.obj",
       "mesh_scale": [
         0.1,
@@ -1403,6 +1562,15 @@
         0.198,
         -0.679
       ],
+      "material_name": "walker/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "haustellum_black-9f5c64daef8dcb8440a45aa53813806c7967fbe2.obj",
       "mesh_scale": [
         0.1,
@@ -1424,6 +1592,15 @@
         -0.494,
         0.834
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "labrum_left_lower-8d37b6eda0f57e939d1156c583bd26dd61c67998.obj",
       "mesh_scale": [
         0.1,
@@ -1445,6 +1622,15 @@
         0.236,
         0.133
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "labrum_right_lower-93c6aa74f3b8b1e4a543b364dc864aad6803bd7d.obj",
       "mesh_scale": [
         0.1,
@@ -1466,6 +1652,15 @@
         0.474,
         -0.635
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "antenna_left_body-e3cc8681784674a4b17dd964cc074147ff789663.obj",
       "mesh_scale": [
         0.1,
@@ -1487,6 +1682,15 @@
         0.474,
         -0.635
       ],
+      "material_name": "walker/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "antenna_left_black-29e1cff29ba798c9f05463acd4212161ca930cc7.obj",
       "mesh_scale": [
         0.1,
@@ -1508,6 +1712,15 @@
         0.364,
         0.49
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "antenna_right_body-c6e0fb379ce24bcea6b3811cd969c4a2544c0a29.obj",
       "mesh_scale": [
         0.1,
@@ -1529,6 +1742,15 @@
         0.364,
         0.49
       ],
+      "material_name": "walker/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "antenna_right_black-ba3b98d2ad8d839d6ec560bf5b11c5cc3495c23d.obj",
       "mesh_scale": [
         0.1,
@@ -1550,6 +1772,15 @@
         -0.403,
         0.0
       ],
+      "material_name": "walker/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "wing_left_brown-f799f8ff2b74e5a364244be2b1bb2e2720e42f9a.obj",
       "mesh_scale": [
         0.1,
@@ -1571,6 +1802,15 @@
         -0.403,
         0.0
       ],
+      "material_name": "walker/membrane",
+      "material_rgba": [
+        0.539,
+        0.686,
+        0.8,
+        0.4
+      ],
+      "material_shininess": 0.907,
+      "material_specular": 0.62,
       "mesh_asset_path": "wing_left_membrane-640fa7684986dd7b3fd22cf59453b5ffb89b5c56.obj",
       "mesh_scale": [
         0.1,
@@ -1592,6 +1832,15 @@
         0.915,
         0.0
       ],
+      "material_name": "walker/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "wing_right_brown-8db881a1e719be1276e7684ac6c8dccf379e21c5.obj",
       "mesh_scale": [
         0.1,
@@ -1613,6 +1862,15 @@
         0.915,
         0.0
       ],
+      "material_name": "walker/membrane",
+      "material_rgba": [
+        0.539,
+        0.686,
+        0.8,
+        0.4
+      ],
+      "material_shininess": 0.907,
+      "material_specular": 0.62,
       "mesh_asset_path": "wing_right_membrane-c29f1c240d9aa14687dcd92b153226ddc4077151.obj",
       "mesh_scale": [
         0.1,
@@ -1634,6 +1892,15 @@
         0.0859,
         0.704
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_1_body-a230d78b11e203acdf0c52530efc562a75a9f117.obj",
       "mesh_scale": [
         0.1,
@@ -1655,6 +1922,15 @@
         0.0859,
         0.704
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_1_lower-19f05f05d29d432e5d0607e45235c7595a309eb9.obj",
       "mesh_scale": [
         0.1,
@@ -1676,6 +1952,15 @@
         -0.0503,
         0.706
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_2_body-470c048e83d9a52cf1839f4320ad62a2ea4c713b.obj",
       "mesh_scale": [
         0.1,
@@ -1697,6 +1982,15 @@
         -0.0503,
         0.706
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_2_lower-dfca1089c1264e3d02f758e3fb6ad6b1ffd993e9.obj",
       "mesh_scale": [
         0.1,
@@ -1718,6 +2012,15 @@
         -0.114,
         0.699
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_3_body-1aa59ba5465df1e7e8fb27463c48dcdaf43f413b.obj",
       "mesh_scale": [
         0.1,
@@ -1739,6 +2042,15 @@
         -0.114,
         0.699
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_3_lower-c1c9fef0cc7de7debdd11b71e79751996d2a7448.obj",
       "mesh_scale": [
         0.1,
@@ -1760,6 +2072,15 @@
         -0.138,
         0.695
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_4_body-67c54d053a1d03b46ecee5b7d126665ecc65dd21.obj",
       "mesh_scale": [
         0.1,
@@ -1781,6 +2102,15 @@
         -0.138,
         0.695
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_4_lower-55ed3ad0614f06d7b4f34cc97cd2d631831ea1b5.obj",
       "mesh_scale": [
         0.1,
@@ -1802,6 +2132,15 @@
         -0.163,
         0.689
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_5_body-79ce6748e524b0c5aab5da3c683415b8662ea0d4.obj",
       "mesh_scale": [
         0.1,
@@ -1823,6 +2162,15 @@
         -0.163,
         0.689
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_5_lower-e157ea4d6e9494df051b370bdba93e4a94f41af6.obj",
       "mesh_scale": [
         0.1,
@@ -1844,6 +2192,15 @@
         -0.208,
         0.677
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_6_body-a3be2fa90c63f0558e0703ae2dc763bcb4167112.obj",
       "mesh_scale": [
         0.1,
@@ -1865,6 +2222,15 @@
         -0.208,
         0.677
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_6_lower-112593e652b1229da6a9748930785d1b9e19e938.obj",
       "mesh_scale": [
         0.1,
@@ -1886,6 +2252,15 @@
         -0.276,
         0.653
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_8_body-8e66e731cae2e6d1d9de5a7e2b1448545f0cea15.obj",
       "mesh_scale": [
         0.1,
@@ -1907,6 +2282,15 @@
         -0.276,
         0.653
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_7_body-8cc7af9b60cd8a3b2ce30aedd4db46210999cc48.obj",
       "mesh_scale": [
         0.1,
@@ -1928,6 +2312,15 @@
         -0.276,
         0.653
       ],
+      "material_name": "walker/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_7_lower-9020c0e39ee0265dabbea1b908d81e0601a628c6.obj",
       "mesh_scale": [
         0.1,
@@ -1949,6 +2342,15 @@
         0.204,
         -0.291
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "haltere_left_body-fc0ad5af3b6cfce56211482b5495b86a5dbd8505.obj",
       "mesh_scale": [
         0.1,
@@ -1970,6 +2372,15 @@
         0.829,
         0.438
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "haltere_right_body-69d1c947c5291edbc38e64b61b804152e7cae4ee.obj",
       "mesh_scale": [
         0.1,
@@ -1991,6 +2402,15 @@
         -0.787,
         0.532
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T1_left_body-8eafdddebc73977e0f2332c6e75cecca1ab43bb0.obj",
       "mesh_scale": [
         0.1,
@@ -2012,6 +2432,15 @@
         0.295,
         -0.101
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T1_left_body-361d9325e6bada1bd5b8454f8b39015a60e45a15.obj",
       "mesh_scale": [
         0.1,
@@ -2033,6 +2462,15 @@
         0.797,
         0.453
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T1_left_body-07df283a7bccd5c4a2d5cb4d04cb7c12f82a4f73.obj",
       "mesh_scale": [
         0.1,
@@ -2054,6 +2492,15 @@
         -0.468,
         0.767
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_1_left_body-a1afcc1a5547fa14053737ae44c60358fd39c848.obj",
       "mesh_scale": [
         0.1,
@@ -2075,6 +2522,15 @@
         0.468,
         -0.767
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_2_left_body-f304e60577d324626d1c34b117e9668518cfb2f9.obj",
       "mesh_scale": [
         0.1,
@@ -2096,6 +2552,15 @@
         -0.468,
         0.767
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_3_left_body-f7cc55f78c5cfc3e43044ebe9da061522521f376.obj",
       "mesh_scale": [
         0.1,
@@ -2117,6 +2582,15 @@
         0.468,
         -0.767
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_4_left_body-6390880decd81d752bc6fd56856165609680aadd.obj",
       "mesh_scale": [
         0.1,
@@ -2138,6 +2612,15 @@
         -0.468,
         0.767
       ],
+      "material_name": "walker/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T1_left_brown-1c2821e95938846b293cb541a3a56e6682b78598.obj",
       "mesh_scale": [
         0.1,
@@ -2159,6 +2642,15 @@
         0.011,
         0.319
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T1_right_body-ff4e3f6422d2c2477748fc878e128f8f6798bfdc.obj",
       "mesh_scale": [
         0.1,
@@ -2180,6 +2672,15 @@
         0.321,
         -0.892
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T1_right_body-66f845f17a538c978eb0dd1007a65453ee7944d4.obj",
       "mesh_scale": [
         0.1,
@@ -2201,6 +2702,15 @@
         -0.184,
         0.357
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T1_right_body-83c915adbae8047fef638857b41bf9622d759f33.obj",
       "mesh_scale": [
         0.1,
@@ -2222,6 +2732,15 @@
         0.299,
         0.16
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_1_right_body-04543b032acaaa5290b486607d4c5764a8b1752a.obj",
       "mesh_scale": [
         0.1,
@@ -2243,6 +2762,15 @@
         -0.299,
         -0.16
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_2_right_body-2ba46716378e21a42079ea9d04f0a1e8762e3bbd.obj",
       "mesh_scale": [
         0.1,
@@ -2264,6 +2792,15 @@
         0.299,
         0.16
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_3_right_body-e640575f3475dbe9c33482184cea219e7f00a0dc.obj",
       "mesh_scale": [
         0.1,
@@ -2285,6 +2822,15 @@
         -0.299,
         -0.16
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_4_right_body-016bd85d6de1936a746182a70ad9a8bdc5d60c45.obj",
       "mesh_scale": [
         0.1,
@@ -2306,6 +2852,15 @@
         0.299,
         0.16
       ],
+      "material_name": "walker/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T1_right_brown-4b0c8e84cae2e13addb2bae46b4ea7cdc5e8ad1e.obj",
       "mesh_scale": [
         0.1,
@@ -2327,6 +2882,15 @@
         -0.917,
         0.371
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T2_left_body-e64518a9c5f3cf726ee62f0fb4809652cc094060.obj",
       "mesh_scale": [
         0.1,
@@ -2348,6 +2912,15 @@
         0.116,
         -0.0879
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T2_left_body-491294cc7e85a715b2cba7ecf4ab596659f5c153.obj",
       "mesh_scale": [
         0.1,
@@ -2369,6 +2942,15 @@
         0.87,
         0.461
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T2_left_body-35d778c873f17eef8bb4ec87cf380e4a1f6386b5.obj",
       "mesh_scale": [
         0.1,
@@ -2390,6 +2972,15 @@
         -0.342,
         0.935
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_1_left_body-0b1b5af8236c0395ca37ddbd21e1462aa6a0c4b0.obj",
       "mesh_scale": [
         0.1,
@@ -2411,6 +3002,15 @@
         0.342,
         -0.935
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_2_left_body-2323cb78f6d232ba3198ed840f424936fbac675a.obj",
       "mesh_scale": [
         0.1,
@@ -2432,6 +3032,15 @@
         -0.342,
         0.935
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_3_left_body-d5676bc4b19254e786ce6a236b02e4cf97f38ca3.obj",
       "mesh_scale": [
         0.1,
@@ -2453,6 +3062,15 @@
         0.342,
         -0.935
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_4_left_body-6d200dfa14b2b3016cb696b69df2112f1c786cf5.obj",
       "mesh_scale": [
         0.1,
@@ -2474,6 +3092,15 @@
         -0.342,
         0.935
       ],
+      "material_name": "walker/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T2_left_brown-1840e3a7d619a1ad7ce109ae68c6bef6fee72faf.obj",
       "mesh_scale": [
         0.1,
@@ -2495,6 +3122,15 @@
         -0.0709,
         0.126
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T2_right_body-0c00f50734b1c68f36e31be47d4f2f420d16221e.obj",
       "mesh_scale": [
         0.1,
@@ -2516,6 +3152,15 @@
         0.247,
         -0.958
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T2_right_body-bb82f471efbe96e2b0067262f21d97068c385c87.obj",
       "mesh_scale": [
         0.1,
@@ -2537,6 +3182,15 @@
         -0.064,
         0.139
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T2_right_body-cf688ca25f1ecd8f0e77da9b1e780a6c9d0b330f.obj",
       "mesh_scale": [
         0.1,
@@ -2558,6 +3212,15 @@
         0.0789,
         -0.0479
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_1_right_body-efcd6236546df37e6c4ff2ef39b4a177428418ba.obj",
       "mesh_scale": [
         0.1,
@@ -2579,6 +3242,15 @@
         -0.0788,
         0.0479
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_2_right_body-a7491f943f4205f879b0d9adb2303c3133eaaabe.obj",
       "mesh_scale": [
         0.1,
@@ -2600,6 +3272,15 @@
         0.0788,
         -0.0479
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_3_right_body-a3091e20230e7e8f33efb81aecd425ded12ff9cb.obj",
       "mesh_scale": [
         0.1,
@@ -2621,6 +3302,15 @@
         -0.0788,
         0.0479
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_4_right_body-1e75ea7b6c61fb24310f73249a59a27c76959aef.obj",
       "mesh_scale": [
         0.1,
@@ -2642,6 +3332,15 @@
         0.0788,
         -0.0479
       ],
+      "material_name": "walker/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T2_right_brown-7d0c9bb8cf10e520a7a681d3adcf260481366963.obj",
       "mesh_scale": [
         0.1,
@@ -2663,6 +3362,15 @@
         0.529,
         -0.681
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T3_left_body-d617bfc55f7a217d8c3fae58cbb197dfd6528723.obj",
       "mesh_scale": [
         0.1,
@@ -2684,6 +3392,15 @@
         -0.398,
         -0.312
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T3_left_body-ccfc564fed9562fbfbdb92e609a9301726f0fb23.obj",
       "mesh_scale": [
         0.1,
@@ -2705,6 +3422,15 @@
         -0.77,
         -0.494
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T3_left_body-4476b9ff8475e9043af87eafad4aaa5ac53a3bc1.obj",
       "mesh_scale": [
         0.1,
@@ -2726,6 +3452,15 @@
         0.251,
         -0.823
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_1_left_body-0480467ff5801b0775749ad79ca92e9262938365.obj",
       "mesh_scale": [
         0.1,
@@ -2747,6 +3482,15 @@
         -0.251,
         0.823
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_2_left_body-84064b53f5671ef7c1ed9ce0279204128ccf49ac.obj",
       "mesh_scale": [
         0.1,
@@ -2768,6 +3512,15 @@
         0.251,
         -0.823
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_3_left_body-9ebcf60966685f7a864029d4259114662306659b.obj",
       "mesh_scale": [
         0.1,
@@ -2789,6 +3542,15 @@
         -0.251,
         0.823
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_4_left_body-2356d05fff491ecb0f5ab0cb41f4f20a96c0c2e8.obj",
       "mesh_scale": [
         0.1,
@@ -2810,6 +3572,15 @@
         0.251,
         -0.823
       ],
+      "material_name": "walker/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T3_left_brown-b2fea9d0f3eee36e0b7a0cdb77fa843d5ac44fdc.obj",
       "mesh_scale": [
         0.1,
@@ -2831,6 +3602,15 @@
         0.505,
         0.0854
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T3_right_body-e2f63e9a0c6671d1182ef451c04efeb7da84fd44.obj",
       "mesh_scale": [
         0.1,
@@ -2852,6 +3632,15 @@
         -0.152,
         0.846
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T3_right_body-32d5d66de9a8a101efc3ce8726f11e3c2c33693a.obj",
       "mesh_scale": [
         0.1,
@@ -2873,6 +3662,15 @@
         0.136,
         -0.382
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T3_right_body-b850753b74b1a929274ad730eae81cf91d59be94.obj",
       "mesh_scale": [
         0.1,
@@ -2894,6 +3692,15 @@
         -0.49,
         -0.136
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_1_right_body-570e9fbb9dc7c50670407dad565f456ca7f92506.obj",
       "mesh_scale": [
         0.1,
@@ -2915,6 +3722,15 @@
         0.49,
         0.136
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_2_right_body-81933cf05005e767874cdc748cf761263b83e873.obj",
       "mesh_scale": [
         0.1,
@@ -2936,6 +3752,15 @@
         -0.49,
         -0.136
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_3_right_body-ebbc4fbc0ec068d207ce47fec2d504e2fcc0390b.obj",
       "mesh_scale": [
         0.1,
@@ -2957,6 +3782,15 @@
         0.49,
         0.136
       ],
+      "material_name": "walker/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_4_right_body-57978f2c52407803453ba6980e5ac1ac5d4ca59a.obj",
       "mesh_scale": [
         0.1,
@@ -2978,6 +3812,15 @@
         -0.49,
         -0.136
       ],
+      "material_name": "walker/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T3_right_brown-fccda3b260eaee74900e2e7909ee05421674c8d5.obj",
       "mesh_scale": [
         0.1,
@@ -2999,6 +3842,15 @@
         0.0,
         -1.0
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "thorax_body-3bfa5cf2add6c736dcd41345af6dc290ed65ddd2.obj",
       "mesh_scale": [
         0.1,
@@ -3020,6 +3872,15 @@
         0.0,
         -1.0
       ],
+      "material_name": "ghost/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "thorax_black-a1c2e0261d45e42f5c9be576a748d6cb3fc923bd.obj",
       "mesh_scale": [
         0.1,
@@ -3041,6 +3902,15 @@
         0.087,
         -0.702
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "head_body-c41faf4956e4e7fb65b97c3614b3b9a25a30806f.obj",
       "mesh_scale": [
         0.1,
@@ -3062,6 +3932,15 @@
         0.087,
         -0.702
       ],
+      "material_name": "ghost/red",
+      "material_rgba": [
+        0.8,
+        0.0279,
+        0.00154,
+        1.0
+      ],
+      "material_shininess": 0.692,
+      "material_specular": 0.0,
       "mesh_asset_path": "head_red-c66c58eed5a2f6cbbc748e6d670733286dc1b1af.obj",
       "mesh_scale": [
         0.1,
@@ -3083,6 +3962,15 @@
         0.087,
         -0.702
       ],
+      "material_name": "ghost/ocelli",
+      "material_rgba": [
+        0.128,
+        0.0488,
+        0.0154,
+        1.0
+      ],
+      "material_shininess": 1.0,
+      "material_specular": 0.0,
       "mesh_asset_path": "head_ocelli-d752a4b17ff5d4fa146b256aca4d2458b5046b78.obj",
       "mesh_scale": [
         0.1,
@@ -3104,6 +3992,15 @@
         0.087,
         -0.702
       ],
+      "material_name": "ghost/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "head_black-5823ef1385642f535c4660e8442016c3dc5b1583.obj",
       "mesh_scale": [
         0.1,
@@ -3125,6 +4022,15 @@
         -0.0494,
         0.705
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "rostrum_body-44713a84b19b06cbd0624642c758999a312fa7c9.obj",
       "mesh_scale": [
         0.1,
@@ -3146,6 +4052,15 @@
         -0.0494,
         0.705
       ],
+      "material_name": "ghost/bristle-brown",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.907,
+      "material_specular": 0.0,
       "mesh_asset_path": "rostrum_bristle-brown-ec0ca2b1e5afb44b00eb5854ff88f2f4e56b9e25.obj",
       "mesh_scale": [
         0.1,
@@ -3167,6 +4082,15 @@
         0.198,
         -0.679
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "haustellum_body-beb9241481a4d896f4e37b1c3b6b81628948cd7b.obj",
       "mesh_scale": [
         0.1,
@@ -3188,6 +4112,15 @@
         0.198,
         -0.679
       ],
+      "material_name": "ghost/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "haustellum_black-9f5c64daef8dcb8440a45aa53813806c7967fbe2.obj",
       "mesh_scale": [
         0.1,
@@ -3209,6 +4142,15 @@
         -0.494,
         0.834
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "labrum_left_lower-8d37b6eda0f57e939d1156c583bd26dd61c67998.obj",
       "mesh_scale": [
         0.1,
@@ -3230,6 +4172,15 @@
         0.236,
         0.133
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "labrum_right_lower-93c6aa74f3b8b1e4a543b364dc864aad6803bd7d.obj",
       "mesh_scale": [
         0.1,
@@ -3251,6 +4202,15 @@
         0.474,
         -0.635
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "antenna_left_body-e3cc8681784674a4b17dd964cc074147ff789663.obj",
       "mesh_scale": [
         0.1,
@@ -3272,6 +4232,15 @@
         0.474,
         -0.635
       ],
+      "material_name": "ghost/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "antenna_left_black-29e1cff29ba798c9f05463acd4212161ca930cc7.obj",
       "mesh_scale": [
         0.1,
@@ -3293,6 +4262,15 @@
         0.364,
         0.49
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "antenna_right_body-c6e0fb379ce24bcea6b3811cd969c4a2544c0a29.obj",
       "mesh_scale": [
         0.1,
@@ -3314,6 +4292,15 @@
         0.364,
         0.49
       ],
+      "material_name": "ghost/black",
+      "material_rgba": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "material_shininess": 0.727,
+      "material_specular": 0.0,
       "mesh_asset_path": "antenna_right_black-ba3b98d2ad8d839d6ec560bf5b11c5cc3495c23d.obj",
       "mesh_scale": [
         0.1,
@@ -3335,6 +4322,15 @@
         0.0859,
         0.704
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_1_body-a230d78b11e203acdf0c52530efc562a75a9f117.obj",
       "mesh_scale": [
         0.1,
@@ -3356,6 +4352,15 @@
         0.0859,
         0.704
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_1_lower-19f05f05d29d432e5d0607e45235c7595a309eb9.obj",
       "mesh_scale": [
         0.1,
@@ -3377,6 +4382,15 @@
         -0.0503,
         0.706
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_2_body-470c048e83d9a52cf1839f4320ad62a2ea4c713b.obj",
       "mesh_scale": [
         0.1,
@@ -3398,6 +4412,15 @@
         -0.0503,
         0.706
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_2_lower-dfca1089c1264e3d02f758e3fb6ad6b1ffd993e9.obj",
       "mesh_scale": [
         0.1,
@@ -3419,6 +4442,15 @@
         -0.114,
         0.699
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_3_body-1aa59ba5465df1e7e8fb27463c48dcdaf43f413b.obj",
       "mesh_scale": [
         0.1,
@@ -3440,6 +4472,15 @@
         -0.114,
         0.699
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_3_lower-c1c9fef0cc7de7debdd11b71e79751996d2a7448.obj",
       "mesh_scale": [
         0.1,
@@ -3461,6 +4502,15 @@
         -0.138,
         0.695
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_4_body-67c54d053a1d03b46ecee5b7d126665ecc65dd21.obj",
       "mesh_scale": [
         0.1,
@@ -3482,6 +4532,15 @@
         -0.138,
         0.695
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_4_lower-55ed3ad0614f06d7b4f34cc97cd2d631831ea1b5.obj",
       "mesh_scale": [
         0.1,
@@ -3503,6 +4562,15 @@
         -0.163,
         0.689
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_5_body-79ce6748e524b0c5aab5da3c683415b8662ea0d4.obj",
       "mesh_scale": [
         0.1,
@@ -3524,6 +4592,15 @@
         -0.163,
         0.689
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_5_lower-e157ea4d6e9494df051b370bdba93e4a94f41af6.obj",
       "mesh_scale": [
         0.1,
@@ -3545,6 +4622,15 @@
         -0.208,
         0.677
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_6_body-a3be2fa90c63f0558e0703ae2dc763bcb4167112.obj",
       "mesh_scale": [
         0.1,
@@ -3566,6 +4652,15 @@
         -0.208,
         0.677
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_6_lower-112593e652b1229da6a9748930785d1b9e19e938.obj",
       "mesh_scale": [
         0.1,
@@ -3587,6 +4682,15 @@
         -0.276,
         0.653
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_8_body-8e66e731cae2e6d1d9de5a7e2b1448545f0cea15.obj",
       "mesh_scale": [
         0.1,
@@ -3608,6 +4712,15 @@
         -0.276,
         0.653
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_7_body-8cc7af9b60cd8a3b2ce30aedd4db46210999cc48.obj",
       "mesh_scale": [
         0.1,
@@ -3629,6 +4742,15 @@
         -0.276,
         0.653
       ],
+      "material_name": "ghost/lower",
+      "material_rgba": [
+        0.799,
+        0.61,
+        0.386,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "abdomen_7_lower-9020c0e39ee0265dabbea1b908d81e0601a628c6.obj",
       "mesh_scale": [
         0.1,
@@ -3650,6 +4772,15 @@
         0.204,
         -0.291
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "haltere_left_body-fc0ad5af3b6cfce56211482b5495b86a5dbd8505.obj",
       "mesh_scale": [
         0.1,
@@ -3671,6 +4802,15 @@
         0.829,
         0.438
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "haltere_right_body-69d1c947c5291edbc38e64b61b804152e7cae4ee.obj",
       "mesh_scale": [
         0.1,
@@ -3692,6 +4832,15 @@
         -0.787,
         0.532
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T1_left_body-8eafdddebc73977e0f2332c6e75cecca1ab43bb0.obj",
       "mesh_scale": [
         0.1,
@@ -3713,6 +4862,15 @@
         0.295,
         -0.101
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T1_left_body-361d9325e6bada1bd5b8454f8b39015a60e45a15.obj",
       "mesh_scale": [
         0.1,
@@ -3734,6 +4892,15 @@
         0.797,
         0.453
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T1_left_body-07df283a7bccd5c4a2d5cb4d04cb7c12f82a4f73.obj",
       "mesh_scale": [
         0.1,
@@ -3755,6 +4922,15 @@
         -0.468,
         0.767
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_1_left_body-a1afcc1a5547fa14053737ae44c60358fd39c848.obj",
       "mesh_scale": [
         0.1,
@@ -3776,6 +4952,15 @@
         0.468,
         -0.767
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_2_left_body-f304e60577d324626d1c34b117e9668518cfb2f9.obj",
       "mesh_scale": [
         0.1,
@@ -3797,6 +4982,15 @@
         -0.468,
         0.767
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_3_left_body-f7cc55f78c5cfc3e43044ebe9da061522521f376.obj",
       "mesh_scale": [
         0.1,
@@ -3818,6 +5012,15 @@
         0.468,
         -0.767
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_4_left_body-6390880decd81d752bc6fd56856165609680aadd.obj",
       "mesh_scale": [
         0.1,
@@ -3839,6 +5042,15 @@
         -0.468,
         0.767
       ],
+      "material_name": "ghost/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T1_left_brown-1c2821e95938846b293cb541a3a56e6682b78598.obj",
       "mesh_scale": [
         0.1,
@@ -3860,6 +5072,15 @@
         0.011,
         0.319
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T1_right_body-ff4e3f6422d2c2477748fc878e128f8f6798bfdc.obj",
       "mesh_scale": [
         0.1,
@@ -3881,6 +5102,15 @@
         0.321,
         -0.892
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T1_right_body-66f845f17a538c978eb0dd1007a65453ee7944d4.obj",
       "mesh_scale": [
         0.1,
@@ -3902,6 +5132,15 @@
         -0.184,
         0.357
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T1_right_body-83c915adbae8047fef638857b41bf9622d759f33.obj",
       "mesh_scale": [
         0.1,
@@ -3923,6 +5162,15 @@
         0.299,
         0.16
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_1_right_body-04543b032acaaa5290b486607d4c5764a8b1752a.obj",
       "mesh_scale": [
         0.1,
@@ -3944,6 +5192,15 @@
         -0.299,
         -0.16
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_2_right_body-2ba46716378e21a42079ea9d04f0a1e8762e3bbd.obj",
       "mesh_scale": [
         0.1,
@@ -3965,6 +5222,15 @@
         0.299,
         0.16
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_3_right_body-e640575f3475dbe9c33482184cea219e7f00a0dc.obj",
       "mesh_scale": [
         0.1,
@@ -3986,6 +5252,15 @@
         -0.299,
         -0.16
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T1_4_right_body-016bd85d6de1936a746182a70ad9a8bdc5d60c45.obj",
       "mesh_scale": [
         0.1,
@@ -4007,6 +5282,15 @@
         0.299,
         0.16
       ],
+      "material_name": "ghost/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T1_right_brown-4b0c8e84cae2e13addb2bae46b4ea7cdc5e8ad1e.obj",
       "mesh_scale": [
         0.1,
@@ -4028,6 +5312,15 @@
         -0.917,
         0.371
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T2_left_body-e64518a9c5f3cf726ee62f0fb4809652cc094060.obj",
       "mesh_scale": [
         0.1,
@@ -4049,6 +5342,15 @@
         0.116,
         -0.0879
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T2_left_body-491294cc7e85a715b2cba7ecf4ab596659f5c153.obj",
       "mesh_scale": [
         0.1,
@@ -4070,6 +5372,15 @@
         0.87,
         0.461
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T2_left_body-35d778c873f17eef8bb4ec87cf380e4a1f6386b5.obj",
       "mesh_scale": [
         0.1,
@@ -4091,6 +5402,15 @@
         -0.342,
         0.935
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_1_left_body-0b1b5af8236c0395ca37ddbd21e1462aa6a0c4b0.obj",
       "mesh_scale": [
         0.1,
@@ -4112,6 +5432,15 @@
         0.342,
         -0.935
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_2_left_body-2323cb78f6d232ba3198ed840f424936fbac675a.obj",
       "mesh_scale": [
         0.1,
@@ -4133,6 +5462,15 @@
         -0.342,
         0.935
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_3_left_body-d5676bc4b19254e786ce6a236b02e4cf97f38ca3.obj",
       "mesh_scale": [
         0.1,
@@ -4154,6 +5492,15 @@
         0.342,
         -0.935
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_4_left_body-6d200dfa14b2b3016cb696b69df2112f1c786cf5.obj",
       "mesh_scale": [
         0.1,
@@ -4175,6 +5522,15 @@
         -0.342,
         0.935
       ],
+      "material_name": "ghost/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T2_left_brown-1840e3a7d619a1ad7ce109ae68c6bef6fee72faf.obj",
       "mesh_scale": [
         0.1,
@@ -4196,6 +5552,15 @@
         -0.0709,
         0.126
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T2_right_body-0c00f50734b1c68f36e31be47d4f2f420d16221e.obj",
       "mesh_scale": [
         0.1,
@@ -4217,6 +5582,15 @@
         0.247,
         -0.958
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T2_right_body-bb82f471efbe96e2b0067262f21d97068c385c87.obj",
       "mesh_scale": [
         0.1,
@@ -4238,6 +5612,15 @@
         -0.064,
         0.139
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T2_right_body-cf688ca25f1ecd8f0e77da9b1e780a6c9d0b330f.obj",
       "mesh_scale": [
         0.1,
@@ -4259,6 +5642,15 @@
         0.0789,
         -0.0479
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_1_right_body-efcd6236546df37e6c4ff2ef39b4a177428418ba.obj",
       "mesh_scale": [
         0.1,
@@ -4280,6 +5672,15 @@
         -0.0788,
         0.0479
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_2_right_body-a7491f943f4205f879b0d9adb2303c3133eaaabe.obj",
       "mesh_scale": [
         0.1,
@@ -4301,6 +5702,15 @@
         0.0788,
         -0.0479
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_3_right_body-a3091e20230e7e8f33efb81aecd425ded12ff9cb.obj",
       "mesh_scale": [
         0.1,
@@ -4322,6 +5732,15 @@
         -0.0788,
         0.0479
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T2_4_right_body-1e75ea7b6c61fb24310f73249a59a27c76959aef.obj",
       "mesh_scale": [
         0.1,
@@ -4343,6 +5762,15 @@
         0.0788,
         -0.0479
       ],
+      "material_name": "ghost/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T2_right_brown-7d0c9bb8cf10e520a7a681d3adcf260481366963.obj",
       "mesh_scale": [
         0.1,
@@ -4364,6 +5792,15 @@
         0.529,
         -0.681
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T3_left_body-d617bfc55f7a217d8c3fae58cbb197dfd6528723.obj",
       "mesh_scale": [
         0.1,
@@ -4385,6 +5822,15 @@
         -0.398,
         -0.312
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T3_left_body-ccfc564fed9562fbfbdb92e609a9301726f0fb23.obj",
       "mesh_scale": [
         0.1,
@@ -4406,6 +5852,15 @@
         -0.77,
         -0.494
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T3_left_body-4476b9ff8475e9043af87eafad4aaa5ac53a3bc1.obj",
       "mesh_scale": [
         0.1,
@@ -4427,6 +5882,15 @@
         0.251,
         -0.823
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_1_left_body-0480467ff5801b0775749ad79ca92e9262938365.obj",
       "mesh_scale": [
         0.1,
@@ -4448,6 +5912,15 @@
         -0.251,
         0.823
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_2_left_body-84064b53f5671ef7c1ed9ce0279204128ccf49ac.obj",
       "mesh_scale": [
         0.1,
@@ -4469,6 +5942,15 @@
         0.251,
         -0.823
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_3_left_body-9ebcf60966685f7a864029d4259114662306659b.obj",
       "mesh_scale": [
         0.1,
@@ -4490,6 +5972,15 @@
         -0.251,
         0.823
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_4_left_body-2356d05fff491ecb0f5ab0cb41f4f20a96c0c2e8.obj",
       "mesh_scale": [
         0.1,
@@ -4511,6 +6002,15 @@
         0.251,
         -0.823
       ],
+      "material_name": "ghost/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T3_left_brown-b2fea9d0f3eee36e0b7a0cdb77fa843d5ac44fdc.obj",
       "mesh_scale": [
         0.1,
@@ -4532,6 +6032,15 @@
         0.505,
         0.0854
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "coxa_T3_right_body-e2f63e9a0c6671d1182ef451c04efeb7da84fd44.obj",
       "mesh_scale": [
         0.1,
@@ -4553,6 +6062,15 @@
         -0.152,
         0.846
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "femur_T3_right_body-32d5d66de9a8a101efc3ce8726f11e3c2c33693a.obj",
       "mesh_scale": [
         0.1,
@@ -4574,6 +6092,15 @@
         0.136,
         -0.382
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tibia_T3_right_body-b850753b74b1a929274ad730eae81cf91d59be94.obj",
       "mesh_scale": [
         0.1,
@@ -4595,6 +6122,15 @@
         -0.49,
         -0.136
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_1_right_body-570e9fbb9dc7c50670407dad565f456ca7f92506.obj",
       "mesh_scale": [
         0.1,
@@ -4616,6 +6152,15 @@
         0.49,
         0.136
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_2_right_body-81933cf05005e767874cdc748cf761263b83e873.obj",
       "mesh_scale": [
         0.1,
@@ -4637,6 +6182,15 @@
         -0.49,
         -0.136
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_3_right_body-ebbc4fbc0ec068d207ce47fec2d504e2fcc0390b.obj",
       "mesh_scale": [
         0.1,
@@ -4658,6 +6212,15 @@
         0.49,
         0.136
       ],
+      "material_name": "ghost/body",
+      "material_rgba": [
+        0.674,
+        0.35,
+        0.143,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsus_T3_4_right_body-57978f2c52407803453ba6980e5ac1ac5d4ca59a.obj",
       "mesh_scale": [
         0.1,
@@ -4679,6 +6242,15 @@
         -0.49,
         -0.136
       ],
+      "material_name": "ghost/brown",
+      "material_rgba": [
+        0.202,
+        0.0782,
+        0.0262,
+        1.0
+      ],
+      "material_shininess": 0.6,
+      "material_specular": 0.0,
       "mesh_asset_path": "tarsal_claw_T3_right_brown-fccda3b260eaee74900e2e7909ee05421674c8d5.obj",
       "mesh_scale": [
         0.1,

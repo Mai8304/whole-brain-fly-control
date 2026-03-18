@@ -21,6 +21,41 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
     if not isinstance(camera_presets_raw, list) or not camera_presets_raw:
         raise ValueError("camera_presets must be a non-empty list")
     camera_presets = [_validate_camera_preset(value) for value in camera_presets_raw]
+    camera_manifest_raw = payload.get("camera_manifest", [])
+    if not isinstance(camera_manifest_raw, list):
+        raise ValueError("camera_manifest must be a list when present")
+    camera_manifest: list[dict[str, Any]] = []
+    for entry in camera_manifest_raw:
+        if not isinstance(entry, dict):
+            raise ValueError("camera_manifest entry must be an object")
+        preset = _validate_camera_preset(entry.get("preset"))
+        camera_name = entry.get("camera_name")
+        if not isinstance(camera_name, str) or not camera_name:
+            raise ValueError("camera_name is required for every camera manifest entry")
+        mode = entry.get("mode")
+        if mode is not None:
+            mode = str(mode)
+        position = _validate_vector(entry.get("position"), size=3, field_name="position")
+        quaternion = entry.get("quaternion")
+        if quaternion is not None:
+            quaternion = _validate_vector(quaternion, size=4, field_name="quaternion")
+        xyaxes = entry.get("xyaxes")
+        if xyaxes is not None:
+            xyaxes = _validate_vector(xyaxes, size=6, field_name="xyaxes")
+        fovy = entry.get("fovy")
+        if fovy is not None:
+            fovy = float(fovy)
+        camera_manifest.append(
+            {
+                "preset": preset,
+                "camera_name": camera_name,
+                "mode": mode,
+                "position": position,
+                "quaternion": quaternion,
+                "xyaxes": xyaxes,
+                "fovy": fovy,
+            }
+        )
 
     body_manifest_raw = payload.get("body_manifest")
     if not isinstance(body_manifest_raw, list):
@@ -70,6 +105,18 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
         local_quaternion = _validate_vector(
             entry.get("local_quaternion"), size=4, field_name="local_quaternion"
         )
+        material_name = entry.get("material_name")
+        if material_name is not None:
+            material_name = str(material_name)
+        material_rgba = entry.get("material_rgba")
+        if material_rgba is not None:
+            material_rgba = _validate_vector(material_rgba, size=4, field_name="material_rgba")
+        material_specular = entry.get("material_specular")
+        if material_specular is not None:
+            material_specular = float(material_specular)
+        material_shininess = entry.get("material_shininess")
+        if material_shininess is not None:
+            material_shininess = float(material_shininess)
         geom_manifest.append(
             {
                 "geom_name": geom_name,
@@ -78,6 +125,10 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
                 "mesh_scale": mesh_scale,
                 "local_position": local_position,
                 "local_quaternion": local_quaternion,
+                "material_name": material_name,
+                "material_rgba": material_rgba,
+                "material_specular": material_specular,
+                "material_shininess": material_shininess,
             }
         )
 
@@ -88,6 +139,7 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
         "checkpoint_loaded": checkpoint_loaded,
         "default_camera": default_camera,
         "camera_presets": camera_presets,
+        "camera_manifest": camera_manifest,
         "body_manifest": body_manifest,
         "geom_manifest": geom_manifest,
     }

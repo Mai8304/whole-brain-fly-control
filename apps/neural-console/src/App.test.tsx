@@ -211,6 +211,7 @@ describe('Neural console shell', () => {
             checkpoint_loaded: false,
             default_camera: 'track',
             camera_presets: ['track', 'side', 'back', 'top'],
+            camera_manifest: [],
             body_manifest: [],
             geom_manifest: [],
           }),

@@ -12,6 +12,7 @@ import { Scene } from '@babylonjs/core/scene'
 
 import type {
   MujocoFlyBrowserViewerBootstrapPayload,
+  MujocoFlyBrowserViewerCameraManifestEntry,
   MujocoFlyBrowserViewerCameraPreset,
   MujocoFlyBrowserViewerPosePayload,
 } from './mujoco-fly-browser-viewer-client'
@@ -41,14 +42,25 @@ const MUJOCO_TO_BABYLON_BASIS = Quaternion.FromEulerAngles(-Math.PI / 2, 0, 0)
 const DEFAULT_TARGET = transformMujocoVectorToBabylon([0, 0, 0.13])
 const CAMERA_FIT_MULTIPLIER = 1.35
 
-const CAMERA_PRESETS: Record<
-  MujocoFlyBrowserViewerCameraPreset,
-  { alpha: number; beta: number; radius: number; target: Vector3 }
-> = {
-  track: { alpha: -Math.PI / 2, beta: 1.05, radius: 0.52, target: DEFAULT_TARGET.clone() },
-  side: { alpha: Math.PI, beta: 1.18, radius: 0.62, target: DEFAULT_TARGET.clone() },
-  back: { alpha: Math.PI / 2, beta: 1.12, radius: 0.58, target: DEFAULT_TARGET.clone() },
-  top: { alpha: -Math.PI / 2, beta: 0.22, radius: 0.48, target: DEFAULT_TARGET.clone() },
+const FALLBACK_CAMERA_OFFSETS: Record<MujocoFlyBrowserViewerCameraPreset, [number, number, number]> =
+  {
+    track: [0.6, 0.22, -0.6],
+    side: [-0.045, -0.035, -0.424],
+    back: [-0.462, 0.297, 0],
+    top: [0, 1, 0],
+  }
+
+interface ViewerMaterialConfig {
+  diffuse: [number, number, number]
+  alpha: number
+  specular: number
+  shininess: number
+}
+
+interface ViewerCameraConfig {
+  position: [number, number, number]
+  target: [number, number, number]
+  radius: number
 }
 
 interface ParsedObjAsset {
@@ -71,10 +83,10 @@ export async function createMujocoFlyBrowserViewerScene(
 
   const camera = new ArcRotateCamera(
     'mujoco-fly-browser-viewer-camera',
-    CAMERA_PRESETS.track.alpha,
-    CAMERA_PRESETS.track.beta,
-    CAMERA_PRESETS.track.radius,
-    CAMERA_PRESETS.track.target,
+    -Math.PI / 2,
+    Math.PI / 2.6,
+    0.52,
+    DEFAULT_TARGET.clone(),
     scene,
   )
   camera.minZ = 0.001
@@ -113,6 +125,9 @@ export async function createMujocoFlyBrowserViewerScene(
   const worldRoot = new TransformNode('mujoco-fly-browser-viewer-world-root', scene)
   worldRoot.rotationQuaternion = MUJOCO_TO_BABYLON_BASIS.clone()
   const bodyNodes = new Map<string, TransformNode>()
+  const cameraManifestByPreset = new Map(
+    bootstrap.camera_manifest.map((entry) => [entry.preset, entry] as const),
+  )
   const flyMeshes: Mesh[] = []
   let activePreset: MujocoFlyBrowserViewerCameraPreset = bootstrap.default_camera
   let followPresetCamera = true
@@ -143,9 +158,17 @@ export async function createMujocoFlyBrowserViewerScene(
     mesh.parent = geomNode
     mesh.isPickable = false
     flyMeshes.push(mesh)
+    const materialSpec = materialColorFromRgba(entry.material_rgba)
     const material = new StandardMaterial(`mesh-material:${entry.geom_name}`, scene)
-    material.diffuseColor = new Color3(0.16, 0.18, 0.2)
-    material.specularColor = new Color3(0.05, 0.05, 0.05)
+    material.diffuseColor = Color3.FromArray(materialSpec.diffuse)
+    material.specularColor = new Color3(
+      entry.material_specular ?? materialSpec.specular,
+      entry.material_specular ?? materialSpec.specular,
+      entry.material_specular ?? materialSpec.specular,
+    )
+    material.alpha = materialSpec.alpha
+    const shininess = entry.material_shininess ?? materialSpec.shininess
+    material.specularPower = shininess <= 0 ? 16 : 8 + shininess * 64
     material.backFaceCulling = false
     material.twoSidedLighting = true
     mesh.material = material
@@ -166,18 +189,21 @@ export async function createMujocoFlyBrowserViewerScene(
     preset: MujocoFlyBrowserViewerCameraPreset,
     flyBounds = computeFlyBounds(flyMeshes),
   ) {
-    const next = CAMERA_PRESETS[preset]
-    const target = flyBounds?.center ?? next.target.clone()
-    const minRadius = flyBounds
-      ? Math.max(
-          next.radius,
-          Math.max(flyBounds.size.x, flyBounds.size.y, flyBounds.size.z) * CAMERA_FIT_MULTIPLIER,
+    const target = flyBounds?.center ?? DEFAULT_TARGET.clone()
+    const fitRadius = flyBounds
+      ? Math.max(flyBounds.size.x, flyBounds.size.y, flyBounds.size.z) * CAMERA_FIT_MULTIPLIER
+      : 0.52
+    const officialCamera = cameraManifestByPreset.get(preset)
+    const resolvedCamera = officialCamera
+      ? resolveCameraPresetConfig(
+          officialCamera,
+          [target.x, target.y, target.z],
+          fitRadius,
         )
-      : next.radius
-    camera.setTarget(target)
-    camera.alpha = next.alpha
-    camera.beta = next.beta
-    camera.radius = minRadius
+      : fallbackCameraPresetConfig(preset, [target.x, target.y, target.z], fitRadius)
+
+    camera.setTarget(Vector3.FromArray(resolvedCamera.target))
+    camera.setPosition(Vector3.FromArray(resolvedCamera.position))
   }
 
   function setViewPreset(preset: MujocoFlyBrowserViewerCameraPreset) {
@@ -251,6 +277,68 @@ export async function createMujocoFlyBrowserViewerScene(
       scene.dispose()
       engine.dispose()
     },
+  }
+}
+
+export function materialColorFromRgba(
+  rgba: [number, number, number, number] | null,
+): ViewerMaterialConfig {
+  if (!rgba) {
+    return {
+      diffuse: [0.16, 0.18, 0.2],
+      alpha: 1,
+      specular: 0.05,
+      shininess: 0.25,
+    }
+  }
+  return {
+    diffuse: [rgba[0], rgba[1], rgba[2]],
+    alpha: rgba[3],
+    specular: 0.18,
+    shininess: 0.6,
+  }
+}
+
+export function resolveCameraPresetConfig(
+  cameraManifest: MujocoFlyBrowserViewerCameraManifestEntry,
+  target: [number, number, number],
+  minimumRadius = 0.52,
+): ViewerCameraConfig {
+  const targetVector = Vector3.FromArray(target)
+  const rawOffset = transformMujocoVectorToBabylon(cameraManifest.position)
+  let offset = rawOffset.clone()
+  if (cameraManifest.mode === null) {
+    if (offset.lengthSquared() === 0) {
+      offset = new Vector3(0, 1, 0)
+    }
+    offset = offset.normalize().scale(minimumRadius)
+  } else if (offset.length() < minimumRadius) {
+    offset = offset.normalizeToNew().scale(minimumRadius)
+  }
+
+  const position = targetVector.add(offset)
+  return {
+    position: [position.x, position.y, position.z],
+    target,
+    radius: position.subtract(targetVector).length(),
+  }
+}
+
+function fallbackCameraPresetConfig(
+  preset: MujocoFlyBrowserViewerCameraPreset,
+  target: [number, number, number],
+  minimumRadius: number,
+): ViewerCameraConfig {
+  const targetVector = Vector3.FromArray(target)
+  const rawOffset = Vector3.FromArray(FALLBACK_CAMERA_OFFSETS[preset])
+  const offset = rawOffset.length() < minimumRadius
+    ? rawOffset.normalizeToNew().scale(minimumRadius)
+    : rawOffset
+  const position = targetVector.add(offset)
+  return {
+    position: [position.x, position.y, position.z],
+    target,
+    radius: position.subtract(targetVector).length(),
   }
 }
 

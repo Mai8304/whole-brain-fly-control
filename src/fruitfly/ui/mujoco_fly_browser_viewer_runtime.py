@@ -188,6 +188,7 @@ def _unavailable_runtime(
         "checkpoint_loaded": checkpoint_loaded,
         "default_camera": config.default_camera,
         "camera_presets": ["track", "side", "back", "top"],
+        "camera_manifest": [],
         "body_manifest": [],
         "geom_manifest": [],
     }
@@ -230,12 +231,33 @@ def _build_bootstrap_payload(
                 "mesh_scale": [float(value) for value in entry["mesh_scale"]],
                 "local_position": [float(value) for value in entry["local_position"]],
                 "local_quaternion": [float(value) for value in entry["local_quaternion"]],
+                "material_name": (
+                    str(entry["material_name"]) if entry.get("material_name") is not None else None
+                ),
+                "material_rgba": (
+                    [float(value) for value in entry["material_rgba"]]
+                    if isinstance(entry.get("material_rgba"), list)
+                    else None
+                ),
+                "material_specular": (
+                    float(entry["material_specular"])
+                    if entry.get("material_specular") is not None
+                    else None
+                ),
+                "material_shininess": (
+                    float(entry["material_shininess"])
+                    if entry.get("material_shininess") is not None
+                    else None
+                ),
             }
         )
 
     camera_presets = manifest.get("camera_presets")
     if not isinstance(camera_presets, list) or not camera_presets:
         camera_presets = ["track", "side", "back", "top"]
+    camera_manifest = manifest.get("camera_manifest")
+    if not isinstance(camera_manifest, list):
+        camera_manifest = []
 
     return validate_browser_viewer_bootstrap_payload(
         {
@@ -245,6 +267,7 @@ def _build_bootstrap_payload(
             "checkpoint_loaded": checkpoint_loaded,
             "default_camera": default_camera,
             "camera_presets": [str(value) for value in camera_presets],
+            "camera_manifest": camera_manifest,
             "body_manifest": body_manifest_raw,
             "geom_manifest": geom_manifest,
         }

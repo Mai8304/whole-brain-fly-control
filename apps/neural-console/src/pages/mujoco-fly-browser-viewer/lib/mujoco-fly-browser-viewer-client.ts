@@ -21,6 +21,20 @@ export interface MujocoFlyBrowserViewerGeomManifestEntry {
   mesh_scale: [number, number, number]
   local_position: [number, number, number]
   local_quaternion: [number, number, number, number]
+  material_name: string | null
+  material_rgba: [number, number, number, number] | null
+  material_specular: number | null
+  material_shininess: number | null
+}
+
+export interface MujocoFlyBrowserViewerCameraManifestEntry {
+  preset: MujocoFlyBrowserViewerCameraPreset
+  camera_name: string
+  mode: string | null
+  position: [number, number, number]
+  quaternion: [number, number, number, number] | null
+  xyaxes: [number, number, number, number, number, number] | null
+  fovy: number | null
 }
 
 export interface MujocoFlyBrowserViewerBootstrapPayload {
@@ -30,6 +44,7 @@ export interface MujocoFlyBrowserViewerBootstrapPayload {
   checkpoint_loaded: boolean
   default_camera: MujocoFlyBrowserViewerCameraPreset
   camera_presets: MujocoFlyBrowserViewerCameraPreset[]
+  camera_manifest: MujocoFlyBrowserViewerCameraManifestEntry[]
   body_manifest: MujocoFlyBrowserViewerBodyManifestEntry[]
   geom_manifest: MujocoFlyBrowserViewerGeomManifestEntry[]
 }

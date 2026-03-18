@@ -52,7 +52,9 @@ def _initialize_environment(environment) -> None:
 
 def _build_manifest(output_dir: Path) -> dict[str, object]:
     entry_xml_path = output_dir / ENTRY_XML
-    body_manifest, geom_manifest, camera_presets = _build_scene_manifests(entry_xml_path)
+    body_manifest, geom_manifest, camera_presets, camera_manifest = _build_scene_manifests(
+        entry_xml_path
+    )
     exported_files = sorted(
         str(path.relative_to(output_dir))
         for path in output_dir.rglob("*")
@@ -64,66 +66,69 @@ def _build_manifest(output_dir: Path) -> dict[str, object]:
         "asset_count": len(exported_files),
         "files": exported_files,
         "camera_presets": camera_presets,
+        "camera_manifest": camera_manifest,
         "body_manifest": body_manifest,
         "geom_manifest": geom_manifest,
         "output_dir": str(output_dir),
     }
 
 
-def _build_scene_manifests(entry_xml_path: Path) -> tuple[list[dict[str, object]], list[dict[str, object]], list[str]]:
+def _build_scene_manifests(
+    entry_xml_path: Path,
+) -> tuple[
+    list[dict[str, object]],
+    list[dict[str, object]],
+    list[str],
+    list[dict[str, object]],
+]:
     root = ET.parse(entry_xml_path).getroot()
-    mesh_defaults_by_class = _build_mesh_defaults_by_class(root)
+    defaults_by_class = _build_defaults_by_class(root)
+    material_specs_by_name = _build_material_specs_by_name(root)
     mesh_file_by_name = {
         str(mesh.get("name")): {
             "file": str(mesh.get("file")),
-            "scale": _resolve_mesh_scale(mesh, mesh_defaults_by_class),
+            "scale": _resolve_mesh_scale(mesh, defaults_by_class),
         }
         for mesh in root.findall("./asset/mesh")
         if mesh.get("name") and mesh.get("file")
     }
-    available_camera_ids = {
-        str(camera.get("name"))
-        for camera in root.iter("camera")
-        if camera.get("name")
-    }
-    camera_presets = [
-        preset
-        for preset, camera_id in (
-            ("track", "walker/track1"),
-            ("side", "walker/side"),
-            ("back", "walker/back"),
-            ("top", "top_camera"),
-        )
-        if camera_id in available_camera_ids
-    ]
+    camera_manifest = _build_camera_manifest(root)
+    camera_presets = [entry["preset"] for entry in camera_manifest]
 
     body_manifest: list[dict[str, object]] = []
     geom_manifest: list[dict[str, object]] = []
     worldbody = root.find("worldbody")
     if worldbody is None:
-        return body_manifest, geom_manifest, camera_presets
+        return body_manifest, geom_manifest, camera_presets, camera_manifest
 
     for body in worldbody.findall("body"):
         _collect_body_and_geom_manifests(
             body,
             parent_body_name=None,
+            inherited_childclass=None,
             body_manifest=body_manifest,
             geom_manifest=geom_manifest,
             mesh_file_by_name=mesh_file_by_name,
+            defaults_by_class=defaults_by_class,
+            material_specs_by_name=material_specs_by_name,
         )
-    return body_manifest, geom_manifest, camera_presets
+    return body_manifest, geom_manifest, camera_presets, camera_manifest
 
 
 def _collect_body_and_geom_manifests(
     body: ET.Element,
     *,
     parent_body_name: str | None,
+    inherited_childclass: str | None,
     body_manifest: list[dict[str, object]],
     geom_manifest: list[dict[str, object]],
     mesh_file_by_name: dict[str, dict[str, object]],
+    defaults_by_class: dict[str, dict[str, object]],
+    material_specs_by_name: dict[str, dict[str, object]],
 ) -> None:
     body_name = body.get("name")
     effective_parent = parent_body_name
+    effective_childclass = body.get("childclass") or inherited_childclass
     geom_names: list[str] = []
 
     if body_name:
@@ -145,6 +150,13 @@ def _collect_body_and_geom_manifests(
         if mesh_entry is None:
             continue
         geom_name = geom.get("name") or _synthetic_geom_name(body_name, mesh_name, index)
+        geom_defaults = _resolve_geom_defaults(
+            geom=geom,
+            inherited_childclass=effective_childclass,
+            defaults_by_class=defaults_by_class,
+        )
+        material_name = _resolve_geom_material_name(geom=geom, geom_defaults=geom_defaults)
+        material_spec = material_specs_by_name.get(material_name or "")
         geom_manifest.append(
             {
                 "geom_name": geom_name,
@@ -153,6 +165,10 @@ def _collect_body_and_geom_manifests(
                 "mesh_scale": [float(value) for value in mesh_entry["scale"]],
                 "local_position": _vector_attr(geom.get("pos"), size=3, default=[0.0, 0.0, 0.0]),
                 "local_quaternion": _vector_attr(geom.get("quat"), size=4, default=[1.0, 0.0, 0.0, 0.0]),
+                "material_name": material_name,
+                "material_rgba": material_spec.get("rgba") if material_spec else None,
+                "material_specular": material_spec.get("specular") if material_spec else None,
+                "material_shininess": material_spec.get("shininess") if material_spec else None,
             }
         )
         geom_names.append(geom_name)
@@ -164,9 +180,12 @@ def _collect_body_and_geom_manifests(
         _collect_body_and_geom_manifests(
             child,
             parent_body_name=effective_parent,
+            inherited_childclass=effective_childclass,
             body_manifest=body_manifest,
             geom_manifest=geom_manifest,
             mesh_file_by_name=mesh_file_by_name,
+            defaults_by_class=defaults_by_class,
+            material_specs_by_name=material_specs_by_name,
         )
 
 
@@ -184,22 +203,22 @@ def _synthetic_geom_name(body_name: str | None, mesh_name: str, index: int) -> s
     return f"{body_prefix}#mesh-{mesh_name}-{index}"
 
 
-def _build_mesh_defaults_by_class(root: ET.Element) -> dict[str, dict[str, list[float]]]:
+def _build_defaults_by_class(root: ET.Element) -> dict[str, dict[str, object]]:
     defaults_root = root.find("default")
     if defaults_root is None:
         return {}
 
-    mesh_defaults: dict[str, dict[str, list[float]]] = {}
+    defaults: dict[str, dict[str, object]] = {}
     for child in defaults_root.findall("default"):
-        _collect_mesh_defaults(child, parent_defaults={}, output=mesh_defaults)
-    return mesh_defaults
+        _collect_defaults(child, parent_defaults={}, output=defaults)
+    return defaults
 
 
-def _collect_mesh_defaults(
+def _collect_defaults(
     default_element: ET.Element,
     *,
-    parent_defaults: dict[str, list[float]],
-    output: dict[str, dict[str, list[float]]],
+    parent_defaults: dict[str, object],
+    output: dict[str, dict[str, object]],
 ) -> None:
     resolved_defaults = dict(parent_defaults)
     mesh_element = default_element.find("mesh")
@@ -209,30 +228,114 @@ def _collect_mesh_defaults(
             size=3,
             default=[1.0, 1.0, 1.0],
         )
+    geom_element = default_element.find("geom")
+    if geom_element is not None:
+        if geom_element.get("material"):
+            resolved_defaults["material"] = str(geom_element.get("material"))
+        if geom_element.get("rgba"):
+            resolved_defaults["rgba"] = _vector_attr(
+                geom_element.get("rgba"),
+                size=4,
+                default=[1.0, 1.0, 1.0, 1.0],
+            )
 
     class_name = default_element.get("class")
     if class_name:
         output[class_name] = dict(resolved_defaults)
 
     for child in default_element.findall("default"):
-        _collect_mesh_defaults(child, parent_defaults=resolved_defaults, output=output)
+        _collect_defaults(child, parent_defaults=resolved_defaults, output=output)
 
 
 def _resolve_mesh_scale(
     mesh_element: ET.Element,
-    mesh_defaults_by_class: dict[str, dict[str, list[float]]],
+    defaults_by_class: dict[str, dict[str, object]],
 ) -> list[float]:
     raw_scale = mesh_element.get("scale")
     if raw_scale:
         return _vector_attr(raw_scale, size=3, default=[1.0, 1.0, 1.0])
 
     class_name = mesh_element.get("class")
-    if class_name and class_name in mesh_defaults_by_class:
-        class_defaults = mesh_defaults_by_class[class_name]
+    if class_name and class_name in defaults_by_class:
+        class_defaults = defaults_by_class[class_name]
         if "scale" in class_defaults:
             return list(class_defaults["scale"])
 
     return [1.0, 1.0, 1.0]
+
+
+def _build_material_specs_by_name(root: ET.Element) -> dict[str, dict[str, object]]:
+    material_specs: dict[str, dict[str, object]] = {}
+    for material in root.findall("./asset/material"):
+        material_name = material.get("name")
+        if not material_name:
+            continue
+        material_specs[str(material_name)] = {
+            "rgba": _vector_attr(material.get("rgba"), size=4, default=[1.0, 1.0, 1.0, 1.0]),
+            "specular": float(material.get("specular") or 0.0),
+            "shininess": float(material.get("shininess") or 0.0),
+        }
+    return material_specs
+
+
+def _resolve_geom_defaults(
+    *,
+    geom: ET.Element,
+    inherited_childclass: str | None,
+    defaults_by_class: dict[str, dict[str, object]],
+) -> dict[str, object]:
+    geom_class = geom.get("class") or inherited_childclass
+    if not geom_class:
+        return {}
+    defaults = defaults_by_class.get(geom_class)
+    if not defaults:
+        return {}
+    return dict(defaults)
+
+
+def _resolve_geom_material_name(*, geom: ET.Element, geom_defaults: dict[str, object]) -> str | None:
+    if geom.get("material"):
+        return str(geom.get("material"))
+    material = geom_defaults.get("material")
+    if material is None:
+        return None
+    return str(material)
+
+
+def _build_camera_manifest(root: ET.Element) -> list[dict[str, object]]:
+    camera_manifest: list[dict[str, object]] = []
+    for preset, camera_name in (
+        ("track", "walker/track1"),
+        ("side", "walker/side"),
+        ("back", "walker/back"),
+        ("top", "top_camera"),
+    ):
+        camera = next(
+            (candidate for candidate in root.iter("camera") if candidate.get("name") == camera_name),
+            None,
+        )
+        if camera is None:
+            continue
+        camera_manifest.append(
+            {
+                "preset": preset,
+                "camera_name": camera_name,
+                "mode": camera.get("mode"),
+                "position": _vector_attr(camera.get("pos"), size=3, default=[0.0, 0.0, 0.0]),
+                "quaternion": (
+                    _vector_attr(camera.get("quat"), size=4, default=[1.0, 0.0, 0.0, 0.0])
+                    if camera.get("quat")
+                    else None
+                ),
+                "xyaxes": (
+                    _vector_attr(camera.get("xyaxes"), size=6, default=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0])
+                    if camera.get("xyaxes")
+                    else None
+                ),
+                "fovy": float(camera.get("fovy")) if camera.get("fovy") else None,
+            }
+        )
+    return camera_manifest
 
 
 def export_official_walk_scene(output_dir: Path) -> dict[str, object]:

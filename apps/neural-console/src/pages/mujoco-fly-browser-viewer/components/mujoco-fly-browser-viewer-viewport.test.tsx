@@ -24,6 +24,7 @@ const bootstrapPayload: MujocoFlyBrowserViewerBootstrapPayload = {
   checkpoint_loaded: true,
   default_camera: 'track',
   camera_presets: ['track', 'side', 'back', 'top'],
+  camera_manifest: [],
   body_manifest: [
     {
       body_name: 'walker/thorax',
@@ -40,6 +41,10 @@ const bootstrapPayload: MujocoFlyBrowserViewerBootstrapPayload = {
       mesh_scale: [0.1, 0.1, 0.1],
       local_position: [0, 0, 0],
       local_quaternion: [1, 0, 0, 0],
+      material_name: 'walker/body',
+      material_rgba: [0.67, 0.35, 0.14, 1],
+      material_specular: 0,
+      material_shininess: 0.6,
     },
   ],
 }

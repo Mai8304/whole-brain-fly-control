@@ -53,14 +53,19 @@ def test_export_official_walk_scene_calls_official_export_and_writes_manifest(
   <default>
     <default class="walker/">
       <mesh scale="0.1 0.1 0.1" />
+      <default class="walker/body">
+        <geom material="walker/body" />
+      </default>
     </default>
   </default>
   <asset>
     <mesh name="walker/thorax" class="walker/" file="thorax_body.obj" />
+    <material name="walker/body" rgba="0.67 0.35 0.14 1" shininess="0.6" />
   </asset>
   <worldbody>
+    <camera name="walker/track1" mode="trackcom" pos="0.6 0.6 0.22" quat="0.312 0.221 0.533 0.754" />
     <body name="walker/">
-      <body name="walker/thorax">
+      <body name="walker/thorax" childclass="walker/body">
         <geom
           name="walker/thorax"
           mesh="walker/thorax"
@@ -99,6 +104,11 @@ def test_export_official_walk_scene_calls_official_export_and_writes_manifest(
     assert manifest["geom_manifest"][0]["geom_name"] == "walker/thorax"
     assert manifest["geom_manifest"][0]["mesh_asset_path"] == "thorax_body.obj"
     assert manifest["geom_manifest"][0]["mesh_scale"] == [0.1, 0.1, 0.1]
+    assert manifest["geom_manifest"][0]["material_name"] == "walker/body"
+    assert manifest["geom_manifest"][0]["material_rgba"] == [0.67, 0.35, 0.14, 1.0]
+    assert manifest["camera_manifest"][0]["preset"] == "track"
+    assert manifest["camera_manifest"][0]["camera_name"] == "walker/track1"
+    assert manifest["camera_manifest"][0]["position"] == [0.6, 0.6, 0.22]
     assert (output_dir / "manifest.json").exists()
 
 

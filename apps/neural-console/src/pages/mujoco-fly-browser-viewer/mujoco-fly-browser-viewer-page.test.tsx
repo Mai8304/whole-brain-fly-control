@@ -39,12 +39,27 @@ function createViewerClientDouble(options: { checkpointLoaded?: boolean; availab
     checkpoint_loaded: boolean
     default_camera: string
     camera_presets: string[]
+    camera_manifest: Array<{
+      preset: string
+      camera_name: string
+      mode: string | null
+      position: [number, number, number]
+      quaternion: [number, number, number, number] | null
+      xyaxes: [number, number, number, number, number, number] | null
+      fovy: number | null
+    }>
     body_manifest: Array<{ body_name: string; parent_body_name: string | null }>
     geom_manifest: Array<{
       geom_name: string
       body_name: string
       mesh_asset: string
       mesh_scale: [number, number, number]
+      local_position: [number, number, number]
+      local_quaternion: [number, number, number, number]
+      material_name: string | null
+      material_rgba: [number, number, number, number] | null
+      material_specular: number | null
+      material_shininess: number | null
     }>
   }
   let session = null as null | {
@@ -81,6 +96,17 @@ function createViewerClientDouble(options: { checkpointLoaded?: boolean; availab
           checkpoint_loaded: checkpointLoaded,
           default_camera: 'track',
           camera_presets: ['track', 'side', 'back', 'top'],
+          camera_manifest: [
+            {
+              preset: 'track',
+              camera_name: 'walker/track1',
+              mode: 'trackcom',
+              position: [0.6, 0.6, 0.22],
+              quaternion: [0.312, 0.221, 0.533, 0.754],
+              xyaxes: null,
+              fovy: null,
+            },
+          ],
           body_manifest: [
             {
               body_name: 'walker/thorax',
@@ -93,6 +119,12 @@ function createViewerClientDouble(options: { checkpointLoaded?: boolean; availab
               body_name: 'walker/thorax',
               mesh_asset: '/mujoco-fly/flybody-official-walk/thorax.obj',
               mesh_scale: [0.1, 0.1, 0.1],
+              local_position: [0, 0, 0],
+              local_quaternion: [1, 0, 0, 0],
+              material_name: 'walker/body',
+              material_rgba: [0.67, 0.35, 0.14, 1],
+              material_specular: 0,
+              material_shininess: 0.6,
             },
           ],
         }
