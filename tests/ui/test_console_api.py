@@ -572,6 +572,69 @@ def test_console_api_materializes_recorded_brain_and_timeline_from_activity_trac
     assert (eval_dir / "timeline.json").exists()
 
 
+def test_console_api_exposes_strict_official_mujoco_fly_runtime_endpoints(tmp_path: Path) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    scene_dir = tmp_path / "flybody-official-walk"
+    missing_checkpoint = tmp_path / "missing-policy.ckpt"
+
+    compiled_dir.mkdir()
+    eval_dir.mkdir()
+    scene_dir.mkdir()
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 1, "edge_count": 0, "afferent_count": 0, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps({"status": "ok", "task": "straight_walking", "steps_requested": 1, "steps_completed": 1}),
+        encoding="utf-8",
+    )
+    (scene_dir / "manifest.json").write_text(
+        json.dumps({"entry_xml": "walk_imitation.xml", "scene_version": "flybody-walk-imitation-v1"}),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+            mujoco_fly_scene_dir=scene_dir,
+            mujoco_fly_policy_checkpoint_path=missing_checkpoint,
+        )
+    )
+    client = TestClient(app)
+
+    session_response = client.get("/api/mujoco-fly/session")
+    assert session_response.status_code == 200
+    session_payload = session_response.json()
+    assert session_payload["available"] is False
+    assert session_payload["status"] == "unavailable"
+    assert "checkpoint" in session_payload["reason"].lower()
+    assert session_payload["scene_version"] == "flybody-walk-imitation-v1"
+
+    state_response = client.get("/api/mujoco-fly/state")
+    assert state_response.status_code == 200
+    state_payload = state_response.json()
+    assert state_payload["running_state"] == "unavailable"
+    assert state_payload["scene_version"] == "flybody-walk-imitation-v1"
+    assert state_payload["body_poses"] == []
+
+    for path in ("/api/mujoco-fly/start", "/api/mujoco-fly/pause", "/api/mujoco-fly/reset"):
+        response = client.post(path)
+        assert response.status_code == 503
+        assert "checkpoint" in response.json()["detail"].lower()
+
+    with client.websocket_connect("/api/mujoco-fly/stream") as websocket:
+        stream_payload = websocket.receive_json()
+
+    assert stream_payload["running_state"] == "unavailable"
+    assert stream_payload["scene_version"] == "flybody-walk-imitation-v1"
+    assert stream_payload["body_poses"] == []
+
+
 def test_console_api_rematerializes_stale_brain_view_contract(tmp_path: Path) -> None:
     from fruitfly.evaluation.runtime_activity_artifacts import (
         RUNTIME_ACTIVITY_ARTIFACT_VERSION,

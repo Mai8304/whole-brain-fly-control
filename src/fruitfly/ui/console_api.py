@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pyarrow.parquet as pq
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import FileResponse, Response
 
 from fruitfly.evaluation.brain_asset_manifest import load_brain_asset_manifest, with_runtime_asset_urls
@@ -20,6 +20,12 @@ from fruitfly.evaluation.runtime_activity_artifacts import (
     materialize_runtime_activity_artifacts,
 )
 from fruitfly.evaluation.timeline import build_shared_timeline_payload
+from fruitfly.ui.mujoco_fly_contract import validate_viewer_state_payload
+from fruitfly.ui.mujoco_fly_runtime import (
+    MujocoFlyRuntime,
+    MujocoFlyRuntimeConfig,
+    create_mujoco_fly_runtime,
+)
 from fruitfly.ui.replay_frame_worker import ReplayFrameWorkerClient
 from fruitfly.ui.replay_runtime import ReplayRuntime
 
@@ -31,6 +37,8 @@ class ConsoleApiConfig:
     checkpoint_path: Path | None = None
     replay_renderer_python: Path | None = None
     brain_asset_dir: Path | None = None
+    mujoco_fly_scene_dir: Path | None = None
+    mujoco_fly_policy_checkpoint_path: Path | None = None
     mode: str = "Experiment"
     task: str = "straight_walking"
     environment_physics: dict[str, str] = field(
@@ -52,6 +60,7 @@ class ConsoleApiConfig:
 def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     replay_runtime: ReplayRuntime | None = None
     replay_frame_client: Any | None = None
+    mujoco_fly_runtime: MujocoFlyRuntime | None = None
 
     def get_or_create_replay_runtime() -> ReplayRuntime:
         nonlocal replay_runtime
@@ -70,6 +79,17 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
         if replay_frame_client is None:
             replay_frame_client = _create_replay_frame_client(config=config)
         return replay_frame_client
+
+    def get_or_create_mujoco_fly_runtime() -> MujocoFlyRuntime:
+        nonlocal mujoco_fly_runtime
+        if mujoco_fly_runtime is None:
+            mujoco_fly_runtime = create_mujoco_fly_runtime(
+                MujocoFlyRuntimeConfig(
+                    scene_dir=config.mujoco_fly_scene_dir,
+                    policy_checkpoint_path=config.mujoco_fly_policy_checkpoint_path,
+                )
+            )
+        return mujoco_fly_runtime
 
     def close_replay_frame_client() -> None:
         nonlocal replay_frame_client
@@ -178,6 +198,40 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
             "timeline_url": "/api/console/timeline",
             "video_url": "/api/console/video" if _video_path(config).exists() else None,
         }
+
+    @app.get("/api/mujoco-fly/session")
+    def mujoco_fly_session() -> dict[str, Any]:
+        return get_or_create_mujoco_fly_runtime().session_payload()
+
+    @app.get("/api/mujoco-fly/state")
+    def mujoco_fly_state() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_runtime()
+        return _validated_mujoco_fly_viewer_state(runtime)
+
+    @app.post("/api/mujoco-fly/start")
+    def mujoco_fly_start() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_runtime()
+        _run_mujoco_fly_control(runtime.start)
+        return runtime.session_payload()
+
+    @app.post("/api/mujoco-fly/pause")
+    def mujoco_fly_pause() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_runtime()
+        _run_mujoco_fly_control(runtime.pause)
+        return runtime.session_payload()
+
+    @app.post("/api/mujoco-fly/reset")
+    def mujoco_fly_reset() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_runtime()
+        _run_mujoco_fly_control(runtime.reset)
+        return runtime.session_payload()
+
+    @app.websocket("/api/mujoco-fly/stream")
+    async def mujoco_fly_stream(websocket: WebSocket) -> None:
+        await websocket.accept()
+        runtime = get_or_create_mujoco_fly_runtime()
+        await websocket.send_json(_validated_mujoco_fly_viewer_state(runtime))
+        await websocket.close()
 
     @app.get("/api/console/replay/session")
     def replay_session() -> dict[str, Any]:
@@ -335,6 +389,17 @@ def _build_session_payload(config: ConsoleApiConfig) -> dict[str, Any]:
         ],
         "action_provenance": session.action_provenance,
     }
+
+
+def _validated_mujoco_fly_viewer_state(runtime: MujocoFlyRuntime) -> dict[str, Any]:
+    return validate_viewer_state_payload(runtime.current_viewer_state())
+
+
+def _run_mujoco_fly_control(control: Any) -> None:
+    try:
+        control()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 def _build_unavailable_brain_view_payload(

@@ -26,6 +26,18 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Optional directory with FlyWire brain asset manifest and shell asset",
     )
+    parser.add_argument(
+        "--mujoco-fly-scene-dir",
+        type=Path,
+        default=None,
+        help="Optional directory with the exported official flybody walk scene bundle",
+    )
+    parser.add_argument(
+        "--mujoco-fly-policy-checkpoint",
+        type=Path,
+        default=None,
+        help="Optional official flybody walking policy checkpoint path",
+    )
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind")
     parser.add_argument("--port", type=int, default=8000, help="Port to bind")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload for local development")
@@ -36,6 +48,10 @@ def main(argv: list[str] | None = None) -> int:
         root=ROOT,
         predicate=_looks_like_brain_asset_dir,
     )
+    mujoco_fly_scene_dir = _resolve_default_mujoco_fly_scene_dir(
+        explicit=args.mujoco_fly_scene_dir,
+        root=ROOT,
+    )
 
     app = create_console_api(
         ConsoleApiConfig(
@@ -43,6 +59,8 @@ def main(argv: list[str] | None = None) -> int:
             eval_dir=args.eval_dir,
             checkpoint_path=args.checkpoint,
             brain_asset_dir=brain_asset_dir,
+            mujoco_fly_scene_dir=mujoco_fly_scene_dir,
+            mujoco_fly_policy_checkpoint_path=args.mujoco_fly_policy_checkpoint,
         )
     )
     uvicorn.run(app, host=args.host, port=args.port, reload=args.reload)
@@ -72,6 +90,22 @@ def _resolve_default_asset_dir(
 
 def _looks_like_brain_asset_dir(path: Path) -> bool:
     return (path / "manifest.json").exists() and (path / "brain_shell.glb").exists()
+
+
+def _resolve_default_mujoco_fly_scene_dir(*, explicit: Path | None, root: Path) -> Path | None:
+    if explicit is not None:
+        return explicit
+
+    candidate = root / "apps" / "neural-console" / "public" / "mujoco-fly" / "flybody-official-walk"
+    if _looks_like_mujoco_fly_scene_dir(candidate):
+        return candidate
+    return None
+
+
+def _looks_like_mujoco_fly_scene_dir(path: Path) -> bool:
+    manifest_path = path / "manifest.json"
+    entry_xml_path = path / "walk_imitation.xml"
+    return manifest_path.exists() and entry_xml_path.exists()
 
 
 if __name__ == "__main__":
