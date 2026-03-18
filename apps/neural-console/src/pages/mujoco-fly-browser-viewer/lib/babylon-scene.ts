@@ -40,14 +40,15 @@ export interface MujocoFlyBrowserViewerSceneHandle {
 
 const MUJOCO_TO_BABYLON_BASIS = Quaternion.FromEulerAngles(-Math.PI / 2, 0, 0)
 const DEFAULT_TARGET = transformMujocoVectorToBabylon([0, 0, 0.13])
-const CAMERA_FIT_MULTIPLIER = 1.35
+const LOCAL_DEFAULT_CAMERA_PRESET: MujocoFlyBrowserViewerCameraPreset = 'track'
+const CAMERA_FIT_MULTIPLIER = 0.72
 
 const FALLBACK_CAMERA_OFFSETS: Record<MujocoFlyBrowserViewerCameraPreset, [number, number, number]> =
   {
-    track: [0.6, 0.22, -0.6],
-    side: [-0.045, -0.035, -0.424],
-    back: [-0.462, 0.297, 0],
-    top: [0, 1, 0],
+    track: [1, 0.28, -0.55],
+    side: [0.18, 0.18, -1],
+    back: [-1, 0.25, 0.18],
+    top: [0.1, 1, -0.06],
   }
 
 interface ViewerMaterialConfig {
@@ -92,6 +93,7 @@ export async function createMujocoFlyBrowserViewerScene(
   )
   camera.minZ = 0.001
   camera.maxZ = 10
+  camera.fov = 0.48
   camera.lowerRadiusLimit = 0.08
   camera.upperRadiusLimit = 2
   camera.wheelDeltaPercentage = 0.02
@@ -114,7 +116,7 @@ export async function createMujocoFlyBrowserViewerScene(
 
   const ground = CreateGround(
     'mujoco-fly-browser-viewer-ground',
-    { width: 0.9, height: 0.9, subdivisions: 2 },
+    { width: 0.65, height: 0.65, subdivisions: 2 },
     scene,
   )
   const groundMaterial = new StandardMaterial('mujoco-fly-browser-viewer-ground-material', scene)
@@ -125,38 +127,27 @@ export async function createMujocoFlyBrowserViewerScene(
 
   const worldRoot = new TransformNode('mujoco-fly-browser-viewer-world-root', scene)
   worldRoot.rotationQuaternion = MUJOCO_TO_BABYLON_BASIS.clone()
-  const bodyNodes = new Map<string, TransformNode>()
+  const geomNodes = new Map<string, TransformNode>()
+  const flyMeshes: Mesh[] = []
   const cameraManifestByPreset = new Map(
     bootstrap.camera_manifest.map((entry) => [entry.preset, entry] as const),
   )
-  const flyMeshes: Mesh[] = []
-  let activePreset: MujocoFlyBrowserViewerCameraPreset = bootstrap.default_camera
+  let activePreset: MujocoFlyBrowserViewerCameraPreset = LOCAL_DEFAULT_CAMERA_PRESET
   let followPresetCamera = true
-
-  for (const entry of bootstrap.body_manifest) {
-    const node = new TransformNode(entry.body_name, scene)
-    node.parent = worldRoot
-    node.rotationQuaternion = Quaternion.Identity()
-    bodyNodes.set(entry.body_name, node)
-  }
 
   for (const entry of bootstrap.geom_manifest) {
     if (entry.body_name.startsWith('ghost/')) {
       continue
     }
-    const bodyNode = bodyNodes.get(entry.body_name)
-    if (!bodyNode) {
-      throw new Error(`Geom ${entry.geom_name} references unknown body ${entry.body_name}`)
-    }
 
     const geomNode = new TransformNode(`geom:${entry.geom_name}`, scene)
-    geomNode.parent = bodyNode
-    geomNode.position = new Vector3(...entry.local_position)
-    geomNode.rotationQuaternion = toBabylonQuaternion(entry.local_quaternion)
-    geomNode.scaling = new Vector3(...entry.mesh_scale)
+    geomNode.parent = worldRoot
+    geomNode.rotationQuaternion = Quaternion.Identity()
+    geomNodes.set(entry.geom_name, geomNode)
 
     const mesh = await createObjMesh(scene, entry.geom_name, entry.mesh_asset)
     mesh.parent = geomNode
+    mesh.scaling = new Vector3(...entry.mesh_scale)
     mesh.isPickable = false
     flyMeshes.push(mesh)
     const materialSpec = materialColorFromRgba(entry.material_rgba)
@@ -188,9 +179,10 @@ export async function createMujocoFlyBrowserViewerScene(
 
   function applyPresetCamera(
     preset: MujocoFlyBrowserViewerCameraPreset,
+    focusTarget: Vector3 | null = null,
     flyBounds = computeFlyBounds(flyMeshes),
   ) {
-    const target = flyBounds?.center ?? DEFAULT_TARGET.clone()
+    const target = focusTarget ?? flyBounds?.center ?? DEFAULT_TARGET.clone()
     const fitRadius = flyBounds
       ? Math.max(flyBounds.size.x, flyBounds.size.y, flyBounds.size.z) * CAMERA_FIT_MULTIPLIER
       : 0.52
@@ -217,22 +209,22 @@ export async function createMujocoFlyBrowserViewerScene(
   }
 
   function applyPoseFrame(payload: MujocoFlyBrowserViewerPosePayload) {
-    for (const pose of payload.body_poses) {
-      const node = bodyNodes.get(pose.body_name)
+    for (const pose of payload.geom_poses) {
+      const node = geomNodes.get(pose.geom_name)
       if (!node) {
-        throw new Error(`Received pose for unknown body ${pose.body_name}`)
+        continue
       }
       node.position = new Vector3(...pose.position)
-      node.rotationQuaternion = toBabylonQuaternion(pose.quaternion)
+      node.rotationQuaternion = rotationMatrixToQuaternion(pose.rotation_matrix)
     }
 
     if (!followPresetCamera) {
       return
     }
-    applyPresetCamera(activePreset)
+    applyPresetCamera(activePreset, computeFocusTarget(payload))
   }
 
-  setViewPreset(bootstrap.default_camera)
+  setViewPreset(LOCAL_DEFAULT_CAMERA_PRESET)
 
   if (import.meta.env.DEV) {
     window.__mujocoFlyBrowserViewerDebug = {
@@ -265,7 +257,7 @@ export async function createMujocoFlyBrowserViewerScene(
   return {
     applyPoseFrame,
     resetView() {
-      setViewPreset(bootstrap.default_camera)
+      setViewPreset(LOCAL_DEFAULT_CAMERA_PRESET)
     },
     setViewPreset,
     dispose() {
@@ -309,17 +301,21 @@ export function resolveCameraPresetConfig(
   fitRadius = 0.52,
 ): ViewerCameraConfig {
   const targetVector = Vector3.FromArray(target)
-  const axes = resolveCameraAxes(cameraManifest)
-  const forward = axes?.forward ?? fallbackCameraDirection(cameraManifest)
-  const up = axes?.up ?? null
-  const radius = fitRadius * cameraDistanceMultiplier(cameraManifest.preset)
-  const position = targetVector.subtract(forward.scale(radius))
+  const officialPosition = transformMujocoVectorToBabylon(cameraManifest.position)
+  const officialOffset = officialPosition.subtract(DEFAULT_TARGET)
+  const normalizedOffset = normalizeOrNull(officialOffset)
+  const fallback = fallbackCameraPresetConfig(cameraManifest.preset, target, fitRadius)
+  if (!normalizedOffset) {
+    return fallback
+  }
+  const radius = Math.max(officialOffset.length(), fitRadius * cameraDistanceMultiplier(cameraManifest.preset))
+  const position = targetVector.add(normalizedOffset.scale(radius))
 
   return {
     position: [position.x, position.y, position.z],
     target,
     radius,
-    upVector: up ? [up.x, up.y, up.z] : null,
+    upVector: null,
   }
 }
 
@@ -330,9 +326,7 @@ function fallbackCameraPresetConfig(
 ): ViewerCameraConfig {
   const targetVector = Vector3.FromArray(target)
   const rawOffset = Vector3.FromArray(FALLBACK_CAMERA_OFFSETS[preset])
-  const offset = rawOffset.length() < minimumRadius
-    ? rawOffset.normalizeToNew().scale(minimumRadius)
-    : rawOffset
+  const offset = normalizeOrNull(rawOffset)?.scale(minimumRadius) ?? new Vector3(0, 0, -minimumRadius)
   const position = targetVector.add(offset)
   return {
     position: [position.x, position.y, position.z],
@@ -342,52 +336,14 @@ function fallbackCameraPresetConfig(
   }
 }
 
-function resolveCameraAxes(cameraManifest: MujocoFlyBrowserViewerCameraManifestEntry) {
-  if (cameraManifest.xyaxes) {
-    const xAxis = Vector3.FromArray(cameraManifest.xyaxes.slice(0, 3))
-    const yAxis = Vector3.FromArray(cameraManifest.xyaxes.slice(3, 6))
-    const zAxis = Vector3.Cross(xAxis, yAxis)
-    return {
-      forward: normalizeOrNull(transformMujocoVectorToBabylon(zAxis.scale(-1))),
-      up: normalizeOrNull(transformMujocoVectorToBabylon(yAxis)),
-    }
-  }
-
-  if (cameraManifest.quaternion) {
-    const rotation = new Quaternion(
-      cameraManifest.quaternion[1],
-      cameraManifest.quaternion[2],
-      cameraManifest.quaternion[3],
-      cameraManifest.quaternion[0],
-    )
-    const forward = rotateVectorByQuaternion(new Vector3(0, 0, -1), rotation)
-    const up = rotateVectorByQuaternion(Vector3.Up(), rotation)
-    return {
-      forward: normalizeOrNull(transformMujocoVectorToBabylon(forward)),
-      up: normalizeOrNull(transformMujocoVectorToBabylon(up)),
-    }
-  }
-
-  return null
-}
-
-function fallbackCameraDirection(cameraManifest: MujocoFlyBrowserViewerCameraManifestEntry) {
-  const offset = transformMujocoVectorToBabylon(cameraManifest.position)
-  const normalizedOffset = normalizeOrNull(offset)
-  if (normalizedOffset) {
-    return normalizedOffset.scale(-1)
-  }
-  return new Vector3(0, -1, 0)
-}
-
 function cameraDistanceMultiplier(preset: MujocoFlyBrowserViewerCameraPreset) {
   if (preset === 'top') {
-    return 1.9
+    return 1.15
   }
   if (preset === 'track') {
-    return 1.7
+    return 0.95
   }
-  return 1.55
+  return 0.9
 }
 
 function normalizeOrNull(vector: Vector3) {
@@ -397,14 +353,38 @@ function normalizeOrNull(vector: Vector3) {
   return vector.normalizeToNew()
 }
 
-function rotateVectorByQuaternion(vector: Vector3, quaternion: Quaternion) {
-  const matrix = Matrix.Identity()
-  quaternion.toRotationMatrix(matrix)
-  return Vector3.TransformCoordinates(vector, matrix)
-}
-
-function toBabylonQuaternion(quaternion: [number, number, number, number] | number[]) {
-  return new Quaternion(quaternion[1], quaternion[2], quaternion[3], quaternion[0])
+function rotationMatrixToQuaternion(
+  rotationMatrix: [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ] | number[],
+) {
+  const matrix = Matrix.FromValues(
+    rotationMatrix[0],
+    rotationMatrix[1],
+    rotationMatrix[2],
+    0,
+    rotationMatrix[3],
+    rotationMatrix[4],
+    rotationMatrix[5],
+    0,
+    rotationMatrix[6],
+    rotationMatrix[7],
+    rotationMatrix[8],
+    0,
+    0,
+    0,
+    0,
+    1,
+  )
+  return Quaternion.FromRotationMatrix(matrix)
 }
 
 export function transformMujocoVectorToBabylon(
@@ -555,4 +535,17 @@ function computeFlyBounds(flyMeshes: Mesh[]) {
     center: minimum.add(maximum).scale(0.5),
     size: maximum.subtract(minimum),
   }
+}
+
+function computeFocusTarget(payload: MujocoFlyBrowserViewerPosePayload) {
+  const focusNames = ['walker/thorax', 'walker/abdomen', 'walker/head']
+  const matches = payload.body_poses.filter((pose) => focusNames.includes(pose.body_name))
+  if (matches.length === 0) {
+    return null
+  }
+  const sum = matches.reduce(
+    (accumulator, pose) => accumulator.add(transformMujocoVectorToBabylon(pose.position)),
+    Vector3.Zero(),
+  )
+  return sum.scale(1 / matches.length)
 }

@@ -77,6 +77,7 @@ function createViewerClientDouble(options: { checkpointLoaded?: boolean; availab
     current_camera: string
     scene_version: string
     body_poses: Array<{ body_name: string; position: number[]; quaternion: number[] }>
+    geom_poses: Array<{ geom_name: string; position: number[]; rotation_matrix: number[] }>
   }
   const listeners = new Set<() => void>()
   const emit = () => {
@@ -144,6 +145,7 @@ function createViewerClientDouble(options: { checkpointLoaded?: boolean; availab
               current_camera: 'track',
               scene_version: 'flybody-walk-imitation-v1',
               body_poses: [],
+              geom_poses: [],
             }
           : null
         emit()

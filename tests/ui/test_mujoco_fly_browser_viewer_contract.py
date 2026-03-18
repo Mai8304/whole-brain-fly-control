@@ -121,12 +121,20 @@ def test_validate_browser_viewer_pose_payload_normalizes_body_poses() -> None:
                     "quaternion": [1, 0, 0, 0],
                 }
             ],
+            "geom_poses": [
+                {
+                    "geom_name": "walker/thorax",
+                    "position": ["0.1", 0.2, 0.3],
+                    "rotation_matrix": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+                }
+            ],
         }
     )
 
     assert payload["frame_id"] == 4
     assert payload["sim_time"] == 1.25
     assert payload["body_poses"][0]["position"] == [0.0, 0.5, 1.0]
+    assert payload["geom_poses"][0]["position"] == [0.1, 0.2, 0.3]
 
 
 def test_build_unavailable_browser_viewer_pose_payload_marks_stream_unavailable() -> None:
@@ -142,4 +150,5 @@ def test_build_unavailable_browser_viewer_pose_payload_marks_stream_unavailable(
     assert payload["running_state"] == "unavailable"
     assert payload["scene_version"] == "flybody-walk-imitation-v1"
     assert payload["body_poses"] == []
+    assert payload["geom_poses"] == []
     assert "checkpoint" in str(payload["reason"]).lower()

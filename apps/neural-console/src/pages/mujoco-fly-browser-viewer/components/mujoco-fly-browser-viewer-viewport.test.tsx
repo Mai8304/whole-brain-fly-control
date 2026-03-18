@@ -62,6 +62,13 @@ const posePayload: MujocoFlyBrowserViewerPosePayload = {
       quaternion: [1, 0, 0, 0],
     },
   ],
+  geom_poses: [
+    {
+      geom_name: 'walker/thorax',
+      position: [0.1, 0, 0.12],
+      rotation_matrix: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    },
+  ],
 }
 
 describe('MujocoFlyBrowserViewerViewport', () => {

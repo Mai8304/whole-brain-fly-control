@@ -189,6 +189,29 @@ def validate_browser_viewer_pose_payload(payload: dict[str, Any]) -> dict[str, A
                 "quaternion": quaternion,
             }
         )
+    geom_poses_raw = payload.get("geom_poses")
+    if not isinstance(geom_poses_raw, list):
+        raise ValueError("geom_poses must be a list")
+    geom_poses: list[dict[str, Any]] = []
+    for entry in geom_poses_raw:
+        if not isinstance(entry, dict):
+            raise ValueError("geom pose entry must be an object")
+        geom_name = entry.get("geom_name")
+        if not isinstance(geom_name, str) or not geom_name:
+            raise ValueError("geom_name is required for every geom pose")
+        position = _validate_vector(entry.get("position"), size=3, field_name="position")
+        rotation_matrix = _validate_vector(
+            entry.get("rotation_matrix"),
+            size=9,
+            field_name="rotation_matrix",
+        )
+        geom_poses.append(
+            {
+                "geom_name": geom_name,
+                "position": position,
+                "rotation_matrix": rotation_matrix,
+            }
+        )
     reason = payload.get("reason")
     if reason is not None:
         reason = str(reason)
@@ -199,6 +222,7 @@ def validate_browser_viewer_pose_payload(payload: dict[str, Any]) -> dict[str, A
         "current_camera": current_camera,
         "scene_version": scene_version,
         "body_poses": body_poses,
+        "geom_poses": geom_poses,
         "reason": reason,
     }
 
@@ -216,6 +240,7 @@ def build_unavailable_browser_viewer_pose_payload(
         "current_camera": _validate_camera_preset(current_camera),
         "scene_version": scene_version,
         "body_poses": [],
+        "geom_poses": [],
     }
     if reason:
         payload["reason"] = reason

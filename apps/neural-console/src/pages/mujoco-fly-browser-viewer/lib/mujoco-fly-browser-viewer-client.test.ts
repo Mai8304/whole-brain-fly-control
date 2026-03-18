@@ -137,12 +137,20 @@ describe('createMujocoFlyBrowserViewerClient', () => {
           quaternion: [1.0, 0.0, 0.0, 0.0],
         },
       ],
+      geom_poses: [
+        {
+          geom_name: 'walker/thorax',
+          position: [0.1, 0.2, 0.3],
+          rotation_matrix: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        },
+      ],
     })
 
     expect(client.getStatus()).toBe('running')
     expect(client.getBootstrap()?.runtime_mode).toBe('official-flybody-browser-viewer')
     expect(client.getSession()?.checkpoint_loaded).toBe(true)
     expect(client.getViewerState()?.body_poses[0]?.body_name).toBe('walker/thorax')
+    expect(client.getViewerState()?.geom_poses[0]?.geom_name).toBe('walker/thorax')
     expect(createSocket).toHaveBeenCalledWith('ws://test.local/api/mujoco-fly-browser-viewer/stream')
   })
 

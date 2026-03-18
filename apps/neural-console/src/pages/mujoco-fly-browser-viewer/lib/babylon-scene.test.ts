@@ -27,7 +27,7 @@ describe('babylon-scene helpers', () => {
       [0, 0, 0.13],
     )
 
-    expect(preset.radius).toBeGreaterThan(0.8)
+    expect(preset.radius).toBeGreaterThan(0.45)
     expect(preset.target).toEqual([0, 0, 0.13])
   })
 })

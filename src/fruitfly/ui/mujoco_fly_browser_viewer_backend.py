@@ -73,6 +73,7 @@ class MujocoFlyBrowserViewerBackend:
             "current_camera": self.current_camera,
             "scene_version": "flybody-walk-imitation-v1",
             "body_poses": _extract_body_poses(self.environment.physics),
+            "geom_poses": _extract_geom_poses(self.environment.physics),
         }
 
     def close(self) -> None:
@@ -107,3 +108,24 @@ def _extract_body_poses(physics: Any) -> list[dict[str, object]]:
             }
         )
     return body_poses
+
+
+def _extract_geom_poses(physics: Any) -> list[dict[str, object]]:
+    geom_xpos = physics.named.data.geom_xpos
+    geom_xmat = physics.named.data.geom_xmat
+    row_names = getattr(getattr(geom_xpos, "axes", None), "row", None)
+    if row_names is None or not hasattr(row_names, "names"):
+        raise RuntimeError("Official flybody physics does not expose named geom poses")
+
+    geom_poses: list[dict[str, object]] = []
+    for geom_name in row_names.names:
+        if not isinstance(geom_name, str) or not geom_name or geom_name == "groundplane":
+            continue
+        geom_poses.append(
+            {
+                "geom_name": geom_name,
+                "position": [float(value) for value in geom_xpos[geom_name]],
+                "rotation_matrix": [float(value) for value in geom_xmat[geom_name]],
+            }
+        )
+    return geom_poses

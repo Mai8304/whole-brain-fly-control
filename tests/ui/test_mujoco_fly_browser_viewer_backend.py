@@ -43,6 +43,18 @@ class _FakePhysics:
                         "walker/thorax": [1.0, 0.0, 0.0, 0.0],
                     }
                 ),
+                geom_xpos=_FakeFieldIndexer(
+                    {
+                        "groundplane": [0.0, 0.0, 0.0],
+                        "walker/thorax": [0.1, 0.0, 0.1278],
+                    }
+                ),
+                geom_xmat=_FakeFieldIndexer(
+                    {
+                        "groundplane": [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                        "walker/thorax": [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                    }
+                ),
             )
         )
 
@@ -62,6 +74,7 @@ class _FakeEnv:
         self.step_calls += 1
         self.physics.data.time += 0.02
         self.physics.named.data.xpos._rows["walker/thorax"] = [float(action[0]), 0.0, 0.1278]
+        self.physics.named.data.geom_xpos._rows["walker/thorax"] = [float(action[0]) + 0.1, 0.0, 0.1278]
         return _FakeTimeStep({"walker/joints_pos": np.asarray([float(action[0])], dtype=np.float32)})
 
 
@@ -79,6 +92,8 @@ def test_browser_viewer_backend_emits_static_pose_without_checkpoint(tmp_path: P
     assert payload["running_state"] == "paused"
     assert payload["body_poses"][0]["body_name"] == "walker/"
     assert payload["body_poses"][1]["body_name"] == "walker/thorax"
+    assert payload["geom_poses"][0]["geom_name"] == "walker/thorax"
+    assert payload["geom_poses"][0]["position"][0] == 0.1
     assert env.step_calls == 0
 
 
@@ -108,6 +123,7 @@ def test_browser_viewer_backend_only_steps_when_running_and_policy_loaded(tmp_pa
     assert running_payload["running_state"] == "running"
     assert running_payload["sim_time"] == 0.02
     assert running_payload["body_poses"][1]["position"][0] == 0.25
+    assert running_payload["geom_poses"][0]["position"][0] == 0.35
 
 
 def test_browser_viewer_backend_start_rejects_missing_checkpoint(tmp_path: Path) -> None:

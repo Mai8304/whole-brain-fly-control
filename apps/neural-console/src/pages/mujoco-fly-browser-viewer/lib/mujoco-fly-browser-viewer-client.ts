@@ -64,6 +64,12 @@ export interface MujocoFlyBrowserViewerBodyPose {
   quaternion: [number, number, number, number]
 }
 
+export interface MujocoFlyBrowserViewerGeomPose {
+  geom_name: string
+  position: [number, number, number]
+  rotation_matrix: [number, number, number, number, number, number, number, number, number]
+}
+
 export interface MujocoFlyBrowserViewerPosePayload {
   frame_id: number
   sim_time: number
@@ -71,6 +77,7 @@ export interface MujocoFlyBrowserViewerPosePayload {
   current_camera: MujocoFlyBrowserViewerCameraPreset
   scene_version: string
   body_poses: MujocoFlyBrowserViewerBodyPose[]
+  geom_poses: MujocoFlyBrowserViewerGeomPose[]
   reason?: string
 }
 

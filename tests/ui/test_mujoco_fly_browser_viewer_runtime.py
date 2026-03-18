@@ -39,6 +39,13 @@ class _FakeBrowserViewerBackend:
                     "quaternion": [1.0, 0.0, 0.0, 0.0],
                 }
             ],
+            "geom_poses": [
+                {
+                    "geom_name": "walker/thorax",
+                    "position": [0.1, 0.0, 0.1278],
+                    "rotation_matrix": [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                }
+            ],
         }
 
 
@@ -142,6 +149,7 @@ def test_browser_viewer_runtime_bootstrap_survives_missing_checkpoint_when_backe
     assert bootstrap["geom_manifest"][0]["material_name"] == "walker/body"
     assert bootstrap["camera_manifest"][0]["camera_name"] == "walker/track1"
     assert pose["body_poses"][0]["body_name"] == "walker/thorax"
+    assert pose["geom_poses"][0]["geom_name"] == "walker/thorax"
 
 
 def test_browser_viewer_runtime_rejects_start_when_checkpoint_missing_even_if_viewer_is_available(
