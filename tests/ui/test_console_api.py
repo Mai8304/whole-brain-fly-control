@@ -635,6 +635,260 @@ def test_console_api_exposes_strict_official_mujoco_fly_runtime_endpoints(tmp_pa
     assert stream_payload["body_poses"] == []
 
 
+def test_console_api_exposes_mujoco_fly_browser_viewer_endpoints(tmp_path: Path, monkeypatch) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+    import fruitfly.ui.console_api as console_api_module
+    import fruitfly.ui.mujoco_fly_browser_viewer_runtime as browser_viewer_runtime_module
+
+    class FakeBrowserViewerBackend:
+        def __init__(self) -> None:
+            self.started = False
+            self.paused = False
+            self.reset_called = False
+            self.snapshots = 0
+
+        def start(self) -> None:
+            self.started = True
+            self.paused = False
+
+        def pause(self) -> None:
+            self.paused = True
+
+        def reset(self) -> None:
+            self.reset_called = True
+            self.paused = True
+
+        def current_viewer_state(self) -> dict[str, object]:
+            self.snapshots += 1
+            return {
+                "frame_id": self.snapshots,
+                "sim_time": 0.05 * self.snapshots,
+                "running_state": "running" if self.started and not self.paused else "paused",
+                "current_camera": "track",
+                "scene_version": "flybody-walk-imitation-v1",
+                "body_poses": [
+                    {
+                        "body_name": "walker/thorax",
+                        "position": [0.0, 0.0, 0.1278],
+                        "quaternion": [1.0, 0.0, 0.0, 0.0],
+                    }
+                ],
+                "geom_poses": [
+                    {
+                        "geom_name": "walker/thorax",
+                        "position": [0.0, 0.0, 0.1278],
+                        "rotation_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                        ],
+                    }
+                ],
+            }
+
+    fake_backend = FakeBrowserViewerBackend()
+
+    monkeypatch.setattr(
+        console_api_module,
+        "_create_mujoco_fly_browser_viewer_backend_factory",
+        lambda: (lambda _config: fake_backend),
+    )
+    monkeypatch.setattr(browser_viewer_runtime_module, "PROJECT_ROOT", tmp_path)
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    scene_dir = tmp_path / "apps" / "neural-console" / "public" / "flybody-official-walk"
+    checkpoint_path = tmp_path / "walking"
+
+    compiled_dir.mkdir(parents=True)
+    eval_dir.mkdir()
+    scene_dir.mkdir(parents=True)
+    checkpoint_path.mkdir()
+    (checkpoint_path / "saved_model.pb").write_bytes(b"checkpoint")
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 1, "edge_count": 0, "afferent_count": 0, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps({"status": "ok", "task": "straight_walking", "steps_requested": 1, "steps_completed": 1}),
+        encoding="utf-8",
+    )
+    (scene_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "entry_xml": "walk_imitation.xml",
+                "scene_version": "flybody-walk-imitation-v1",
+                "camera_presets": ["track", "side", "back", "top"],
+                "body_manifest": [
+                    {
+                        "body_name": "walker/thorax",
+                        "parent_body_name": "walker/",
+                        "renderable": True,
+                        "geom_names": ["walker/thorax"],
+                    }
+                ],
+                "geom_manifest": [
+                    {
+                        "geom_name": "walker/thorax",
+                        "body_name": "walker/thorax",
+                        "mesh_asset_path": "thorax_body.obj",
+                        "mesh_scale": [0.1, 0.1, 0.1],
+                        "geom_local_position": [0.0, 0.0, 0.0],
+                        "geom_local_quaternion": [1.0, 0.0, 0.0, 0.0],
+                        "mesh_local_position": [0.0, 0.0, 0.0],
+                        "mesh_local_quaternion": [1.0, 0.0, 0.0, 0.0],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (scene_dir / "thorax_body.obj").write_text("o thorax\n", encoding="utf-8")
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+            mujoco_fly_scene_dir=scene_dir,
+            mujoco_fly_policy_checkpoint_path=checkpoint_path,
+        )
+    )
+    client = TestClient(app)
+
+    bootstrap_response = client.get("/api/mujoco-fly-browser-viewer/bootstrap")
+    assert bootstrap_response.status_code == 200
+    bootstrap_payload = bootstrap_response.json()
+    assert bootstrap_payload["runtime_mode"] == "official-flybody-browser-viewer"
+    assert bootstrap_payload["checkpoint_loaded"] is True
+    assert bootstrap_payload["body_manifest"][0]["body_name"] == "walker/thorax"
+    assert bootstrap_payload["geom_manifest"][0]["mesh_asset"].startswith(
+        "/flybody-official-walk/thorax_body.obj?v="
+    )
+    assert bootstrap_payload["geom_manifest"][0]["mesh_scale"] == [0.1, 0.1, 0.1]
+
+    session_response = client.get("/api/mujoco-fly-browser-viewer/session")
+    assert session_response.status_code == 200
+    session_payload = session_response.json()
+    assert session_payload["available"] is True
+    assert session_payload["running_state"] == "paused"
+    assert session_payload["checkpoint_loaded"] is True
+
+    state_response = client.get("/api/mujoco-fly-browser-viewer/state")
+    assert state_response.status_code == 200
+    assert state_response.json()["geom_poses"][0]["geom_name"] == "walker/thorax"
+
+    start_response = client.post("/api/mujoco-fly-browser-viewer/start")
+    assert start_response.status_code == 200
+    assert start_response.json()["running_state"] == "running"
+
+    pause_response = client.post("/api/mujoco-fly-browser-viewer/pause")
+    assert pause_response.status_code == 200
+    assert pause_response.json()["running_state"] == "paused"
+
+    reset_response = client.post("/api/mujoco-fly-browser-viewer/reset")
+    assert reset_response.status_code == 200
+    assert reset_response.json()["running_state"] == "paused"
+    assert fake_backend.started is True
+    assert fake_backend.paused is True
+    assert fake_backend.reset_called is True
+
+    with client.websocket_connect("/api/mujoco-fly-browser-viewer/stream") as websocket:
+        stream_payload = websocket.receive_json()
+
+    assert stream_payload["scene_version"] == "flybody-walk-imitation-v1"
+    assert stream_payload["body_poses"][0]["body_name"] == "walker/thorax"
+
+
+def test_console_api_browser_viewer_fails_closed_on_missing_checkpoint(tmp_path: Path, monkeypatch) -> None:
+    from fruitfly.ui import ConsoleApiConfig, create_console_api
+    import fruitfly.ui.console_api as console_api_module
+    import fruitfly.ui.mujoco_fly_browser_viewer_runtime as browser_viewer_runtime_module
+
+    monkeypatch.setattr(
+        console_api_module,
+        "_create_mujoco_fly_browser_viewer_backend_factory",
+        lambda: (lambda _config: type(
+            "StaticBackend",
+            (),
+            {
+                "start": lambda self: None,
+                "pause": lambda self: None,
+                "reset": lambda self: None,
+                "current_viewer_state": lambda self: {
+                    "frame_id": 1,
+                    "sim_time": 0.0,
+                    "running_state": "paused",
+                    "current_camera": "track",
+                    "scene_version": "flybody-walk-imitation-v1",
+                    "body_poses": [],
+                },
+            },
+        )()),
+    )
+    monkeypatch.setattr(browser_viewer_runtime_module, "PROJECT_ROOT", tmp_path)
+
+    compiled_dir = tmp_path / "compiled"
+    eval_dir = tmp_path / "eval"
+    scene_dir = tmp_path / "apps" / "neural-console" / "public" / "flybody-official-walk"
+
+    compiled_dir.mkdir(parents=True)
+    eval_dir.mkdir()
+    scene_dir.mkdir(parents=True)
+    (compiled_dir / "graph_stats.json").write_text(
+        json.dumps({"node_count": 1, "edge_count": 0, "afferent_count": 0, "intrinsic_count": 1, "efferent_count": 0}),
+        encoding="utf-8",
+    )
+    (eval_dir / "summary.json").write_text(
+        json.dumps({"status": "ok", "task": "straight_walking", "steps_requested": 1, "steps_completed": 1}),
+        encoding="utf-8",
+    )
+    (scene_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "entry_xml": "walk_imitation.xml",
+                "scene_version": "flybody-walk-imitation-v1",
+                "camera_presets": ["track", "side", "back", "top"],
+                "body_manifest": [],
+                "geom_manifest": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    app = create_console_api(
+        ConsoleApiConfig(
+            compiled_graph_dir=compiled_dir,
+            eval_dir=eval_dir,
+            checkpoint_path=None,
+            mujoco_fly_scene_dir=scene_dir,
+            mujoco_fly_policy_checkpoint_path=tmp_path / "missing-checkpoint",
+        )
+    )
+    client = TestClient(app)
+
+    session_response = client.get("/api/mujoco-fly-browser-viewer/session")
+    assert session_response.status_code == 200
+    session_payload = session_response.json()
+    assert session_payload["available"] is True
+    assert session_payload["checkpoint_loaded"] is False
+    assert "checkpoint" in str(session_payload["reason"]).lower()
+
+    start_response = client.post("/api/mujoco-fly-browser-viewer/start")
+    assert start_response.status_code == 503
+    assert "checkpoint" in start_response.json()["detail"].lower()
+
+    bootstrap_response = client.get("/api/mujoco-fly-browser-viewer/bootstrap")
+    assert bootstrap_response.status_code == 200
+    assert bootstrap_response.json()["checkpoint_loaded"] is False
+
+
 def test_console_api_exposes_strict_official_mujoco_fly_official_render_endpoints(tmp_path: Path, monkeypatch) -> None:
     from fruitfly.ui import ConsoleApiConfig, create_console_api
     import fruitfly.ui.console_api as console_api_module

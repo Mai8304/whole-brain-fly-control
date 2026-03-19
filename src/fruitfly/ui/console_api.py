@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from contextlib import asynccontextmanager, suppress
 from dataclasses import dataclass, field
@@ -7,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pyarrow.parquet as pq
-from fastapi import FastAPI, HTTPException, WebSocket
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, Response
 
 from fruitfly.evaluation.brain_asset_manifest import load_brain_asset_manifest, with_runtime_asset_urls
@@ -30,6 +31,13 @@ from fruitfly.ui.mujoco_fly_official_render_runtime import (
     MujocoFlyOfficialRenderRuntimeConfig,
     create_mujoco_fly_official_render_runtime,
 )
+from fruitfly.ui.mujoco_fly_official_render_worker import MujocoFlyOfficialRenderWorkerClient
+from fruitfly.ui.mujoco_fly_browser_viewer_runtime import (
+    MujocoFlyBrowserViewerRuntime,
+    MujocoFlyBrowserViewerRuntimeConfig,
+    create_mujoco_fly_browser_viewer_runtime,
+)
+from fruitfly.ui.mujoco_fly_browser_viewer_worker import MujocoFlyBrowserViewerWorkerClient
 from fruitfly.ui.mujoco_fly_runtime import (
     MujocoFlyRuntime,
     MujocoFlyRuntimeConfig,
@@ -71,6 +79,7 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     replay_frame_client: Any | None = None
     mujoco_fly_runtime: MujocoFlyRuntime | None = None
     mujoco_fly_official_render_runtime: MujocoFlyOfficialRenderRuntime | None = None
+    mujoco_fly_browser_viewer_runtime: MujocoFlyBrowserViewerRuntime | None = None
 
     def get_or_create_replay_runtime() -> ReplayRuntime:
         nonlocal replay_runtime
@@ -129,19 +138,62 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
                 )
         return mujoco_fly_official_render_runtime
 
+    def get_or_create_mujoco_fly_browser_viewer_runtime() -> MujocoFlyBrowserViewerRuntime:
+        nonlocal mujoco_fly_browser_viewer_runtime
+        if mujoco_fly_browser_viewer_runtime is None:
+            runtime_config = MujocoFlyBrowserViewerRuntimeConfig(
+                scene_dir=config.mujoco_fly_scene_dir,
+                policy_checkpoint_path=config.mujoco_fly_policy_checkpoint_path,
+            )
+            try:
+                mujoco_fly_browser_viewer_runtime = create_mujoco_fly_browser_viewer_runtime(
+                    runtime_config,
+                    backend_factory=_create_mujoco_fly_browser_viewer_backend_factory(),
+                )
+            except Exception:
+                mujoco_fly_browser_viewer_runtime = create_mujoco_fly_browser_viewer_runtime(
+                    runtime_config,
+                    backend_factory=None,
+                )
+        return mujoco_fly_browser_viewer_runtime
+
     def close_replay_frame_client() -> None:
         nonlocal replay_frame_client
         if replay_frame_client is None:
             return
         with suppress(Exception):
             replay_frame_client.close()
-        replay_frame_client = None
+            replay_frame_client = None
+
+    def close_mujoco_fly_official_render_backend() -> None:
+        nonlocal mujoco_fly_official_render_runtime
+        runtime = mujoco_fly_official_render_runtime
+        if runtime is None:
+            return
+        backend = runtime.backend
+        close = getattr(backend, "close", None)
+        if callable(close):
+            with suppress(Exception):
+                close()
+
+    def close_mujoco_fly_browser_viewer_backend() -> None:
+        nonlocal mujoco_fly_browser_viewer_runtime
+        runtime = mujoco_fly_browser_viewer_runtime
+        if runtime is None:
+            return
+        backend = runtime.backend
+        close = getattr(backend, "close", None)
+        if callable(close):
+            with suppress(Exception):
+                close()
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
         try:
             yield
         finally:
+            close_mujoco_fly_browser_viewer_backend()
+            close_mujoco_fly_official_render_backend()
             close_replay_frame_client()
 
     app = FastAPI(
@@ -264,6 +316,36 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
         _run_mujoco_fly_control(runtime.reset)
         return runtime.session_payload()
 
+    @app.get("/api/mujoco-fly-browser-viewer/bootstrap")
+    def mujoco_fly_browser_viewer_bootstrap() -> dict[str, Any]:
+        return get_or_create_mujoco_fly_browser_viewer_runtime().bootstrap_payload()
+
+    @app.get("/api/mujoco-fly-browser-viewer/session")
+    def mujoco_fly_browser_viewer_session() -> dict[str, Any]:
+        return get_or_create_mujoco_fly_browser_viewer_runtime().session_payload()
+
+    @app.get("/api/mujoco-fly-browser-viewer/state")
+    def mujoco_fly_browser_viewer_state() -> dict[str, Any]:
+        return get_or_create_mujoco_fly_browser_viewer_runtime().current_viewer_state()
+
+    @app.post("/api/mujoco-fly-browser-viewer/start")
+    def mujoco_fly_browser_viewer_start() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_browser_viewer_runtime()
+        _run_mujoco_fly_browser_viewer_control(runtime.start)
+        return runtime.session_payload()
+
+    @app.post("/api/mujoco-fly-browser-viewer/pause")
+    def mujoco_fly_browser_viewer_pause() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_browser_viewer_runtime()
+        _run_mujoco_fly_browser_viewer_control(runtime.pause)
+        return runtime.session_payload()
+
+    @app.post("/api/mujoco-fly-browser-viewer/reset")
+    def mujoco_fly_browser_viewer_reset() -> dict[str, Any]:
+        runtime = get_or_create_mujoco_fly_browser_viewer_runtime()
+        _run_mujoco_fly_browser_viewer_control(runtime.reset)
+        return runtime.session_payload()
+
     @app.get("/api/mujoco-fly-official-render/session")
     def mujoco_fly_official_render_session() -> dict[str, Any]:
         return get_or_create_mujoco_fly_official_render_runtime().session_payload()
@@ -334,6 +416,17 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
         runtime = get_or_create_mujoco_fly_runtime()
         await websocket.send_json(_validated_mujoco_fly_viewer_state(runtime))
         await websocket.close()
+
+    @app.websocket("/api/mujoco-fly-browser-viewer/stream")
+    async def mujoco_fly_browser_viewer_stream(websocket: WebSocket) -> None:
+        await websocket.accept()
+        runtime = get_or_create_mujoco_fly_browser_viewer_runtime()
+        try:
+            while True:
+                await websocket.send_json(runtime.current_viewer_state())
+                await asyncio.sleep(0.05)
+        except WebSocketDisconnect:
+            return
 
     @app.get("/api/console/replay/session")
     def replay_session() -> dict[str, Any]:
@@ -505,6 +598,14 @@ def _run_mujoco_fly_official_render_control(control: Any) -> None:
         raise HTTPException(status_code=503, detail=message) from exc
 
 
+def _run_mujoco_fly_browser_viewer_control(control: Any) -> None:
+    try:
+        control()
+    except Exception as exc:
+        message = str(exc).strip() or "browser viewer control failed"
+        raise HTTPException(status_code=503, detail=message) from exc
+
+
 def _run_mujoco_fly_control(control: Any) -> None:
     try:
         control()
@@ -615,7 +716,44 @@ def _create_replay_frame_client(*, config: ConsoleApiConfig) -> ReplayFrameWorke
 
 
 def _create_mujoco_fly_official_render_backend_factory() -> Any | None:
-    return None
+    renderer_python = _resolve_replay_renderer_python(ConsoleApiConfig(Path("."), Path(".")))
+    if renderer_python is None:
+        return None
+
+    worker_script = Path(__file__).resolve().parents[3] / "scripts" / "mujoco_fly_official_render_worker.py"
+    if not worker_script.exists():
+        return None
+
+    def _factory(config: MujocoFlyOfficialRenderRuntimeConfig) -> MujocoFlyOfficialRenderWorkerClient:
+        checkpoint_path = config.policy_checkpoint_path
+        if checkpoint_path is None:
+            raise RuntimeError("official render worker requires a policy checkpoint path")
+        return MujocoFlyOfficialRenderWorkerClient.launch(
+            python_executable=renderer_python,
+            worker_script=worker_script,
+            checkpoint_path=checkpoint_path,
+        )
+
+    return _factory
+
+
+def _create_mujoco_fly_browser_viewer_backend_factory() -> Any | None:
+    renderer_python = _resolve_replay_renderer_python(ConsoleApiConfig(Path("."), Path(".")))
+    if renderer_python is None:
+        return None
+
+    worker_script = Path(__file__).resolve().parents[3] / "scripts" / "mujoco_fly_browser_viewer_worker.py"
+    if not worker_script.exists():
+        return None
+
+    def _factory(config: MujocoFlyBrowserViewerRuntimeConfig) -> MujocoFlyBrowserViewerWorkerClient:
+        return MujocoFlyBrowserViewerWorkerClient.launch(
+            python_executable=renderer_python,
+            worker_script=worker_script,
+            checkpoint_path=config.policy_checkpoint_path,
+        )
+
+    return _factory
 
 
 def _resolve_replay_renderer_python(config: ConsoleApiConfig) -> Path | None:
