@@ -120,6 +120,44 @@ describe('createMujocoFlyOfficialRenderClient', () => {
     expect(client.getSession()?.current_camera).toBe('back')
   })
 
+  it('fetches official render frame blobs through the frame endpoint', async () => {
+    const fetchImpl = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.endsWith('/api/mujoco-fly-official-render/session')) {
+        return jsonResponse({
+          available: true,
+          running_state: 'paused',
+          current_camera: 'track',
+          checkpoint_loaded: true,
+          reason: null,
+        })
+      }
+      if (url.includes('/api/mujoco-fly-official-render/frame?')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          blob: async () => new Blob(['jpeg'], { type: 'image/jpeg' }),
+        } as Response)
+      }
+      throw new Error(`unexpected request: ${url}`)
+    })
+    const client = createMujocoFlyOfficialRenderClient({ fetchImpl })
+
+    await client.bootstrap()
+    const blob = await client.fetchFrame({
+      width: 1280,
+      height: 720,
+      camera: 'track',
+      cacheKey: 7,
+    })
+
+    expect(blob.type).toBe('image/jpeg')
+    expect(fetchImpl).toHaveBeenCalledWith(
+      '/api/mujoco-fly-official-render/frame?width=1280&height=720&camera=track&cache=7',
+      undefined,
+    )
+  })
+
   it('fails closed into unavailable status when the official runtime is unavailable', async () => {
     const fetchImpl = vi.fn((input: RequestInfo | URL) => {
       const url = String(input)

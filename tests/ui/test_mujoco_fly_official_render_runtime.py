@@ -64,6 +64,34 @@ def test_official_render_runtime_reports_unavailable_when_checkpoint_missing(tmp
     assert "checkpoint" in str(payload["reason"]).lower()
 
 
+def test_official_render_runtime_resolves_repo_default_checkpoint_path(tmp_path: Path, monkeypatch) -> None:
+    import fruitfly.ui.mujoco_fly_official_render_runtime as runtime_module
+
+    scene_dir = tmp_path / "flybody-official-walk"
+    _materialize_scene_bundle(scene_dir)
+
+    default_policy_dir = tmp_path / "outputs" / "flybody-data" / "trained-fly-policies" / "walking"
+    default_policy_dir.mkdir(parents=True, exist_ok=True)
+    (default_policy_dir / "saved_model.pb").write_bytes(b"saved-model")
+
+    monkeypatch.setattr(runtime_module, "PROJECT_ROOT", tmp_path)
+    backend = _FakeOfficialRenderBackend()
+
+    runtime = runtime_module.create_mujoco_fly_official_render_runtime(
+        runtime_module.MujocoFlyOfficialRenderRuntimeConfig(
+            scene_dir=scene_dir,
+            policy_checkpoint_path=None,
+        ),
+        backend_factory=lambda _config: backend,
+    )
+
+    payload = runtime.session_payload()
+
+    assert payload["available"] is True
+    assert payload["checkpoint_loaded"] is True
+    assert runtime.config.policy_checkpoint_path == default_policy_dir
+
+
 def test_official_render_runtime_lifecycle_controls_delegate_to_backend(tmp_path: Path) -> None:
     from fruitfly.ui.mujoco_fly_official_render_runtime import (
         MujocoFlyOfficialRenderRuntimeConfig,

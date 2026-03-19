@@ -26,6 +26,7 @@ export interface MujocoFlyOfficialRenderClient {
   pause: () => Promise<void>
   reset: () => Promise<void>
   setCameraPreset: (camera: MujocoFlyOfficialRenderCameraPreset) => Promise<void>
+  fetchFrame: (options: BuildMujocoFlyOfficialRenderFrameUrlOptions) => Promise<Blob>
   dispose: () => void
   subscribe: (listener: () => void) => () => void
   getStatus: () => MujocoFlyOfficialRenderStatus
@@ -116,6 +117,15 @@ export function createMujocoFlyOfficialRenderClient(
         body: JSON.stringify({ camera }),
       })
     },
+    async fetchFrame(options: BuildMujocoFlyOfficialRenderFrameUrlOptions) {
+      return requestBlob(
+        fetchImpl,
+        buildMujocoFlyOfficialRenderFrameUrl({
+          ...options,
+          basePath,
+        }),
+      )
+    },
     dispose() {
       disposed = true
       listeners.clear()
@@ -165,4 +175,16 @@ async function requestJson<T>(
     throw new Error(`${init?.method ?? 'GET'} ${url} failed with ${response.status}`)
   }
   return (await response.json()) as T
+}
+
+async function requestBlob(
+  fetchImpl: typeof fetch,
+  url: string,
+  init?: RequestInit,
+): Promise<Blob> {
+  const response = await fetchImpl(url, init)
+  if (!response.ok) {
+    throw new Error(`${init?.method ?? 'GET'} ${url} failed with ${response.status}`)
+  }
+  return response.blob()
 }

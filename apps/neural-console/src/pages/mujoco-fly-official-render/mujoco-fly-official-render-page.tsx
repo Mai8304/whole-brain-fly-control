@@ -14,7 +14,6 @@ import { useConsolePreferences } from '@/providers/console-preferences-provider'
 
 import { MujocoFlyOfficialRenderViewport } from './components/mujoco-fly-official-render-viewport'
 import {
-  buildMujocoFlyOfficialRenderFrameUrl,
   createMujocoFlyOfficialRenderClient,
   type MujocoFlyOfficialRenderCameraPreset,
   type MujocoFlyOfficialRenderClient,
@@ -22,12 +21,20 @@ import {
   type MujocoFlyOfficialRenderStatus,
 } from './lib/mujoco-fly-official-render-client'
 
+const FRAME_WIDTH = 1280
+const FRAME_HEIGHT = 720
+const RUNNING_FRAME_INTERVAL_MS = 250
+
 export function MujocoFlyOfficialRenderPage() {
   const { t } = useConsolePreferences()
   const clientRef = useRef<MujocoFlyOfficialRenderClient | null>(null)
+  const frameUrlRef = useRef<string | null>(null)
+  const frameCacheKeyRef = useRef(0)
+  const frameRequestRef = useRef<Promise<void> | null>(null)
   const [status, setStatus] = useState<MujocoFlyOfficialRenderStatus>('loading')
   const [session, setSession] = useState<MujocoFlyOfficialRenderSessionPayload | null>(null)
-  const [frameRevision, setFrameRevision] = useState(0)
+  const [frameSrc, setFrameSrc] = useState<string | null>(null)
+  const [controlPending, setControlPending] = useState(false)
 
   if (clientRef.current === null) {
     clientRef.current = createMujocoFlyOfficialRenderClient()
@@ -57,28 +64,85 @@ export function MujocoFlyOfficialRenderPage() {
   }, [])
 
   useEffect(() => {
-    if (!session?.available) {
+    if (!session?.available || !session.current_camera) {
+      replaceFrameSrc(frameUrlRef, setFrameSrc, null)
       return
     }
-    setFrameRevision((current) => current + 1)
-  }, [session?.available, session?.current_camera, status])
+    if (controlPending) {
+      return
+    }
+    const client = clientRef.current
+    if (!client) {
+      return
+    }
+
+    let cancelled = false
+
+    const fetchFrame = async () => {
+      const request = (async () => {
+        const blob = await client.fetchFrame({
+          width: FRAME_WIDTH,
+          height: FRAME_HEIGHT,
+          camera: session.current_camera,
+          cacheKey: ++frameCacheKeyRef.current,
+        })
+        if (cancelled) {
+          return
+        }
+        const nextUrl = URL.createObjectURL(blob)
+        replaceFrameSrc(frameUrlRef, setFrameSrc, nextUrl)
+      })()
+      frameRequestRef.current = request
+      try {
+        await request
+      } finally {
+        if (frameRequestRef.current === request) {
+          frameRequestRef.current = null
+        }
+      }
+    }
+
+    const run = async () => {
+      try {
+        await fetchFrame()
+        while (!cancelled && status === 'running') {
+          await sleep(RUNNING_FRAME_INTERVAL_MS)
+          if (cancelled) {
+            return
+          }
+          await fetchFrame()
+        }
+      } catch {
+        if (cancelled) {
+          return
+        }
+        setStatus(client.getStatus())
+        setSession(client.getSession())
+        replaceFrameSrc(frameUrlRef, setFrameSrc, null)
+      }
+    }
+
+    void run()
+
+    return () => {
+      cancelled = true
+    }
+  }, [controlPending, session?.available, session?.current_camera, status])
 
   useEffect(() => {
-    if (status !== 'running' || !session?.available) {
-      return
+    return () => {
+      replaceFrameSrc(frameUrlRef, setFrameSrc, null)
     }
-    const intervalId = window.setInterval(() => {
-      setFrameRevision((current) => current + 1)
-    }, 250)
-    return () => window.clearInterval(intervalId)
-  }, [session?.available, status])
+  }, [])
 
   async function applyControl(action: 'start' | 'pause' | 'reset') {
     const client = clientRef.current
     if (!client) {
       return
     }
+    setControlPending(true)
     try {
+      await frameRequestRef.current?.catch(() => undefined)
       if (action === 'start') {
         await client.start()
         return
@@ -91,6 +155,8 @@ export function MujocoFlyOfficialRenderPage() {
     } catch {
       setStatus(client.getStatus())
       setSession(client.getSession())
+    } finally {
+      setControlPending(false)
     }
   }
 
@@ -99,23 +165,18 @@ export function MujocoFlyOfficialRenderPage() {
     if (!client) {
       return
     }
+    setControlPending(true)
     try {
+      await frameRequestRef.current?.catch(() => undefined)
       await client.setCameraPreset(camera)
     } catch {
       setStatus(client.getStatus())
       setSession(client.getSession())
+    } finally {
+      setControlPending(false)
     }
   }
 
-  const frameSrc =
-    session?.available && session.current_camera
-      ? buildMujocoFlyOfficialRenderFrameUrl({
-          width: 1280,
-          height: 720,
-          camera: session.current_camera,
-          cacheKey: frameRevision,
-        })
-      : null
   const reason = session?.reason ?? null
 
   return (
@@ -155,7 +216,7 @@ export function MujocoFlyOfficialRenderPage() {
                 <Button
                   type="button"
                   onClick={() => void applyControl('start')}
-                  disabled={status !== 'paused'}
+                  disabled={controlPending || status !== 'paused'}
                 >
                   {t('action.start')}
                 </Button>
@@ -163,7 +224,7 @@ export function MujocoFlyOfficialRenderPage() {
                   type="button"
                   variant="outline"
                   onClick={() => void applyControl('pause')}
-                  disabled={status !== 'running'}
+                  disabled={controlPending || status !== 'running'}
                 >
                   {t('action.pause')}
                 </Button>
@@ -171,7 +232,7 @@ export function MujocoFlyOfficialRenderPage() {
                   type="button"
                   variant="outline"
                   onClick={() => void applyControl('reset')}
-                  disabled={status !== 'paused' && status !== 'running'}
+                  disabled={controlPending || (status !== 'paused' && status !== 'running')}
                 >
                   {t('action.reset')}
                 </Button>
@@ -186,7 +247,7 @@ export function MujocoFlyOfficialRenderPage() {
                     type="button"
                     variant="outline"
                     onClick={() => void applyCameraPreset('track')}
-                    disabled={!session?.available}
+                    disabled={controlPending || !session?.available}
                   >
                     {t('mujocoFlyOfficialRender.camera.track')}
                   </Button>
@@ -194,7 +255,7 @@ export function MujocoFlyOfficialRenderPage() {
                     type="button"
                     variant="outline"
                     onClick={() => void applyCameraPreset('side')}
-                    disabled={!session?.available}
+                    disabled={controlPending || !session?.available}
                   >
                     {t('mujocoFlyOfficialRender.camera.side')}
                   </Button>
@@ -202,7 +263,7 @@ export function MujocoFlyOfficialRenderPage() {
                     type="button"
                     variant="outline"
                     onClick={() => void applyCameraPreset('back')}
-                    disabled={!session?.available}
+                    disabled={controlPending || !session?.available}
                   >
                     {t('mujocoFlyOfficialRender.camera.back')}
                   </Button>
@@ -210,7 +271,7 @@ export function MujocoFlyOfficialRenderPage() {
                     type="button"
                     variant="outline"
                     onClick={() => void applyCameraPreset('top')}
-                    disabled={!session?.available}
+                    disabled={controlPending || !session?.available}
                   >
                     {t('mujocoFlyOfficialRender.camera.top')}
                   </Button>
@@ -274,4 +335,23 @@ function SessionField({ label, value }: { label: string; value: string }) {
       <div className="mt-1 text-sm font-medium text-foreground">{value}</div>
     </div>
   )
+}
+
+function replaceFrameSrc(
+  frameUrlRef: React.MutableRefObject<string | null>,
+  setFrameSrc: React.Dispatch<React.SetStateAction<string | null>>,
+  nextUrl: string | null,
+) {
+  const previousUrl = frameUrlRef.current
+  frameUrlRef.current = nextUrl
+  setFrameSrc(nextUrl)
+  if (previousUrl) {
+    URL.revokeObjectURL(previousUrl)
+  }
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
 }

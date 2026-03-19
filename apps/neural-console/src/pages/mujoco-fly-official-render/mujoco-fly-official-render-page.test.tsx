@@ -110,6 +110,7 @@ function createOfficialRenderClientDouble(options: { unavailable?: boolean } = {
         }
         emit()
       }),
+      fetchFrame: vi.fn(async () => new Blob(['jpeg'], { type: 'image/jpeg' })),
       dispose: vi.fn(),
       subscribe: vi.fn((listener: () => void) => {
         listeners.add(listener)
@@ -121,9 +122,26 @@ function createOfficialRenderClientDouble(options: { unavailable?: boolean } = {
   }
 }
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((innerResolve, innerReject) => {
+    resolve = innerResolve
+    reject = innerReject
+  })
+  return { promise, resolve, reject }
+}
+
 describe('MujocoFlyOfficialRenderPage', () => {
   beforeEach(() => {
     createOfficialRenderClientMock.mockReset()
+    vi.stubGlobal(
+      'URL',
+      Object.assign(URL, {
+        createObjectURL: vi.fn(() => 'blob:official-render-frame'),
+        revokeObjectURL: vi.fn(),
+      }),
+    )
   })
 
   it('renders the official render page with contract-aligned session fields and frame surface', async () => {
@@ -161,9 +179,11 @@ describe('MujocoFlyOfficialRenderPage', () => {
     expect(screen.getAllByText(/^paused$/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/^track$/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/^no issue$/i)).toBeInTheDocument()
-    expect(
-      screen.getByTestId('mujoco-fly-official-render-viewport-src'),
-    ).toHaveTextContent('/api/mujoco-fly-official-render/frame?width=1280&height=720&camera=track&cache=1')
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('mujoco-fly-official-render-viewport-src'),
+      ).toHaveTextContent('blob:official-render-frame')
+    })
   })
 
   it('wires official render controls and camera presets through the client', async () => {
@@ -193,6 +213,34 @@ describe('MujocoFlyOfficialRenderPage', () => {
 
     await user.click(screen.getByRole('button', { name: /^back$/i }))
     expect(client.setCameraPreset).toHaveBeenCalledWith('back')
+  })
+
+  it('waits for the in-flight frame fetch before sending camera changes', async () => {
+    const deferredFrame = createDeferred<Blob>()
+    const { client } = createOfficialRenderClientDouble()
+    client.fetchFrame.mockImplementation(() => deferredFrame.promise)
+    createOfficialRenderClientMock.mockReturnValue(client)
+    const user = userEvent.setup()
+
+    render(
+      <ConsolePreferencesProvider>
+        <MujocoFlyOfficialRenderPage />
+      </ConsolePreferencesProvider>,
+    )
+
+    await waitFor(() => {
+      expect(client.bootstrap).toHaveBeenCalledTimes(1)
+      expect(screen.getByRole('button', { name: /start/i })).toBeEnabled()
+    })
+
+    await user.click(screen.getByRole('button', { name: /side/i }))
+    expect(client.setCameraPreset).not.toHaveBeenCalled()
+
+    deferredFrame.resolve(new Blob(['jpeg'], { type: 'image/jpeg' }))
+
+    await waitFor(() => {
+      expect(client.setCameraPreset).toHaveBeenCalledWith('side')
+    })
   })
 
   it('fails closed when the official runtime is unavailable', async () => {
