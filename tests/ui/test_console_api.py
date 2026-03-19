@@ -673,6 +673,23 @@ def test_console_api_exposes_mujoco_fly_browser_viewer_endpoints(tmp_path: Path,
                         "quaternion": [1.0, 0.0, 0.0, 0.0],
                     }
                 ],
+                "geom_poses": [
+                    {
+                        "geom_name": "walker/thorax",
+                        "position": [0.0, 0.0, 0.1278],
+                        "rotation_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                        ],
+                    }
+                ],
             }
 
     fake_backend = FakeBrowserViewerBackend()
@@ -722,8 +739,10 @@ def test_console_api_exposes_mujoco_fly_browser_viewer_endpoints(tmp_path: Path,
                         "body_name": "walker/thorax",
                         "mesh_asset_path": "thorax_body.obj",
                         "mesh_scale": [0.1, 0.1, 0.1],
-                        "local_position": [0.0, 0.0, 0.0],
-                        "local_quaternion": [1.0, 0.0, 0.0, 0.0],
+                        "geom_local_position": [0.0, 0.0, 0.0],
+                        "geom_local_quaternion": [1.0, 0.0, 0.0, 0.0],
+                        "mesh_local_position": [0.0, 0.0, 0.0],
+                        "mesh_local_quaternion": [1.0, 0.0, 0.0, 0.0],
                     }
                 ],
             }
@@ -749,7 +768,9 @@ def test_console_api_exposes_mujoco_fly_browser_viewer_endpoints(tmp_path: Path,
     assert bootstrap_payload["runtime_mode"] == "official-flybody-browser-viewer"
     assert bootstrap_payload["checkpoint_loaded"] is True
     assert bootstrap_payload["body_manifest"][0]["body_name"] == "walker/thorax"
-    assert bootstrap_payload["geom_manifest"][0]["mesh_asset"] == "/flybody-official-walk/thorax_body.obj"
+    assert bootstrap_payload["geom_manifest"][0]["mesh_asset"].startswith(
+        "/flybody-official-walk/thorax_body.obj?v="
+    )
     assert bootstrap_payload["geom_manifest"][0]["mesh_scale"] == [0.1, 0.1, 0.1]
 
     session_response = client.get("/api/mujoco-fly-browser-viewer/session")
@@ -759,8 +780,9 @@ def test_console_api_exposes_mujoco_fly_browser_viewer_endpoints(tmp_path: Path,
     assert session_payload["running_state"] == "paused"
     assert session_payload["checkpoint_loaded"] is True
 
-    state_response = client.get("/api/mujoco-fly-browser-viewer/session")
+    state_response = client.get("/api/mujoco-fly-browser-viewer/state")
     assert state_response.status_code == 200
+    assert state_response.json()["geom_poses"][0]["geom_name"] == "walker/thorax"
 
     start_response = client.post("/api/mujoco-fly-browser-viewer/start")
     assert start_response.status_code == 200

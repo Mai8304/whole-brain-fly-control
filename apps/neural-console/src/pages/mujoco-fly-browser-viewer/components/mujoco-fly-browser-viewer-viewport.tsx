@@ -33,6 +33,21 @@ export function MujocoFlyBrowserViewerViewport({
 }: MujocoFlyBrowserViewerViewportProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const handleRef = useRef<MujocoFlyBrowserViewerSceneHandle | null>(null)
+  const latestViewerStateRef = useRef<MujocoFlyBrowserViewerPosePayload | null>(viewerState)
+  const latestControlsRef = useRef(onViewerControlsRef)
+  const latestOnErrorRef = useRef(onError)
+
+  useEffect(() => {
+    latestViewerStateRef.current = viewerState
+  }, [viewerState])
+
+  useEffect(() => {
+    latestControlsRef.current = onViewerControlsRef
+  }, [onViewerControlsRef])
+
+  useEffect(() => {
+    latestOnErrorRef.current = onError
+  }, [onError])
 
   useEffect(() => {
     if (!bootstrap) {
@@ -53,28 +68,28 @@ export function MujocoFlyBrowserViewerViewport({
           return
         }
         handleRef.current = handle
-        onViewerControlsRef({
+        latestControlsRef.current({
           resetView: handle.resetView,
           setViewPreset: handle.setViewPreset,
         })
-        if (viewerState) {
-          handle.applyPoseFrame(viewerState)
+        if (latestViewerStateRef.current) {
+          handle.applyPoseFrame(latestViewerStateRef.current)
         }
       } catch (error) {
-        onError?.(error as Error)
+        latestOnErrorRef.current?.(error as Error)
       }
     })()
 
     return () => {
       cancelled = true
-      onViewerControlsRef({
+      latestControlsRef.current({
         resetView: () => undefined,
         setViewPreset: () => undefined,
       })
       handleRef.current?.dispose()
       handleRef.current = null
     }
-  }, [bootstrap, onError, onViewerControlsRef])
+  }, [bootstrap])
 
   useEffect(() => {
     if (!viewerState) {

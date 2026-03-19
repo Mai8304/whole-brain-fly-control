@@ -48,14 +48,40 @@ function createViewerClientDouble(options: { checkpointLoaded?: boolean; availab
       xyaxes: [number, number, number, number, number, number] | null
       fovy: number | null
     }>
+    ground_manifest: {
+      geom_name: string
+      size: [number, number, number]
+      material_name: string | null
+      friction: number
+      texture_name: string | null
+      texture_builtin: string | null
+      texture_rgb1: [number, number, number] | null
+      texture_rgb2: [number, number, number] | null
+      texture_mark: string | null
+      texture_markrgb: [number, number, number] | null
+      texture_size: [number, number] | null
+      texrepeat: [number, number]
+      texuniform: boolean
+      reflectance: number
+      material_rgba: [number, number, number, number] | null
+    } | null
+    light_manifest: Array<{
+      name: string
+      mode: string | null
+      position: [number, number, number]
+      direction: [number, number, number] | null
+      diffuse: [number, number, number] | null
+    }>
     body_manifest: Array<{ body_name: string; parent_body_name: string | null }>
     geom_manifest: Array<{
       geom_name: string
       body_name: string
       mesh_asset: string
       mesh_scale: [number, number, number]
-      local_position: [number, number, number]
-      local_quaternion: [number, number, number, number]
+      geom_local_position: [number, number, number]
+      geom_local_quaternion: [number, number, number, number]
+      mesh_local_position: [number, number, number]
+      mesh_local_quaternion: [number, number, number, number]
       material_name: string | null
       material_rgba: [number, number, number, number] | null
       material_specular: number | null
@@ -108,6 +134,24 @@ function createViewerClientDouble(options: { checkpointLoaded?: boolean; availab
               fovy: null,
             },
           ],
+          ground_manifest: {
+            geom_name: 'groundplane',
+            size: [8, 8, 0.25],
+            material_name: 'groundplane',
+            friction: 0.5,
+            texture_name: 'groundplane',
+            texture_builtin: 'checker',
+            texture_rgb1: [0.2, 0.3, 0.4],
+            texture_rgb2: [0.1, 0.2, 0.3],
+            texture_mark: 'edge',
+            texture_markrgb: [0.8, 0.8, 0.8],
+            texture_size: [200, 200],
+            texrepeat: [2, 2],
+            texuniform: true,
+            reflectance: 0.2,
+            material_rgba: [1, 1, 1, 1],
+          },
+          light_manifest: [],
           body_manifest: [
             {
               body_name: 'walker/thorax',
@@ -120,8 +164,10 @@ function createViewerClientDouble(options: { checkpointLoaded?: boolean; availab
               body_name: 'walker/thorax',
               mesh_asset: '/mujoco-fly/flybody-official-walk/thorax.obj',
               mesh_scale: [0.1, 0.1, 0.1],
-              local_position: [0, 0, 0],
-              local_quaternion: [1, 0, 0, 0],
+              geom_local_position: [0, 0, 0],
+              geom_local_quaternion: [1, 0, 0, 0],
+              mesh_local_position: [0, 0, 0],
+              mesh_local_quaternion: [1, 0, 0, 0],
               material_name: 'walker/body',
               material_rgba: [0.67, 0.35, 0.14, 1],
               material_specular: 0,

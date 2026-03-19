@@ -27,6 +27,31 @@ def test_validate_browser_viewer_bootstrap_payload_normalizes_body_and_geom_mani
                     "fovy": None,
                 }
             ],
+            "ground_manifest": {
+                "geom_name": "groundplane",
+                "size": [8, 8, 0.25],
+                "material_name": "groundplane",
+                "friction": 0.5,
+                "texture_name": "groundplane",
+                "texture_builtin": "checker",
+                "texture_rgb1": [0.2, 0.3, 0.4],
+                "texture_rgb2": [0.1, 0.2, 0.3],
+                "texture_mark": "edge",
+                "texture_markrgb": [0.8, 0.8, 0.8],
+                "texture_size": [200, 200],
+                "texrepeat": [2, 2],
+                "texuniform": True,
+                "reflectance": 0.2,
+            },
+            "light_manifest": [
+                {
+                    "name": "walker/right",
+                    "mode": "trackcom",
+                    "position": [0, -1, 1],
+                    "direction": [0, 1, -1],
+                    "diffuse": [0.3, 0.3, 0.3],
+                }
+            ],
             "body_manifest": [
                 {
                     "body_name": "walker/thorax",
@@ -41,8 +66,10 @@ def test_validate_browser_viewer_bootstrap_payload_normalizes_body_and_geom_mani
                     "body_name": "walker/thorax",
                     "mesh_asset": "/mujoco-fly/flybody-official-walk/thorax_body.obj",
                     "mesh_scale": ["0.1", 0.1, 0.1],
-                    "local_position": ["0", 0, 0.25],
-                    "local_quaternion": [1, 0, 0, 0],
+                    "geom_local_position": ["0", 0, 0.25],
+                    "geom_local_quaternion": [1, 0, 0, 0],
+                    "mesh_local_position": [0, 0, 0],
+                    "mesh_local_quaternion": [1, 0, 0, 0],
                     "material_name": "walker/body",
                     "material_rgba": [0.67, 0.35, 0.14, 1],
                     "material_specular": 0,
@@ -57,10 +84,18 @@ def test_validate_browser_viewer_bootstrap_payload_normalizes_body_and_geom_mani
     assert payload["camera_presets"] == ["track", "side", "back", "top"]
     assert payload["camera_manifest"][0]["camera_name"] == "walker/track1"
     assert payload["camera_manifest"][0]["position"] == [0.6, 0.6, 0.22]
+    assert payload["ground_manifest"]["texture_builtin"] == "checker"
+    assert payload["ground_manifest"]["texrepeat"] == [2.0, 2.0]
+    assert payload["light_manifest"][0]["name"] == "walker/right"
     assert payload["body_manifest"][0]["body_name"] == "walker/thorax"
-    assert payload["geom_manifest"][0]["mesh_asset"].endswith("thorax_body.obj")
+    assert payload["geom_manifest"][0]["mesh_asset"].startswith(
+        "/mujoco-fly/flybody-official-walk/thorax_body.obj"
+    )
     assert payload["geom_manifest"][0]["mesh_scale"] == [0.1, 0.1, 0.1]
-    assert payload["geom_manifest"][0]["local_position"] == [0.0, 0.0, 0.25]
+    assert payload["geom_manifest"][0]["geom_local_position"] == [0.0, 0.0, 0.25]
+    assert payload["geom_manifest"][0]["geom_local_quaternion"] == [1.0, 0.0, 0.0, 0.0]
+    assert payload["geom_manifest"][0]["mesh_local_position"] == [0.0, 0.0, 0.0]
+    assert payload["geom_manifest"][0]["mesh_local_quaternion"] == [1.0, 0.0, 0.0, 0.0]
     assert payload["geom_manifest"][0]["material_name"] == "walker/body"
     assert payload["geom_manifest"][0]["material_rgba"] == [0.67, 0.35, 0.14, 1.0]
 
@@ -79,6 +114,23 @@ def test_validate_browser_viewer_bootstrap_payload_rejects_missing_body_name() -
                 "checkpoint_loaded": False,
                 "default_camera": "track",
                 "camera_presets": ["track"],
+                "ground_manifest": {
+                    "geom_name": "groundplane",
+                    "size": [8, 8, 0.25],
+                    "material_name": "groundplane",
+                    "friction": 0.5,
+                    "texture_name": "groundplane",
+                    "texture_builtin": "checker",
+                    "texture_rgb1": [0.2, 0.3, 0.4],
+                    "texture_rgb2": [0.1, 0.2, 0.3],
+                    "texture_mark": "edge",
+                    "texture_markrgb": [0.8, 0.8, 0.8],
+                    "texture_size": [200, 200],
+                    "texrepeat": [2, 2],
+                    "texuniform": True,
+                    "reflectance": 0.2,
+                },
+                "light_manifest": [],
                 "body_manifest": [{"parent_body_name": None}],
                 "geom_manifest": [],
             }

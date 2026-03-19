@@ -20,6 +20,18 @@ import {
   type MujocoFlyBrowserViewerStatus,
 } from './lib/mujoco-fly-browser-viewer-client'
 
+declare global {
+  interface Window {
+    __mujocoFlyBrowserViewerPageDebug?: {
+      status: () => MujocoFlyBrowserViewerStatus
+      viewerFrameId: () => number | null
+      sessionAvailable: () => boolean | null
+      geomPoseCount: () => number
+      runtimeReason: () => string | null
+    }
+  }
+}
+
 const EMPTY_VIEWER_CONTROLS: MujocoFlyBrowserViewerControls = {
   resetView: () => undefined,
   setViewPreset: () => undefined,
@@ -114,6 +126,22 @@ export function MujocoFlyBrowserViewerPage() {
 
   const runtimeReasonLabel =
     runtimeReason ?? t('mujocoFlyBrowserViewer.runtime.value.none')
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) {
+      return
+    }
+    window.__mujocoFlyBrowserViewerPageDebug = {
+      status: () => status,
+      viewerFrameId: () => viewerState?.frame_id ?? null,
+      sessionAvailable: () => session?.available ?? null,
+      geomPoseCount: () => viewerState?.geom_poses.length ?? 0,
+      runtimeReason: () => runtimeReason,
+    }
+    return () => {
+      delete window.__mujocoFlyBrowserViewerPageDebug
+    }
+  }, [session?.available, status, viewerState])
 
   return (
     <main

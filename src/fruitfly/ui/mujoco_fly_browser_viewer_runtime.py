@@ -189,6 +189,8 @@ def _unavailable_runtime(
         "default_camera": config.default_camera,
         "camera_presets": ["track", "side", "back", "top"],
         "camera_manifest": [],
+        "ground_manifest": None,
+        "light_manifest": [],
         "body_manifest": [],
         "geom_manifest": [],
     }
@@ -224,16 +226,27 @@ def _build_bootstrap_payload(
         if not isinstance(asset_path, str) or not asset_path:
             raise ValueError("geom manifest entry is missing mesh_asset_path")
         geom_manifest.append(
-            {
-                "geom_name": str(entry["geom_name"]),
-                "body_name": str(entry["body_name"]),
-                "mesh_asset": _public_asset_url(scene_dir / asset_path),
-                "mesh_scale": [float(value) for value in entry["mesh_scale"]],
-                "local_position": [float(value) for value in entry["local_position"]],
-                "local_quaternion": [float(value) for value in entry["local_quaternion"]],
-                "material_name": (
-                    str(entry["material_name"]) if entry.get("material_name") is not None else None
-                ),
+                {
+                    "geom_name": str(entry["geom_name"]),
+                    "body_name": str(entry["body_name"]),
+                    "mesh_asset": _public_asset_url(scene_dir / asset_path),
+                    "mesh_scale": [
+                        float(value)
+                        for value in entry["mesh_scale"]
+                    ],
+                    "geom_local_position": [float(value) for value in entry["geom_local_position"]],
+                    "geom_local_quaternion": [float(value) for value in entry["geom_local_quaternion"]],
+                    "mesh_local_position": [
+                        float(value)
+                        for value in entry["mesh_local_position"]
+                    ],
+                    "mesh_local_quaternion": [
+                        float(value)
+                        for value in entry["mesh_local_quaternion"]
+                    ],
+                    "material_name": (
+                        str(entry["material_name"]) if entry.get("material_name") is not None else None
+                    ),
                 "material_rgba": (
                     [float(value) for value in entry["material_rgba"]]
                     if isinstance(entry.get("material_rgba"), list)
@@ -258,6 +271,12 @@ def _build_bootstrap_payload(
     camera_manifest = manifest.get("camera_manifest")
     if not isinstance(camera_manifest, list):
         camera_manifest = []
+    ground_manifest = manifest.get("ground_manifest")
+    if ground_manifest is not None and not isinstance(ground_manifest, dict):
+        raise ValueError("Official walk scene manifest ground_manifest must be an object when present")
+    light_manifest = manifest.get("light_manifest")
+    if not isinstance(light_manifest, list):
+        light_manifest = []
 
     return validate_browser_viewer_bootstrap_payload(
         {
@@ -268,6 +287,8 @@ def _build_bootstrap_payload(
             "default_camera": default_camera,
             "camera_presets": [str(value) for value in camera_presets],
             "camera_manifest": camera_manifest,
+            "ground_manifest": ground_manifest,
+            "light_manifest": light_manifest,
             "body_manifest": body_manifest_raw,
             "geom_manifest": geom_manifest,
         }
@@ -282,7 +303,8 @@ def _public_asset_url(path: Path) -> str:
         raise ValueError(
             f"Official walk asset {resolved} is outside the public asset root {_public_root().resolve()}"
         ) from exc
-    return "/" + relative.as_posix()
+    version = resolved.stat().st_mtime_ns
+    return f"/{relative.as_posix()}?v={version}"
 
 
 def _public_root() -> Path:

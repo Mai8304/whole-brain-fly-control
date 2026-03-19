@@ -32,6 +32,9 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
         camera_name = entry.get("camera_name")
         if not isinstance(camera_name, str) or not camera_name:
             raise ValueError("camera_name is required for every camera manifest entry")
+        parent_body_name = entry.get("parent_body_name")
+        if parent_body_name is not None:
+            parent_body_name = str(parent_body_name)
         mode = entry.get("mode")
         if mode is not None:
             mode = str(mode)
@@ -49,11 +52,110 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
             {
                 "preset": preset,
                 "camera_name": camera_name,
+                "parent_body_name": parent_body_name,
                 "mode": mode,
                 "position": position,
                 "quaternion": quaternion,
                 "xyaxes": xyaxes,
                 "fovy": fovy,
+            }
+        )
+
+    ground_manifest_raw = payload.get("ground_manifest")
+    ground_manifest: dict[str, Any] | None = None
+    if ground_manifest_raw is not None:
+        if not isinstance(ground_manifest_raw, dict):
+            raise ValueError("ground_manifest must be an object when present")
+        geom_name = ground_manifest_raw.get("geom_name")
+        if not isinstance(geom_name, str) or not geom_name:
+            raise ValueError("geom_name is required for ground_manifest")
+        material_name = ground_manifest_raw.get("material_name")
+        if material_name is not None:
+            material_name = str(material_name)
+        texture_name = ground_manifest_raw.get("texture_name")
+        if texture_name is not None:
+            texture_name = str(texture_name)
+        texture_builtin = ground_manifest_raw.get("texture_builtin")
+        if texture_builtin is not None:
+            texture_builtin = str(texture_builtin)
+        texture_mark = ground_manifest_raw.get("texture_mark")
+        if texture_mark is not None:
+            texture_mark = str(texture_mark)
+        ground_manifest = {
+            "geom_name": geom_name,
+            "size": _validate_vector(ground_manifest_raw.get("size"), size=3, field_name="size"),
+            "material_name": material_name,
+            "friction": float(ground_manifest_raw.get("friction") or 0.0),
+            "texture_name": texture_name,
+            "texture_builtin": texture_builtin,
+            "texture_rgb1": (
+                _validate_vector(ground_manifest_raw.get("texture_rgb1"), size=3, field_name="texture_rgb1")
+                if ground_manifest_raw.get("texture_rgb1") is not None
+                else None
+            ),
+            "texture_rgb2": (
+                _validate_vector(ground_manifest_raw.get("texture_rgb2"), size=3, field_name="texture_rgb2")
+                if ground_manifest_raw.get("texture_rgb2") is not None
+                else None
+            ),
+            "texture_mark": texture_mark,
+            "texture_markrgb": (
+                _validate_vector(ground_manifest_raw.get("texture_markrgb"), size=3, field_name="texture_markrgb")
+                if ground_manifest_raw.get("texture_markrgb") is not None
+                else None
+            ),
+            "texture_size": (
+                _validate_vector(ground_manifest_raw.get("texture_size"), size=2, field_name="texture_size")
+                if ground_manifest_raw.get("texture_size") is not None
+                else None
+            ),
+            "texrepeat": (
+                _validate_vector(ground_manifest_raw.get("texrepeat"), size=2, field_name="texrepeat")
+                if ground_manifest_raw.get("texrepeat") is not None
+                else [1.0, 1.0]
+            ),
+            "texuniform": _validate_bool(
+                ground_manifest_raw.get("texuniform", False),
+                field_name="texuniform",
+            ),
+            "reflectance": float(ground_manifest_raw.get("reflectance") or 0.0),
+            "material_rgba": (
+                _validate_vector(ground_manifest_raw.get("material_rgba"), size=4, field_name="material_rgba")
+                if ground_manifest_raw.get("material_rgba") is not None
+                else None
+            ),
+        }
+
+    light_manifest_raw = payload.get("light_manifest", [])
+    if not isinstance(light_manifest_raw, list):
+        raise ValueError("light_manifest must be a list when present")
+    light_manifest: list[dict[str, Any]] = []
+    for entry in light_manifest_raw:
+        if not isinstance(entry, dict):
+            raise ValueError("light_manifest entry must be an object")
+        name = entry.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError("name is required for every light manifest entry")
+        parent_body_name = entry.get("parent_body_name")
+        if parent_body_name is not None:
+            parent_body_name = str(parent_body_name)
+        mode = entry.get("mode")
+        if mode is not None:
+            mode = str(mode)
+        direction = entry.get("direction")
+        if direction is not None:
+            direction = _validate_vector(direction, size=3, field_name="direction")
+        diffuse = entry.get("diffuse")
+        if diffuse is not None:
+            diffuse = _validate_vector(diffuse, size=3, field_name="diffuse")
+        light_manifest.append(
+            {
+                "name": name,
+                "parent_body_name": parent_body_name,
+                "mode": mode,
+                "position": _validate_vector(entry.get("position"), size=3, field_name="position"),
+                "direction": direction,
+                "diffuse": diffuse,
             }
         )
 
@@ -101,9 +203,25 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
         if not isinstance(mesh_asset, str) or not mesh_asset:
             raise ValueError("mesh_asset is required for every geom manifest entry")
         mesh_scale = _validate_vector(entry.get("mesh_scale"), size=3, field_name="mesh_scale")
-        local_position = _validate_vector(entry.get("local_position"), size=3, field_name="local_position")
-        local_quaternion = _validate_vector(
-            entry.get("local_quaternion"), size=4, field_name="local_quaternion"
+        geom_local_position = _validate_vector(
+            entry.get("geom_local_position"),
+            size=3,
+            field_name="geom_local_position",
+        )
+        geom_local_quaternion = _validate_vector(
+            entry.get("geom_local_quaternion"),
+            size=4,
+            field_name="geom_local_quaternion",
+        )
+        mesh_local_position = _validate_vector(
+            entry.get("mesh_local_position"),
+            size=3,
+            field_name="mesh_local_position",
+        )
+        mesh_local_quaternion = _validate_vector(
+            entry.get("mesh_local_quaternion"),
+            size=4,
+            field_name="mesh_local_quaternion",
         )
         material_name = entry.get("material_name")
         if material_name is not None:
@@ -123,8 +241,10 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
                 "body_name": body_name,
                 "mesh_asset": mesh_asset,
                 "mesh_scale": mesh_scale,
-                "local_position": local_position,
-                "local_quaternion": local_quaternion,
+                "geom_local_position": geom_local_position,
+                "geom_local_quaternion": geom_local_quaternion,
+                "mesh_local_position": mesh_local_position,
+                "mesh_local_quaternion": mesh_local_quaternion,
                 "material_name": material_name,
                 "material_rgba": material_rgba,
                 "material_specular": material_specular,
@@ -140,6 +260,8 @@ def validate_browser_viewer_bootstrap_payload(payload: dict[str, Any]) -> dict[s
         "default_camera": default_camera,
         "camera_presets": camera_presets,
         "camera_manifest": camera_manifest,
+        "ground_manifest": ground_manifest,
+        "light_manifest": light_manifest,
         "body_manifest": body_manifest,
         "geom_manifest": geom_manifest,
     }

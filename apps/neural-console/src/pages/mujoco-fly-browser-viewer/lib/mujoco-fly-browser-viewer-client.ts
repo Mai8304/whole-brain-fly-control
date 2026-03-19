@@ -19,8 +19,10 @@ export interface MujocoFlyBrowserViewerGeomManifestEntry {
   body_name: string
   mesh_asset: string
   mesh_scale: [number, number, number]
-  local_position: [number, number, number]
-  local_quaternion: [number, number, number, number]
+  geom_local_position: [number, number, number]
+  geom_local_quaternion: [number, number, number, number]
+  mesh_local_position: [number, number, number]
+  mesh_local_quaternion: [number, number, number, number]
   material_name: string | null
   material_rgba: [number, number, number, number] | null
   material_specular: number | null
@@ -30,11 +32,39 @@ export interface MujocoFlyBrowserViewerGeomManifestEntry {
 export interface MujocoFlyBrowserViewerCameraManifestEntry {
   preset: MujocoFlyBrowserViewerCameraPreset
   camera_name: string
+  parent_body_name: string | null
   mode: string | null
   position: [number, number, number]
   quaternion: [number, number, number, number] | null
   xyaxes: [number, number, number, number, number, number] | null
   fovy: number | null
+}
+
+export interface MujocoFlyBrowserViewerGroundManifest {
+  geom_name: string
+  size: [number, number, number]
+  material_name: string | null
+  friction: number
+  texture_name: string | null
+  texture_builtin: string | null
+  texture_rgb1: [number, number, number] | null
+  texture_rgb2: [number, number, number] | null
+  texture_mark: string | null
+  texture_markrgb: [number, number, number] | null
+  texture_size: [number, number] | null
+  texrepeat: [number, number]
+  texuniform: boolean
+  reflectance: number
+  material_rgba: [number, number, number, number] | null
+}
+
+export interface MujocoFlyBrowserViewerLightManifestEntry {
+  name: string
+  parent_body_name: string | null
+  mode: string | null
+  position: [number, number, number]
+  direction: [number, number, number] | null
+  diffuse: [number, number, number] | null
 }
 
 export interface MujocoFlyBrowserViewerBootstrapPayload {
@@ -45,6 +75,8 @@ export interface MujocoFlyBrowserViewerBootstrapPayload {
   default_camera: MujocoFlyBrowserViewerCameraPreset
   camera_presets: MujocoFlyBrowserViewerCameraPreset[]
   camera_manifest: MujocoFlyBrowserViewerCameraManifestEntry[]
+  ground_manifest: MujocoFlyBrowserViewerGroundManifest | null
+  light_manifest: MujocoFlyBrowserViewerLightManifestEntry[]
   body_manifest: MujocoFlyBrowserViewerBodyManifestEntry[]
   geom_manifest: MujocoFlyBrowserViewerGeomManifestEntry[]
 }
@@ -170,6 +202,12 @@ export function createMujocoFlyBrowserViewerClient(
     })
   }
 
+  const refreshViewerState = async (url = `${basePath}/state`) => {
+    viewerState = await requestJson<MujocoFlyBrowserViewerPosePayload>(fetchImpl, url)
+    syncStatus()
+    notify()
+  }
+
   const refreshSession = async (url = `${basePath}/session`, init?: RequestInit) => {
     session = await requestJson<MujocoFlyBrowserViewerSessionPayload>(fetchImpl, url, init)
     syncStatus()
@@ -191,6 +229,9 @@ export function createMujocoFlyBrowserViewerClient(
             `${basePath}/bootstrap`,
           )
           await refreshSession()
+          if (session?.available) {
+            await refreshViewerState()
+          }
         } catch (error) {
           status = 'error'
           notify()
@@ -240,7 +281,10 @@ async function requestJson<T>(
   url: string,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetchImpl(resolveUrl(url), init)
+  const response = await fetchImpl(resolveUrl(url), {
+    cache: 'no-store',
+    ...init,
+  })
   if (!response.ok) {
     throw new Error(`${init?.method ?? 'GET'} ${url} failed with ${response.status}`)
   }

@@ -324,6 +324,10 @@ def create_console_api(config: ConsoleApiConfig) -> FastAPI:
     def mujoco_fly_browser_viewer_session() -> dict[str, Any]:
         return get_or_create_mujoco_fly_browser_viewer_runtime().session_payload()
 
+    @app.get("/api/mujoco-fly-browser-viewer/state")
+    def mujoco_fly_browser_viewer_state() -> dict[str, Any]:
+        return get_or_create_mujoco_fly_browser_viewer_runtime().current_viewer_state()
+
     @app.post("/api/mujoco-fly-browser-viewer/start")
     def mujoco_fly_browser_viewer_start() -> dict[str, Any]:
         runtime = get_or_create_mujoco_fly_browser_viewer_runtime()
